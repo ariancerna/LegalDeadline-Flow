@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="LegalDeadline Flow - IntelliJ local" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="legaldeadline-flow-backend" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="pe.edu.utp.legaldeadlineflow.LegalDeadlineFlowApplication" />
+    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=local" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,2692 @@
+{
+  "info": {
+    "name": "LegalDeadline Flow - Backend learning and RF demonstration",
+    "description": "Run all folders in order. Uses synthetic per-run records; finalizes its own cases/tasks/deadlines and deactivates its own two users. Existing demo accounts are not edited. RF01–RF18 API examples; RF19 restart/idempotence and complete boundary evidence are documented in backend-learning-and-demo-guide.en.md. Spanish API names are preserved. Requires demo administrator/supervisor/auditor accounts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Authentication and isolated fixtures (RF01 RF02)",
+      "item": [
+        {
+          "name": "01.01 Health and initialize this run",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/health",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const run = Date.now().toString(36).toUpperCase();",
+                  "pm.environment.set('run_id', run);",
+                  "pm.environment.set('case_code', 'LAB-' + run);",
+                  "pm.environment.set('a_email', 'lab-a-' + run.toLowerCase() + '@test.local');",
+                  "pm.environment.set('b_email', 'lab-b-' + run.toLowerCase() + '@test.local');",
+                  "const today = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString().slice(0,10);",
+                  "pm.environment.set('today', today);",
+                  "for (const days of [-1,2,8,15]) { const d = new Date(today + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+days); pm.environment.set('date_' + (days<0?'past':days), d.toISOString().slice(0,10)); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Backend is UP\", function () { pm.expect(b.status).to.eql(\"UP\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.02 Missing JWT is rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.expect(pm.response.code).to.eql(401); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Authentication error\", function () { pm.expect(b.code).to.eql(\"NO_AUTENTICADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.03 Wrong login password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@legaldeadline.local\",\n  \"password\": \"IncorrectPassword!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.expect(pm.response.code).to.eql(401); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.04 Login as administrator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@legaldeadline.local\",\n  \"password\": \"AdminDemo123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"admin_token\", b.accessToken);",
+                  "pm.environment.set(\"admin_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.05 Login as supervisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"supervisor@legaldeadline.local\",\n  \"password\": \"SupervisorDemo123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"supervisor_token\", b.accessToken);",
+                  "pm.environment.set(\"supervisor_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.06 Login as auditor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"auditor@legaldeadline.local\",\n  \"password\": \"AuditorDemo123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"auditor_token\", b.accessToken);",
+                  "pm.environment.set(\"auditor_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.07 Create isolated responsible A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Lab responsible A\",\n  \"email\": \"{{a_email}}\",\n  \"password\": \"LabDemo123!\",\n  \"rol\": \"RESPONSABLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"a_id\", b.id);",
+                  "pm.environment.set(\"a_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.08 Create isolated responsible B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Lab responsible B\",\n  \"email\": \"{{b_email}}\",\n  \"password\": \"LabDemo123!\",\n  \"rol\": \"RESPONSABLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"b_id\", b.id);",
+                  "pm.environment.set(\"b_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.09 Login as responsible A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{a_email}}\",\n  \"password\": \"LabDemo123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"a_token\", b.accessToken);",
+                  "pm.environment.set(\"a_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.10 Login as responsible B",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{b_email}}\",\n  \"password\": \"LabDemo123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"b_token\", b.accessToken);",
+                  "pm.environment.set(\"b_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.11 Read current responsible",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Correct account\", function () { pm.expect(b.id > 0).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.12 Auditor cannot manage users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.13 List users without password data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"No hashes or passwords\", function () { pm.expect(b.every(u => !Object.hasOwn(u,'passwordHash') && !Object.hasOwn(u,'password'))).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.14 Read isolated user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/usuarios/{{a_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.15 Capture indicator baseline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/indicadores",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"baseline_active\", b.tareasActivas);",
+                  "pm.environment.set(\"baseline_closed\", b.tareasCerradas);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Case CRUD and visibility (RF03 RF04 RF05)",
+      "item": [
+        {
+          "name": "02.01 Create an open case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{case_code}}\",\n  \"asunto\": \"Controlled presentation lab\",\n  \"responsableId\": {{a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"case_id\", b.id);",
+                  "pm.environment.set(\"case_version\", b.version);",
+                  "pm.environment.set(\"case_old_version\", b.version);",
+                  "pm.test(\"Initial state\", function () { pm.expect(b.estado).to.eql(\"ABIERTO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.02 Read the case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.03 Reject duplicate case code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{case_code}}\",\n  \"asunto\": \"Controlled presentation lab\",\n  \"responsableId\": {{a_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.expect(pm.response.code).to.eql(409); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Duplicate code\", function () { pm.expect(b.code).to.eql(\"EXPEDIENTE_DUPLICADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.04 Find the case with paging and filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes?estado=ABIERTO&responsableId={{a_id}}&q={{case_code}}&page=0&size=5",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"One matching case\", function () { pm.expect(b.totalElements).to.eql(1); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.05 Unassigned responsible cannot read it",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{b_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.06 Missing case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes/9223372036854775807",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.expect(pm.response.code).to.eql(404); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.07 Edit and reassign to B",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{case_code}}\",\n  \"asunto\": \"Edited presentation lab\",\n  \"responsableId\": {{b_id}},\n  \"version\": {{case_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"case_id\", b.id);",
+                  "pm.environment.set(\"case_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.08 Reject outdated version",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{case_code}}\",\n  \"asunto\": \"Controlled presentation lab\",\n  \"responsableId\": {{a_id}},\n  \"version\": {{case_old_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.expect(pm.response.code).to.eql(409); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Version conflict\", function () { pm.expect(b.code).to.eql(\"VERSION_DESACTUALIZADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.09 Reassign back to A",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{case_code}}\",\n  \"asunto\": \"Controlled presentation lab\",\n  \"responsableId\": {{a_id}},\n  \"version\": {{case_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"case_id\", b.id);",
+                  "pm.environment.set(\"case_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Tasks and authorization (RF07 RF08 RF09 RF11)",
+      "item": [
+        {
+          "name": "03.01 Create a high priority task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \"  Prepare   hearing  \",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"task_id\", b.id);",
+                  "pm.environment.set(\"task_version\", b.version);",
+                  "pm.environment.set(\"task_old_version\", b.version);",
+                  "pm.test(\"Clean display title\", function () { pm.expect(b.titulo).to.eql(\"Prepare hearing\"); });",
+                  "pm.test(\"Type normalization\", function () { pm.expect(b.tipo).to.eql(\"ESCRITO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.02 Reject equivalent active task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \"prepare hearing\",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.expect(pm.response.code).to.eql(409); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Business duplicate\", function () { pm.expect(b.code).to.eql(\"TAREA_DUPLICADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.03 DTO rejects a blank title",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \" \",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.expect(pm.response.code).to.eql(400); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Validation error\", function () { pm.expect(b.code).to.eql(\"VALIDACION_FALLIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.04 Auditor cannot create a task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \"Auditor write attempt\",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.05 List tasks with filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/tareas?expedienteId={{case_id}}&prioridad=ALTA&page=0&size=5",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.06 List the tasks of the case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"One task\", function () { pm.expect(b.length).to.eql(1); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.07 Responsible cannot change priority",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Prepare hearing\",\n  \"tipo\": \"ESCRITO\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"MEDIA\",\n  \"fechaLimite\": \"{{date_2}}\",\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.08 Manager edits and reassigns task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Prepare hearing\",\n  \"tipo\": \"ESCRITO\",\n  \"responsableId\": {{b_id}},\n  \"prioridad\": \"MEDIA\",\n  \"fechaLimite\": \"{{date_8}}\",\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"task_id\", b.id);",
+                  "pm.environment.set(\"task_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.09 Reject stale task version",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Prepare hearing\",\n  \"tipo\": \"ESCRITO\",\n  \"responsableId\": {{b_id}},\n  \"prioridad\": \"MEDIA\",\n  \"fechaLimite\": \"{{date_8}}\",\n  \"version\": {{task_old_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.expect(pm.response.code).to.eql(409); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Version conflict\", function () { pm.expect(b.code).to.eql(\"VERSION_DESACTUALIZADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.10 Restore A and high priority",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Prepare hearing\",\n  \"tipo\": \"ESCRITO\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\",\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"task_id\", b.id);",
+                  "pm.environment.set(\"task_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03.11 Create a task to cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \"Review supporting documents\",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"MEDIA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"cancel_task_id\", b.id);",
+                  "pm.environment.set(\"cancel_task_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Deadlines and persisted calculations (RF12 RF13 RF15 RF16 RF17)",
+      "item": [
+        {
+          "name": "04.01 Create an active deadline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"tipo\": \"AUDIENCIA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"deadline_id\", b.id);",
+                  "pm.environment.set(\"deadline_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.02 Two days plus active tasks means critical",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}/riesgo",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Risk\", function () { pm.expect(b.nivel).to.eql(\"CRITICO\"); });",
+                  "pm.test(\"Active tasks\", function () { pm.expect(b.tareasPendientes).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.03 List deadlines with filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/plazos?expedienteId={{case_id}}&estado=ACTIVO&desde={{today}}&hasta={{date_15}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.04 Edit deadline to eight days",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"AUDIENCIA\",\n  \"fechaLimite\": \"{{date_8}}\",\n  \"version\": {{deadline_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"deadline_id\", b.id);",
+                  "pm.environment.set(\"deadline_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.05 Eight days means medium risk",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}/riesgo",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Risk\", function () { pm.expect(b.nivel).to.eql(\"MEDIO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.06 Create deadline for DELETE example",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"tipo\": \"ESCRITO\",\n  \"fechaLimite\": \"{{date_15}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.expect(pm.response.code).to.eql(201); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"delete_deadline_id\", b.id);",
+                  "pm.environment.set(\"delete_deadline_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.07 Workload includes a zero-load user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/responsables/carga",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"A has two active tasks\", function () { pm.expect(b.find(x=>x.responsableId === Number(pm.environment.get('a_id'))).tareasActivas).to.eql(2); });",
+                  "pm.test(\"B is present with zero tasks\", function () { pm.expect(b.find(x=>x.responsableId === Number(pm.environment.get('b_id'))).tareasActivas).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04.08 Indicators reflect the new tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/indicadores",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Two active tasks added\", function () { pm.expect(b.tareasActivas - Number(pm.environment.get('baseline_active'))).to.eql(2); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - State changes and logical removal (RF06 RF10 RF11 RF14)",
+      "item": [
+        {
+          "name": "05.01 Case closure blocked by active children",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}/cierre",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{case_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", function () { pm.expect(pm.response.code).to.eql(422); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Pending children\", function () { pm.expect(b.code).to.eql(\"EXPEDIENTE_CON_PENDIENTES\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.02 Transition task to IN PROGRESS",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}/estado",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"EN_PROGRESO\",\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"task_id\", b.id);",
+                  "pm.environment.set(\"task_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.03 High priority closure needs confirmation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}/estado",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"CERRADA\",\n  \"confirmacionSupervisor\": false,\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", function () { pm.expect(pm.response.code).to.eql(422); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.04 Checkbox does not grant supervisor authority",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}/estado",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"CERRADA\",\n  \"confirmacionSupervisor\": true,\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.05 Supervisor closes the high priority task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}/estado",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{supervisor_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"CERRADA\",\n  \"confirmacionSupervisor\": true,\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"task_id\", b.id);",
+                  "pm.environment.set(\"task_version\", b.version);",
+                  "pm.test(\"Closed\", function () { pm.expect(b.estado).to.eql(\"CERRADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.06 Finalized task cannot transition again",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{task_id}}/estado",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"PENDIENTE\",\n  \"version\": {{task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", function () { pm.expect(pm.response.code).to.eql(422); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Invalid transition\", function () { pm.expect(b.code).to.eql(\"TRANSICION_NO_PERMITIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.07 Cancel the second task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas/{{cancel_task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{cancel_task_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"cancel_task_id\", b.id);",
+                  "pm.environment.set(\"cancel_task_version\", b.version);",
+                  "pm.test(\"Logical cancellation\", function () { pm.expect(b.estado).to.eql(\"CANCELADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.08 Cancelled task can still be read",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/tareas/{{cancel_task_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Retained row\", function () { pm.expect(b.estado).to.eql(\"CANCELADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.09 Deadline reason is too short",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}/anulacion",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Short\",\n  \"version\": {{deadline_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.expect(pm.response.code).to.eql(400); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.10 Annul deadline with a reason",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}/anulacion",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Hearing rescheduled for the presentation lab\",\n  \"version\": {{deadline_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"deadline_id\", b.id);",
+                  "pm.environment.set(\"deadline_version\", b.version);",
+                  "pm.test(\"Annulled\", function () { pm.expect(b.estado).to.eql(\"ANULADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.11 Annul another deadline using DELETE",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/plazos/{{delete_deadline_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Supporting deadline withdrawn for the lab\",\n  \"version\": {{delete_deadline_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"delete_deadline_id\", b.id);",
+                  "pm.environment.set(\"delete_deadline_version\", b.version);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.12 Read retained annulled deadline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/plazos/{{deadline_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Retained row\", function () { pm.expect(b.estado).to.eql(\"ANULADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.13 Close case after all children are finalized",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}/cierre",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{case_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"case_id\", b.id);",
+                  "pm.environment.set(\"case_version\", b.version);",
+                  "pm.test(\"Closed\", function () { pm.expect(b.estado).to.eql(\"CERRADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.14 Archive the case",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{case_version}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"case_id\", b.id);",
+                  "pm.environment.set(\"case_version\", b.version);",
+                  "pm.test(\"Archived\", function () { pm.expect(b.estado).to.eql(\"ARCHIVADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.15 Read the retained archived case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/expedientes/{{case_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Retained row\", function () { pm.expect(b.estado).to.eql(\"ARCHIVADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05.16 Cannot add a task to an archived case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/tareas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expedienteId\": {{case_id}},\n  \"titulo\": \"Attempt in archived case\",\n  \"tipo\": \"escrito\",\n  \"responsableId\": {{a_id}},\n  \"prioridad\": \"ALTA\",\n  \"fechaLimite\": \"{{date_2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", function () { pm.expect(pm.response.code).to.eql(422); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Finalized case\", function () { pm.expect(b.code).to.eql(\"EXPEDIENTE_FINALIZADO\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Audit and token revocation (RF02 RF17 RF18)",
+      "item": [
+        {
+          "name": "06.01 Auditor reads filtered events with actor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auditoria/eventos?tipo=TAREA_CREADA&usuarioId={{admin_id}}&page=0&size=100",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.test(\"Creation event exists\", function () { pm.expect(b.content.some(e=> e.recurso === 'TAREA' && e.recursoId === Number(pm.environment.get('task_id')) && e.usuarioId === Number(pm.environment.get('admin_id')))).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.02 Responsible cannot read global audit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auditoria/eventos",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.expect(pm.response.code).to.eql(403); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.03 Final indicators reflect finalization",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/indicadores",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b=pm.response.json();",
+                  "pm.test('Active count returns to baseline', function(){ pm.expect(b.tareasActivas).to.eql(Number(pm.environment.get('baseline_active'))); });",
+                  "pm.test('One closed task added', function(){ pm.expect(b.tareasCerradas).to.eql(Number(pm.environment.get('baseline_closed'))+1); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.04 Change isolated A password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/usuarios/{{a_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Lab responsible A\",\n  \"email\": \"{{a_email}}\",\n  \"rol\": \"RESPONSABLE\",\n  \"activo\": true,\n  \"password\": \"LabChanged123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.05 Old A token is revoked",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.expect(pm.response.code).to.eql(401); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.06 Login A with the new password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{a_email}}\",\n  \"password\": \"LabChanged123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();",
+                  "pm.environment.set(\"a_token\", b.accessToken);",
+                  "pm.environment.set(\"a_id\", b.usuario.id);",
+                  "pm.test(\"Bearer token issued\", function () { pm.expect(b.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"User hash is not exposed\", function () { pm.expect(Object.hasOwn(b.usuario,'passwordHash')).to.eql(false); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.07 Deactivate isolated A",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/v1/usuarios/{{a_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.expect(pm.response.code).to.eql(204); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.08 Deactivated A token is rejected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{a_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.expect(pm.response.code).to.eql(401); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06.09 Deactivate isolated B",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/v1/usuarios/{{b_id}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.expect(pm.response.code).to.eql(204); });",
+                  "const b = pm.response.code === 204 ? null : pm.response.json();"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
