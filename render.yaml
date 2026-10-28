@@ -1,0 +1,36 @@
+# Blueprint de Render para el backend (Render → New → Blueprint → este repositorio).
+# La base de datos está en Neon (misma región: AWS US East 1). Ver docs/despliegue.md.
+services:
+  - type: web
+    name: legaldeadline-flow-api # da la URL https://legaldeadline-flow-api.onrender.com (usada en frontend/vercel.json)
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    # Solo se reconstruye cuando cambia el backend, no el frontend.
+    buildFilter:
+      paths:
+        - src/**
+        - pom.xml
+        - Dockerfile
+        - mvnw
+        - .mvn/**
+    envVars:
+      - key: DATABASE_URL # cadena de conexión directa de Neon; Render la pide al crear el servicio
+        sync: false
+      - key: JWT_SECRET # Render genera un valor aleatorio
+        generateValue: true
+      - key: SPRING_PROFILES_ACTIVE
+        value: neon,demo
+      - key: PORT
+        value: "8081"
+      - key: SERVER_PORT
+        value: "8081"
+      - key: TZ
+        value: America/Lima
+      # Memoria ajustada a los 512 MB del plan gratuito (medido: ~260 MB en uso).
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=55 -XX:+UseSerialGC -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError

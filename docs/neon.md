@@ -8,14 +8,14 @@ Esta guía conecta el backend a una base PostgreSQL en la nube con [Neon](https:
 2. Crea un proyecto:
    - **Project name:** `legaldeadline-flow`
    - **Postgres version:** 17 (la misma que usa Docker en local)
-   - **Region:** **AWS South America (São Paulo)**, la más cercana a Lima. La región no se puede cambiar después.
+   - **Region:** **AWS US East 1 (N. Virginia)**, la misma región donde corre el backend en Render (ver [despliegue.md](despliegue.md)). La región no se puede cambiar después.
 3. En el panel del proyecto pulsa **Connect**:
    - Branch `production`, base `neondb`, rol `neondb_owner`.
    - **Desactiva «Connection pooling».** El backend necesita la conexión directa: Flyway y los bloqueos de las transacciones no funcionan bien a través del pooler.
    - Copia la cadena de conexión. Tiene esta forma:
 
 ```
-postgresql://neondb_owner:npg_XXXXXXXX@ep-nombre-123456.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+postgresql://neondb_owner:npg_XXXXXXXX@ep-nombre-123456.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
 ## 2. Configurar el backend
@@ -23,7 +23,7 @@ postgresql://neondb_owner:npg_XXXXXXXX@ep-nombre-123456.sa-east-1.aws.neon.tech/
 En la carpeta del backend, abre `.env` (si no existe, copia `.env.example`) y agrega:
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_XXXXXXXX@ep-nombre-123456.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://neondb_owner:npg_XXXXXXXX@ep-nombre-123456.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 JWT_SECRET=una-clave-aleatoria-de-al-menos-32-caracteres
 ```
 
@@ -77,6 +77,6 @@ Evita conectar monitores de disponibilidad u otras herramientas que consulten la
 | `Validate failed: Migrations have failed validation` | Se modificó una migración ya aplicada. No edites `V1`–`V3`: crea una `V4` nueva. |
 | Quiero empezar de cero | En Neon, crea una rama nueva desde **Branches** o borra las tablas con el **SQL Editor**; al reiniciar, Flyway y la demo las crean otra vez. |
 
-## Publicar el backend más adelante
+## Publicar el backend
 
-Si despliegas el backend en un servicio en la nube, configura estas variables en ese servicio: `DATABASE_URL`, `JWT_SECRET`, `SPRING_PROFILES_ACTIVE=neon` (agrega `,demo` si quieres los datos de ejemplo) y `CORS_ALLOWED_ORIGINS` con el dominio del frontend.
+Para publicar backend y frontend en la nube (Render y Vercel), sigue [despliegue.md](despliegue.md).
