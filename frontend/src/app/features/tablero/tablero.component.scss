@@ -1,0 +1,74 @@
+@use 'tokens' as *;
+
+.enlace-kpi {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    border-color: $color-primario;
+  }
+}
+
+.dos-columnas {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 2fr 1fr;
+  margin: 16px 0;
+
+  @include movil {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjeta + .tarjeta {
+    margin-top: 0;
+  }
+}
+
+.barra-riesgo {
+  display: flex;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef1f6;
+}
+
+@each $nivel, $color in $riesgo {
+  .seg-#{$nivel} {
+    background: $color;
+  }
+}
+
+.leyenda,
+.lista-simple,
+.alertas {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.lista-simple li {
+  margin-bottom: 8px;
+}
+
+.alertas li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid $color-borde;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.alertas .badge {
+  min-width: 68px;
+  text-align: center;
+}

@@ -1,0 +1,50 @@
+<div class="estructura" [class.menu-abierto]="menuAbierto()">
+  <aside class="menu" aria-label="Navegación principal">
+    <div class="marca">
+      <span class="logo" aria-hidden="true">⚖</span>
+      <div>
+        <strong>LegalDeadline</strong>
+        <span>Flow</span>
+      </div>
+    </div>
+    <nav>
+      @for (enlace of enlaces(); track enlace.ruta) {
+        <a [routerLink]="enlace.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
+          <span class="icono" aria-hidden="true">{{ enlace.icono }}</span>
+          {{ enlace.texto }}
+        </a>
+      }
+    </nav>
+    <p class="pie">Caso académico simulado · datos ficticios</p>
+  </aside>
+
+  <div class="principal">
+    <header class="barra">
+      <button
+        type="button"
+        class="btn-enlace hamburguesa"
+        aria-label="Abrir menú"
+        (click)="menuAbierto.set(!menuAbierto())"
+      >
+        ☰
+      </button>
+      <div class="espaciador"></div>
+      @if (auth.usuario(); as usuario) {
+        <div class="usuario">
+          <div class="datos">
+            <strong>{{ usuario.nombre }}</strong>
+            <span class="badge">{{ usuario.rol | etiqueta }}</span>
+          </div>
+          <button type="button" class="btn btn-secundario btn-chico" (click)="salir()">
+            Cerrar sesión
+          </button>
+        </div>
+      }
+    </header>
+    <main class="contenido">
+      <router-outlet />
+    </main>
+  </div>
+  <div class="cortina" (click)="menuAbierto.set(false)"></div>
+</div>
+<app-notificaciones />

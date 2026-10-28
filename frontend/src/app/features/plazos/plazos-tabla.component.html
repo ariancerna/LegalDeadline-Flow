@@ -1,0 +1,116 @@
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        @if (mostrarExpediente()) {
+          <th>Expediente</th>
+        }
+        <th>Fecha límite</th>
+        <th>Riesgo</th>
+        <th>Estado</th>
+        <th><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of plazos(); track p.id) {
+        <tr>
+          <td class="mono">{{ p.tipo }}</td>
+          @if (mostrarExpediente()) {
+            <td>
+              <a class="mono" [routerLink]="['/expedientes', p.expedienteId]">{{
+                expedientes.codigo(p.expedienteId)
+              }}</a>
+            </td>
+          }
+          <td>{{ p.fechaLimite | fecha }}</td>
+          <td>
+            @if (riesgos().get(p.id); as r) {
+              <span
+                [class]="'badge ' + claseRiesgo(r.nivel)"
+                [title]="r.tareasPendientes + ' tareas activas en el expediente'"
+              >
+                {{ r.nivel | etiqueta }}
+              </span>
+              @if (p.estado === 'ACTIVO') {
+                <span class="texto-suave texto-chico">
+                  {{ textoDias(r.diasRestantes) }}
+                </span>
+              }
+            } @else {
+              <span class="texto-suave">…</span>
+            }
+          </td>
+          <td>
+            <span [class]="'badge ' + tono(p.estado)">{{ p.estado | etiqueta }}</span>
+            @if (p.motivoAnulacion) {
+              <div class="texto-suave texto-chico">{{ p.motivoAnulacion }}</div>
+            }
+          </td>
+          <td>
+            @if (puedeModificar(p)) {
+              <div class="acciones">
+                <button type="button" class="btn-enlace btn-chico" (click)="editando.set(p)">
+                  Editar
+                </button>
+                <button type="button" class="btn-enlace btn-chico peligro" (click)="abrirAnular(p)">
+                  Anular
+                </button>
+              </div>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="mostrarExpediente() ? 6 : 5" class="vacia">
+            {{ cargando() ? 'Cargando…' : 'No hay plazos para mostrar.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <ng-content />
+</div>
+
+@if (editando(); as p) {
+  <app-dialogo titulo="Editar plazo" (cerrar)="editando.set(null)">
+    <app-plazo-form [plazo]="p" (guardado)="editado()" (cancelar)="editando.set(null)" />
+  </app-dialogo>
+}
+
+@if (anulando(); as p) {
+  <app-dialogo titulo="Anular plazo" (cerrar)="anulando.set(null)">
+    <div class="formulario">
+      <p>
+        Los plazos no se eliminan: se anulan con un motivo y quedan auditados (RN05).
+        <br /><span class="texto-suave">{{ p.tipo }} · vence {{ p.fechaLimite | fecha }}</span>
+      </p>
+      @if (errorDialogo(); as mensaje) {
+        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+      }
+      <div class="campo" [class.invalido]="motivo().length > 0 && !motivoValido()">
+        <label for="motivo">Motivo de anulación</label>
+        <textarea
+          id="motivo"
+          maxlength="250"
+          [ngModel]="motivo()"
+          (ngModelChange)="motivo.set($event)"
+        ></textarea>
+        <span class="ayuda">{{ motivo().trim().length }}/250 · mínimo 10 caracteres</span>
+      </div>
+      <div class="acciones">
+        <button
+          type="button"
+          class="btn btn-peligro"
+          [disabled]="enviando() || !motivoValido()"
+          (click)="confirmarAnular()"
+        >
+          Anular plazo
+        </button>
+        <button type="button" class="btn btn-secundario" (click)="anulando.set(null)">
+          Volver
+        </button>
+      </div>
+    </div>
+  </app-dialogo>
+}

@@ -1,0 +1,50 @@
+@use 'tokens' as *;
+
+.pantalla {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, $color-primario-oscuro, $color-primario);
+}
+
+.panel {
+  width: min(400px, 100%);
+  background: $color-superficie;
+  border-radius: 14px;
+  padding: 32px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  display: grid;
+  gap: 18px;
+}
+
+.marca {
+  text-align: center;
+
+  span {
+    font-size: 2.2rem;
+    color: $color-acento;
+  }
+
+  p {
+    margin: 4px 0 0;
+  }
+}
+
+.demo {
+  border-top: 1px solid $color-borde;
+  padding-top: 14px;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: $color-primario;
+  }
+
+  .cuentas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+}

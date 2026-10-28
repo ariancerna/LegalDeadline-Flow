@@ -1,0 +1,176 @@
+<a routerLink="/expedientes" class="btn-enlace">← Volver a expedientes</a>
+
+@if (error(); as mensaje) {
+  <div class="aviso aviso-error" role="alert" style="margin-top: 12px">{{ mensaje }}</div>
+}
+
+@if (expediente(); as e) {
+  <div class="pagina-encabezado" style="margin-top: 12px">
+    <div>
+      <h1>
+        <span class="mono">{{ e.codigo }}</span>
+        <span [class]="'badge ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+      </h1>
+      <p>{{ e.asunto }}</p>
+    </div>
+    @if (auth.esGestor() && e.estado !== 'ARCHIVADO') {
+      <div class="acciones">
+        @if (abierto()) {
+          <button type="button" class="btn btn-secundario" (click)="abrir('editar')">
+            Editar / reasignar
+          </button>
+          <button type="button" class="btn btn-secundario" (click)="abrir('cerrar')">Cerrar</button>
+        }
+        <button type="button" class="btn btn-secundario" (click)="abrir('archivar')">
+          Archivar
+        </button>
+      </div>
+    }
+  </div>
+
+  <section class="tarjeta">
+    <dl class="detalle">
+      <div>
+        <dt>Responsable</dt>
+        <dd>{{ responsables.nombre(e.responsableId) }}</dd>
+      </div>
+      <div>
+        <dt>Tareas activas</dt>
+        <dd>{{ tareasActivas() }}</dd>
+      </div>
+      <div>
+        <dt>Plazos activos</dt>
+        <dd>{{ plazosActivos() }}</dd>
+      </div>
+      <div>
+        <dt>Registrado</dt>
+        <dd>{{ e.creadoEn | fecha: 'hora' }}</dd>
+      </div>
+      <div>
+        <dt>Actualizado</dt>
+        <dd>{{ e.actualizadoEn | fecha: 'hora' }}</dd>
+      </div>
+      <div>
+        <dt>Versión</dt>
+        <dd>{{ e.version }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <div class="pestanas" role="tablist" style="margin-top: 20px">
+    <button
+      type="button"
+      role="tab"
+      [class.activa]="pestana() === 'tareas'"
+      (click)="pestana.set('tareas')"
+    >
+      Tareas ({{ tareas().length }})
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [class.activa]="pestana() === 'plazos'"
+      (click)="pestana.set('plazos')"
+    >
+      Plazos ({{ plazos().length }})
+    </button>
+    <span style="flex: 1"></span>
+    @if (abierto() && auth.puedeEscribir()) {
+      @if (pestana() === 'tareas') {
+        <button type="button" class="btn btn-primario btn-chico" (click)="abrir('tarea')">
+          + Tarea
+        </button>
+      } @else {
+        <button type="button" class="btn btn-primario btn-chico" (click)="abrir('plazo')">
+          + Plazo
+        </button>
+      }
+    }
+  </div>
+
+  @if (pestana() === 'tareas') {
+    <app-tareas-tabla
+      [tareas]="tareas()"
+      [mostrarExpediente]="false"
+      [editable]="abierto()"
+      (cambio)="cargar()"
+    />
+  } @else {
+    <app-plazos-tabla
+      [plazos]="plazos()"
+      [mostrarExpediente]="false"
+      [editable]="abierto()"
+      (cambio)="cargar()"
+    />
+  }
+
+  @switch (accion()) {
+    @case ('editar') {
+      <app-dialogo titulo="Editar expediente" (cerrar)="accion.set(null)">
+        <app-expediente-form
+          [expediente]="e"
+          (guardado)="terminado()"
+          (cancelar)="accion.set(null)"
+        />
+      </app-dialogo>
+    }
+    @case ('tarea') {
+      <app-dialogo titulo="Nueva tarea" (cerrar)="accion.set(null)">
+        <app-tarea-form
+          [expedienteId]="e.id"
+          (guardado)="terminado()"
+          (cancelar)="accion.set(null)"
+        />
+      </app-dialogo>
+    }
+    @case ('plazo') {
+      <app-dialogo titulo="Nuevo plazo" (cerrar)="accion.set(null)">
+        <app-plazo-form
+          [expedienteId]="e.id"
+          (guardado)="terminado()"
+          (cancelar)="accion.set(null)"
+        />
+      </app-dialogo>
+    }
+    @case ('cerrar') {
+      <app-dialogo titulo="Cerrar expediente" (cerrar)="accion.set(null)">
+        <ng-container *ngTemplateOutlet="confirmarFinal; context: { tipo: 'cerrar' }" />
+      </app-dialogo>
+    }
+    @case ('archivar') {
+      <app-dialogo titulo="Archivar expediente" (cerrar)="accion.set(null)">
+        <ng-container *ngTemplateOutlet="confirmarFinal; context: { tipo: 'archivar' }" />
+      </app-dialogo>
+    }
+  }
+
+  <ng-template #confirmarFinal let-tipo="tipo">
+    <div class="formulario">
+      <p>
+        ¿{{ tipo === 'cerrar' ? 'Cerrar' : 'Archivar' }} el expediente
+        <strong>{{ e.codigo }}</strong
+        >? El registro se conserva; solo cambia su estado.
+      </p>
+      @if (tienePendientes()) {
+        <div class="aviso aviso-alerta">
+          Tiene {{ tareasActivas() }} tareas y {{ plazosActivos() }} plazos activos. El sistema no
+          permite finalizarlo hasta cerrarlos, cancelarlos o anularlos (RN10).
+        </div>
+      }
+      @if (errorAccion(); as mensaje) {
+        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+      }
+      <div class="acciones">
+        <button
+          type="button"
+          class="btn btn-peligro"
+          [disabled]="enviando()"
+          (click)="finalizar(tipo)"
+        >
+          {{ tipo === 'cerrar' ? 'Cerrar expediente' : 'Archivar expediente' }}
+        </button>
+        <button type="button" class="btn btn-secundario" (click)="accion.set(null)">Volver</button>
+      </div>
+    </div>
+  </ng-template>
+}

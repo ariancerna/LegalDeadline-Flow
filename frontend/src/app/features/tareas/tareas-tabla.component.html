@@ -1,0 +1,171 @@
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Título</th>
+        @if (mostrarExpediente()) {
+          <th>Expediente</th>
+        }
+        <th>Tipo</th>
+        <th>Responsable</th>
+        <th>Prioridad</th>
+        <th>Fecha límite</th>
+        <th>Estado</th>
+        <th><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (t of tareas(); track t.id) {
+        <tr>
+          <td>{{ t.titulo }}</td>
+          @if (mostrarExpediente()) {
+            <td>
+              <a class="mono" [routerLink]="['/expedientes', t.expedienteId]">{{
+                expedientes.codigo(t.expedienteId)
+              }}</a>
+            </td>
+          }
+          <td class="mono texto-chico">{{ t.tipo }}</td>
+          <td>{{ responsables.nombre(t.responsableId) }}</td>
+          <td>
+            <span [class]="'badge ' + tono(t.prioridad)">{{ t.prioridad | etiqueta }}</span>
+          </td>
+          <td>
+            {{ t.fechaLimite | fecha }}
+            @if (vencida(t)) {
+              <span class="badge badge-error">Vencida</span>
+            }
+          </td>
+          <td>
+            <span [class]="'badge ' + tono(t.estado)">{{ t.estado | etiqueta }}</span>
+          </td>
+          <td>
+            @if (puedeModificar(t)) {
+              <div class="acciones">
+                <button type="button" class="btn-enlace btn-chico" (click)="abrirEstado(t)">
+                  Estado
+                </button>
+                <button type="button" class="btn-enlace btn-chico" (click)="editando.set(t)">
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn-enlace btn-chico peligro"
+                  (click)="abrirCancelar(t)"
+                >
+                  Cancelar
+                </button>
+              </div>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="mostrarExpediente() ? 8 : 7" class="vacia">
+            {{ cargando() ? 'Cargando…' : 'No hay tareas para mostrar.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <ng-content />
+</div>
+
+@if (editando(); as t) {
+  <app-dialogo titulo="Editar tarea" (cerrar)="editando.set(null)">
+    <app-tarea-form [tarea]="t" (guardado)="editada()" (cancelar)="editando.set(null)" />
+  </app-dialogo>
+}
+
+@if (cambiandoEstado(); as t) {
+  <app-dialogo titulo="Cambiar estado de la tarea" (cerrar)="cambiandoEstado.set(null)">
+    <div class="formulario">
+      <p>
+        <strong>{{ t.titulo }}</strong
+        ><br />
+        <span class="texto-suave"
+          >Estado actual: {{ t.estado | etiqueta }} · Prioridad {{ t.prioridad | etiqueta }}</span
+        >
+      </p>
+      @if (errorDialogo(); as mensaje) {
+        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+      }
+      <div class="campo">
+        <label for="nuevo-estado">Nuevo estado</label>
+        <select
+          id="nuevo-estado"
+          [ngModel]="nuevoEstado()"
+          (ngModelChange)="nuevoEstado.set($event); confirmacion.set(false)"
+        >
+          @for (e of opcionesEstado(); track e) {
+            <option [ngValue]="e">{{ e | etiqueta }}</option>
+          }
+        </select>
+      </div>
+      @if (necesitaConfirmacion()) {
+        @if (auth.esGestor()) {
+          <label class="casilla aviso aviso-alerta">
+            <input
+              type="checkbox"
+              [ngModel]="confirmacion()"
+              (ngModelChange)="confirmacion.set($event)"
+            />
+            <span
+              >Confirmo, como {{ auth.rol() | etiqueta | lowercase }}, el cierre de esta tarea de
+              prioridad ALTA (RN03).</span
+            >
+          </label>
+        } @else {
+          <div class="aviso aviso-info">
+            Las tareas de prioridad ALTA solo las puede cerrar un supervisor o administrador. Pídele
+            a tu supervisor que confirme el cierre.
+          </div>
+        }
+      }
+      <div class="acciones">
+        <button
+          type="button"
+          class="btn btn-primario"
+          (click)="guardarEstado()"
+          [disabled]="
+            enviando() ||
+            !nuevoEstado() ||
+            (necesitaConfirmacion() && (!auth.esGestor() || !confirmacion()))
+          "
+        >
+          Guardar estado
+        </button>
+        <button type="button" class="btn btn-secundario" (click)="cambiandoEstado.set(null)">
+          Volver
+        </button>
+      </div>
+    </div>
+  </app-dialogo>
+}
+
+@if (cancelando(); as t) {
+  <app-dialogo titulo="Cancelar tarea" (cerrar)="cancelando.set(null)">
+    <div class="formulario">
+      <p>
+        ¿Cancelar <strong>{{ t.titulo }}</strong
+        >? La tarea no se borra: queda como cancelada en el historial.
+      </p>
+      @if (errorDialogo(); as mensaje) {
+        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+      }
+      <div class="acciones">
+        <button
+          type="button"
+          class="btn btn-peligro"
+          [disabled]="enviando()"
+          (click)="confirmarCancelar()"
+        >
+          Cancelar tarea
+        </button>
+        <button type="button" class="btn btn-secundario" (click)="cancelando.set(null)">
+          Volver
+        </button>
+      </div>
+    </div>
+  </app-dialogo>
+}

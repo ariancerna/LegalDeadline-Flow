@@ -1,0 +1,142 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Tablero</h1>
+    <p>
+      Hola, {{ auth.usuario()?.nombre }}.
+      @if (!auth.lecturaGlobal()) {
+        Estos datos corresponden a tus expedientes asignados.
+      }
+      @if (indicadores(); as i) {
+        Calculado al {{ i.fechaCalculo | fecha }} (hora de Lima).
+      }
+    </p>
+  </div>
+</div>
+
+@if (error(); as mensaje) {
+  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+}
+
+@if (indicadores(); as i) {
+  <div class="rejilla">
+    <a class="kpi enlace-kpi" routerLink="/expedientes">
+      <div class="kpi-valor">{{ i.expedientesAbiertos }}</div>
+      <div class="kpi-etiqueta">Expedientes abiertos</div>
+    </a>
+    <a class="kpi enlace-kpi" routerLink="/tareas">
+      <div class="kpi-valor">{{ i.tareasActivas }}</div>
+      <div class="kpi-etiqueta">Tareas activas</div>
+    </a>
+    <div class="kpi" [class.kpi-alerta]="i.tareasVencidas > 0">
+      <div class="kpi-valor">{{ i.tareasVencidas }}</div>
+      <div class="kpi-etiqueta">Tareas vencidas</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-valor">{{ i.porcentajeTareasCerradas }}%</div>
+      <div class="kpi-etiqueta">Tareas cerradas</div>
+    </div>
+    <a class="kpi enlace-kpi" routerLink="/plazos">
+      <div class="kpi-valor">{{ i.plazosActivos }}</div>
+      <div class="kpi-etiqueta">Plazos activos</div>
+    </a>
+    <div class="kpi" [class.kpi-alerta]="i.plazosProximos > 0">
+      <div class="kpi-valor">{{ i.plazosProximos }}</div>
+      <div class="kpi-etiqueta">Plazos que vencen en 7 días</div>
+    </div>
+    <div class="kpi" [class.kpi-alerta]="i.plazosVencidos > 0">
+      <div class="kpi-valor">{{ i.plazosVencidos }}</div>
+      <div class="kpi-etiqueta">Plazos vencidos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-valor">{{ i.expedientesCerrados + i.expedientesArchivados }}</div>
+      <div class="kpi-etiqueta">Expedientes finalizados</div>
+    </div>
+  </div>
+
+  <div class="dos-columnas">
+    <section class="tarjeta">
+      <h2>Riesgo de plazos activos</h2>
+      @if (totalRiesgo() === 0) {
+        <p class="texto-suave">No hay plazos activos.</p>
+      } @else {
+        <div
+          class="barra-riesgo"
+          role="img"
+          aria-label="Distribución del riesgo de los plazos activos"
+        >
+          @for (n of niveles; track n) {
+            @if (cantidad(n) > 0) {
+              <div
+                [class]="'segmento seg-' + n"
+                [style.width.%]="porcentaje(n)"
+                [title]="(n | etiqueta) + ': ' + cantidad(n)"
+              ></div>
+            }
+          }
+        </div>
+        <ul class="leyenda">
+          @for (n of niveles; track n) {
+            <li>
+              <span [class]="'badge ' + claseRiesgo(n)">{{ n | etiqueta }}</span> {{ cantidad(n) }}
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="tarjeta">
+      <h2>Carga de trabajo</h2>
+      @if (sobrecargados().length === 0) {
+        <p class="texto-suave">Ningún responsable supera el umbral.</p>
+      } @else {
+        <ul class="lista-simple">
+          @for (r of sobrecargados(); track r.responsableId) {
+            <li>
+              <strong>{{ r.nombre }}</strong
+              >: {{ r.tareasActivas }} tareas (umbral {{ r.umbral }})
+            </li>
+          }
+        </ul>
+      }
+      <a routerLink="/carga" class="btn btn-secundario btn-chico">Ver balance</a>
+    </section>
+  </div>
+}
+
+<section class="tarjeta">
+  <h2>Alertas de plazos</h2>
+  <p class="texto-suave texto-chico">
+    Plazos activos con riesgo crítico o alto (vencidos o que vencen en los próximos 10 días).
+  </p>
+  @if (alertas(); as lista) {
+    @if (lista.length === 0) {
+      <div class="aviso aviso-info">
+        Sin alertas: ningún plazo próximo tiene riesgo crítico o alto.
+      </div>
+    } @else {
+      <ul class="alertas">
+        @for (a of lista; track a.plazo.id) {
+          <li>
+            <span [class]="'badge ' + claseRiesgo(a.riesgo.nivel)">{{
+              a.riesgo.nivel | etiqueta
+            }}</span>
+            <div>
+              <strong class="mono">{{ a.plazo.tipo }}</strong> ·
+              <a class="mono" [routerLink]="['/expedientes', a.plazo.expedienteId]">{{
+                expedientes.codigo(a.plazo.expedienteId)
+              }}</a>
+              <div class="texto-suave texto-chico">
+                Vence {{ a.plazo.fechaLimite | fecha }} ·
+                {{ textoDias(a.riesgo.diasRestantes) }}
+                · {{ a.riesgo.tareasPendientes }}
+                {{ a.riesgo.tareasPendientes === 1 ? 'tarea activa' : 'tareas activas' }}
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <div class="cargando">Calculando alertas…</div>
+  }
+</section>

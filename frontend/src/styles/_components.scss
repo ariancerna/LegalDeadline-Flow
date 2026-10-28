@@ -1,0 +1,416 @@
+@use 'sass:color';
+@use 'tokens' as *;
+
+// ---------- Encabezado de página ----------
+.pagina-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  p {
+    margin: 4px 0 0;
+    color: $color-texto-suave;
+  }
+}
+
+// ---------- Tarjetas ----------
+.tarjeta {
+  background: $color-superficie;
+  border: 1px solid $color-borde;
+  border-radius: $radio;
+  box-shadow: $sombra;
+  padding: 20px;
+
+  & + & {
+    margin-top: 16px;
+  }
+
+  > h2 {
+    margin-bottom: 14px;
+  }
+}
+
+.rejilla {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include movil {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.kpi {
+  @extend .tarjeta;
+  padding: 16px 18px;
+
+  .kpi-valor {
+    font-size: clamp(1.35rem, 4vw, 1.8rem);
+    font-weight: 700;
+    color: $color-primario-oscuro;
+  }
+
+  .kpi-etiqueta {
+    color: $color-texto-suave;
+    font-size: 0.85rem;
+  }
+
+  &.kpi-alerta .kpi-valor {
+    color: $color-error;
+  }
+}
+
+// Las tarjetas dentro de una rejilla no llevan margen superior.
+.rejilla > .kpi,
+.rejilla > .tarjeta {
+  margin-top: 0;
+}
+
+// ---------- Botones ----------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: $radio-chico;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 3px solid color.change($color-acento, $alpha: 0.6);
+    outline-offset: 1px;
+  }
+}
+
+.btn-primario {
+  background: $color-primario;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: $color-primario-oscuro;
+  }
+}
+
+.btn-secundario {
+  background: $color-superficie;
+  color: $color-primario;
+  border-color: $color-borde;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primario;
+  }
+}
+
+.btn-peligro {
+  background: $color-error;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: color.adjust($color-error, $lightness: -6%);
+  }
+}
+
+.btn-enlace {
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  color: $color-primario;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+
+  &.peligro {
+    color: $color-error;
+  }
+}
+
+.btn-chico {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+// ---------- Formularios ----------
+.formulario {
+  display: grid;
+  gap: 14px;
+}
+
+.fila-campos {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  input,
+  select,
+  textarea {
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid $color-borde;
+    border-radius: $radio-chico;
+    background: #fff;
+    color: $color-texto;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primario;
+      box-shadow: 0 0 0 3px color.change($color-primario, $alpha: 0.15);
+    }
+
+    &:disabled {
+      background: $color-fondo;
+    }
+  }
+
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  &.invalido {
+    input,
+    select,
+    textarea {
+      border-color: $color-error;
+    }
+  }
+
+  .error-campo {
+    color: $color-error;
+    font-size: 0.8rem;
+  }
+
+  .ayuda {
+    color: $color-texto-suave;
+    font-size: 0.8rem;
+  }
+}
+
+.casilla {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+
+  input {
+    margin-top: 3px;
+  }
+}
+
+.filtros {
+  @extend .tarjeta;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: end;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+// ---------- Alertas en línea ----------
+.aviso {
+  padding: 10px 14px;
+  border-radius: $radio-chico;
+  border: 1px solid;
+  font-size: 0.9rem;
+
+  &.aviso-error {
+    color: $color-error;
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  &.aviso-info {
+    color: $color-info;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+  }
+
+  &.aviso-alerta {
+    color: $color-aviso;
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+}
+
+// ---------- Tablas ----------
+.tabla-contenedor {
+  @extend .tarjeta;
+  padding: 0;
+  overflow-x: auto;
+}
+
+table.tabla {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid $color-borde;
+    vertical-align: middle;
+  }
+
+  th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: $color-texto-suave;
+    background: #f9fafc;
+    white-space: nowrap;
+  }
+
+  tbody tr:hover {
+    background: #f9fafc;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .vacia {
+    text-align: center;
+    color: $color-texto-suave;
+    padding: 28px;
+  }
+}
+
+// ---------- Badges ----------
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: #eef1f6;
+  color: $color-primario;
+
+  &.badge-exito {
+    background: #dcfce7;
+    color: $color-exito;
+  }
+
+  &.badge-error {
+    background: #fee2e2;
+    color: $color-error;
+  }
+
+  &.badge-aviso {
+    background: #fef3c7;
+    color: $color-aviso;
+  }
+
+  &.badge-info {
+    background: #dbeafe;
+    color: $color-info;
+  }
+
+  &.badge-neutro {
+    background: #f1f5f9;
+    color: $color-texto-suave;
+  }
+
+  @each $nivel, $color in $riesgo {
+    &.riesgo-#{$nivel} {
+      background: color.change($color, $alpha: 0.12);
+      color: $color;
+    }
+  }
+}
+
+// ---------- Pestañas ----------
+.pestanas {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid $color-borde;
+  margin-bottom: 16px;
+
+  button {
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    font: inherit;
+    font-weight: 600;
+    color: $color-texto-suave;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+
+    &.activa {
+      color: $color-primario;
+      border-bottom-color: $color-acento;
+    }
+  }
+}
+
+// ---------- Detalle (lista de definición) ----------
+.detalle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 0;
+
+  dt {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: $color-texto-suave;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-weight: 600;
+  }
+}
+
+.cargando {
+  padding: 24px;
+  text-align: center;
+  color: $color-texto-suave;
+}

@@ -1,0 +1,123 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Carga de trabajo</h1>
+    <p>
+      Tareas activas (pendientes y en progreso) por responsable. Umbral de sobrecarga:
+      {{ umbral() }}.
+    </p>
+  </div>
+  <button type="button" class="btn btn-secundario" (click)="recargar()">Actualizar</button>
+</div>
+
+@if (error(); as mensaje) {
+  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+}
+
+<section class="tarjeta">
+  <h2>Balance por responsable</h2>
+  <ul class="barras">
+    @for (r of lista(); track r.responsableId) {
+      <li>
+        <div class="nombre">
+          <strong>{{ r.nombre }}</strong>
+          <span class="texto-suave texto-chico">{{ r.rol | etiqueta }}</span>
+        </div>
+        <div class="pista" [attr.aria-label]="r.tareasActivas + ' de ' + r.umbral + ' tareas'">
+          <div
+            class="relleno"
+            [class.excedido]="r.sobrecargado"
+            [style.width.%]="ancho(r.tareasActivas)"
+          ></div>
+          <div class="marca-umbral" [style.left.%]="ancho(r.umbral)" title="Umbral"></div>
+        </div>
+        <div class="valor">
+          {{ r.tareasActivas }}
+          @if (r.sobrecargado) {
+            <span class="badge badge-error">+{{ r.tareasActivas - r.umbral }} sobre el umbral</span>
+          }
+        </div>
+      </li>
+    } @empty {
+      <li class="texto-suave">Sin responsables activos.</li>
+    }
+  </ul>
+  <p class="texto-suave texto-chico">
+    La línea dorada marca el umbral. Igualar el umbral no es sobrecarga; superarlo sí (RN06).
+  </p>
+</section>
+
+@if (auth.lecturaGlobal()) {
+  <section class="tarjeta">
+    <h2>Recomendación de reasignación</h2>
+    @if (sobrecargados().length === 0) {
+      <div class="aviso aviso-info">Nadie supera el umbral. No hay reasignaciones que sugerir.</div>
+    } @else {
+      <details class="reglas">
+        <summary>¿Cómo se calcula?</summary>
+        <ol>
+          <li>Se parte de quienes superan el umbral, de mayor a menor carga.</li>
+          <li>Solo se propone mover el exceso (carga − umbral).</li>
+          <li>Primero las tareas menos urgentes: prioridad más baja y fecha límite más lejana.</li>
+          <li>El receptor es quien tiene menos carga y no supera el umbral al recibir la tarea.</li>
+          <li>Nada se aplica sin la decisión de un supervisor o administrador.</li>
+        </ol>
+      </details>
+      @if (sugerencias().length === 0) {
+        <div class="aviso aviso-alerta">
+          Hay sobrecarga, pero ningún otro responsable tiene capacidad libre bajo el umbral.
+        </div>
+      } @else {
+        <div class="tabla-contenedor">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Tarea</th>
+                <th>Expediente</th>
+                <th>Prioridad</th>
+                <th>Vence</th>
+                <th>Mover de → a</th>
+                <th><span class="sr-only">Acción</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of sugerencias(); track s.tarea.id) {
+                <tr>
+                  <td>{{ s.tarea.titulo }}</td>
+                  <td>
+                    <a class="mono" [routerLink]="['/expedientes', s.tarea.expedienteId]">{{
+                      expedientes.codigo(s.tarea.expedienteId)
+                    }}</a>
+                  </td>
+                  <td>
+                    <span [class]="'badge ' + tono(s.tarea.prioridad)">{{
+                      s.tarea.prioridad | etiqueta
+                    }}</span>
+                  </td>
+                  <td>{{ s.tarea.fechaLimite | fecha }}</td>
+                  <td>
+                    {{ s.desde.nombre }} ({{ s.cargaOrigen + 1 }}→{{ s.cargaOrigen }}) →
+                    <strong>{{ s.hacia.nombre }}</strong> ({{ s.cargaReceptor - 1 }}→{{
+                      s.cargaReceptor
+                    }})
+                  </td>
+                  <td>
+                    @if (auth.esGestor()) {
+                      <button
+                        type="button"
+                        class="btn btn-primario btn-chico"
+                        [disabled]="aplicando() !== null"
+                        (click)="aplicar(s)"
+                      >
+                        {{ aplicando() === s.tarea.id ? 'Reasignando…' : 'Reasignar' }}
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </section>
+}

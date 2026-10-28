@@ -1,0 +1,111 @@
+<form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      @if (duplicada()) {
+        <strong>Tarea duplicada (409).</strong>
+      }
+      {{ mensaje }}
+    </div>
+  }
+
+  @if (!tarea() && expedienteId() === null) {
+    <div class="campo">
+      <label for="t-exp">Expediente (abierto)</label>
+      <select id="t-exp" formControlName="expedienteId">
+        <option [ngValue]="null" disabled>Selecciona…</option>
+        @for (e of expedientesAbiertos(); track e.id) {
+          <option [ngValue]="e.id">{{ e.codigo }} — {{ e.asunto }}</option>
+        }
+      </select>
+      <app-error-campo
+        [control]="form.controls.expedienteId"
+        [servidor]="camposServidor()['expedienteId']"
+      />
+    </div>
+  }
+
+  <div class="campo">
+    <label for="t-titulo">Título</label>
+    <input
+      id="t-titulo"
+      formControlName="titulo"
+      maxlength="120"
+      placeholder="Presentar escrito de contestación"
+    />
+    <app-error-campo [control]="form.controls.titulo" [servidor]="camposServidor()['titulo']" />
+  </div>
+
+  <div class="fila-campos">
+    <div class="campo">
+      <label for="t-tipo">Tipo</label>
+      <input
+        id="t-tipo"
+        formControlName="tipo"
+        maxlength="50"
+        placeholder="ESCRITO"
+        list="tipos-tarea"
+      />
+      <datalist id="tipos-tarea">
+        <option value="ESCRITO"></option>
+        <option value="AUDIENCIA"></option>
+        <option value="REVISION"></option>
+        <option value="NOTIFICACION"></option>
+        <option value="REUNION"></option>
+      </datalist>
+      <app-error-campo [control]="form.controls.tipo" [servidor]="camposServidor()['tipo']" />
+    </div>
+    <div class="campo">
+      <label for="t-prioridad">Prioridad</label>
+      <select id="t-prioridad" formControlName="prioridad">
+        @for (p of prioridades; track p) {
+          <option [ngValue]="p">{{ p | etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div class="campo">
+      <label for="t-fecha">Fecha límite</label>
+      <input id="t-fecha" type="date" formControlName="fechaLimite" />
+      <app-error-campo
+        [control]="form.controls.fechaLimite"
+        [servidor]="camposServidor()['fechaLimite']"
+      />
+    </div>
+  </div>
+
+  <div class="campo">
+    <label for="t-resp">Responsable</label>
+    <select id="t-resp" formControlName="responsableId">
+      <option [ngValue]="null" disabled>Selecciona…</option>
+      @for (r of responsables.lista(); track r.responsableId) {
+        <option [ngValue]="r.responsableId">
+          {{ r.nombre }} · {{ r.tareasActivas }}/{{ r.umbral }} tareas{{
+            r.sobrecargado ? ' (sobrecargado)' : ''
+          }}
+        </option>
+      }
+    </select>
+    @if (!auth.esGestor()) {
+      <span class="ayuda"
+        >Solo un supervisor o administrador puede reasignar o cambiar la prioridad.</span
+      >
+    }
+    <app-error-campo
+      [control]="form.controls.responsableId"
+      [servidor]="camposServidor()['responsableId']"
+    />
+  </div>
+
+  @if (avisoCarga(); as carga) {
+    <div class="aviso aviso-alerta">
+      ⚠ {{ carga.nombre }} quedaría con {{ carga.nueva }} tareas activas, por encima del umbral de
+      {{ carga.umbral }}. Puedes continuar, pero considera reasignar.
+    </div>
+  }
+
+  <div class="acciones">
+    <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+      {{ tarea() ? 'Guardar cambios' : 'Registrar tarea' }}
+    </button>
+    <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
+  </div>
+</form>

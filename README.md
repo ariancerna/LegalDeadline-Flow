@@ -1,4 +1,13 @@
-# LegalDeadline Flow — Backend
+# LegalDeadline Flow
+
+Sistema web para gestionar expedientes, tareas, plazos y auditoría de un estudio jurídico ficticio. El repositorio contiene:
+
+- **Backend** (esta carpeta): API REST con Spring Boot.
+- **Frontend** ([`frontend/`](frontend/README.md)): cliente Angular 21 + SASS que consume la API con JWT y adapta cada pantalla al rol.
+
+`docker compose up -d --build` levanta base de datos, backend y frontend. La aplicación web queda en `http://localhost:4200`.
+
+## Backend
 
 API REST del segundo avance para gestionar expedientes, tareas, plazos y auditoría. Usa Java 17, Spring Boot, Spring Data JPA/Hibernate, PostgreSQL, Flyway, Spring Security y JWT. Los datos permanecen al reiniciar y los permisos se verifican por rol y recurso.
 
@@ -153,7 +162,7 @@ Las rutas de negocio requieren JWT. Los listados usan paginación y filtros opci
 | GET | `/api/v1/auditoria/eventos` | Consultar trazabilidad |
 | GET | `/actuator/health` | Consultar disponibilidad |
 
-Los listados de expedientes, tareas, plazos y eventos devuelven una página con `content`, `totalElements`, `totalPages`, etc. Aceptan `page` desde 0 y `size` entre 1 y 100; por defecto se devuelven 20 registros. Usuarios y carga de trabajo devuelven una lista. Filtros:
+Los listados de expedientes, tareas, plazos y eventos devuelven una página con `content`, `totalElements`, `totalPages`, etc. Aceptan `page` desde 0 y `size` entre 1 y 100; por defecto se devuelven 20 registros. Usuarios y carga de trabajo devuelven una lista. Cada elemento de la carga incluye `responsableId`, `nombre`, `rol`, `tareasActivas`, `umbral` y `sobrecargado`; el frontend usa el nombre para mostrar y asignar responsables sin requerir el permiso de administración de usuarios. Filtros:
 
 - Expedientes: `estado`, `responsableId` y `q` para buscar código o asunto.
 - Tareas: `expedienteId`, `responsableId`, `estado`, `prioridad`, `desde` y `hasta`.
@@ -186,6 +195,9 @@ El [modelo relacional](docs/modelo-relacional.md) documenta tablas, relaciones e
 | `JWT_EXPIRATION_SECONDS` | Vigencia del token: 3600 por defecto, de 60 a 86400 |
 | `SERVER_PORT` | Puerto HTTP de Java: 8081 por defecto |
 | `BACKEND_PORT` | Puerto del host publicado por Compose |
+| `FRONTEND_PORT` | Puerto del host para la aplicación web en Compose: 4200 por defecto |
+| `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por comas: `http://localhost:4200,http://localhost:5173` por defecto |
+| `SPRING_DATASOURCE_URL` | URL JDBC completa; reemplaza a `DB_HOST`, `DB_PORT` y `DB_NAME` (por ejemplo, PostgreSQL en la nube con `?sslmode=require`) |
 | `DEMO_ENABLED` | Carga de ejemplo en Compose |
 | `LEGALDEADLINE_DEMO_ENABLED` | Carga de ejemplo en Java directo |
 

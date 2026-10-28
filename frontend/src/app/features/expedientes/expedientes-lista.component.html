@@ -1,0 +1,112 @@
+<div class="pagina-encabezado">
+  <div>
+    <h1>Expedientes</h1>
+    <p>Busca por código o asunto y filtra por estado o responsable.</p>
+  </div>
+  @if (auth.esGestor()) {
+    <button type="button" class="btn btn-primario" (click)="creando.set(true)">
+      + Nuevo expediente
+    </button>
+  }
+</div>
+
+<div class="filtros" role="search">
+  <div class="campo">
+    <label for="f-q">Buscar</label>
+    <input
+      id="f-q"
+      type="search"
+      placeholder="Código o asunto"
+      [ngModel]="filtros().q"
+      (ngModelChange)="cambiarFiltro('q', $event)"
+      maxlength="255"
+    />
+  </div>
+  <div class="campo">
+    <label for="f-estado">Estado</label>
+    <select
+      id="f-estado"
+      [ngModel]="filtros().estado"
+      (ngModelChange)="cambiarFiltro('estado', $event)"
+    >
+      <option value="">Todos</option>
+      @for (e of estados; track e) {
+        <option [value]="e">{{ e | etiqueta }}</option>
+      }
+    </select>
+  </div>
+  @if (auth.lecturaGlobal()) {
+    <div class="campo">
+      <label for="f-resp">Responsable</label>
+      <select
+        id="f-resp"
+        [ngModel]="filtros().responsableId"
+        (ngModelChange)="cambiarFiltro('responsableId', $event)"
+      >
+        <option [ngValue]="null">Todos</option>
+        @for (r of responsables.lista(); track r.responsableId) {
+          <option [ngValue]="r.responsableId">{{ r.nombre }}</option>
+        }
+      </select>
+    </div>
+  }
+  <div>
+    <button type="button" class="btn btn-secundario" (click)="limpiar()">Limpiar filtros</button>
+  </div>
+</div>
+
+@if (error(); as mensaje) {
+  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+}
+
+<div class="tabla-contenedor">
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Asunto</th>
+        <th>Responsable</th>
+        <th>Estado</th>
+        <th>Actualizado</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (e of datos(); track e.id) {
+        <tr>
+          <td>
+            <a class="mono" [routerLink]="['/expedientes', e.id]">{{ e.codigo }}</a>
+          </td>
+          <td>{{ e.asunto }}</td>
+          <td>{{ responsables.nombre(e.responsableId) }}</td>
+          <td>
+            <span class="badge" [class]="'badge ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+          </td>
+          <td class="texto-suave">{{ e.actualizadoEn | fecha: 'hora' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="vacia">
+            {{ cargando() ? 'Cargando…' : 'No hay expedientes que coincidan con la búsqueda.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <app-paginador
+    [pagina]="pagina()"
+    [tamano]="tamano"
+    [total]="total()"
+    (cambiar)="irAPagina($event)"
+  />
+</div>
+@if (tiempoMs() !== null) {
+  <p class="texto-suave texto-chico">
+    Búsqueda respondida en {{ tiempoMs() }} ms (indicador RF04).
+  </p>
+}
+
+@if (creando()) {
+  <app-dialogo titulo="Nuevo expediente" (cerrar)="creando.set(false)">
+    <app-expediente-form (guardado)="creado($event)" (cancelar)="creando.set(false)" />
+  </app-dialogo>
+}
