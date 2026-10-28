@@ -1,0 +1,52 @@
+# Backend y frontend usando PostgreSQL en Neon (sin contenedor de base de datos).
+# Requiere DATABASE_URL y JWT_SECRET en .env. Ver docs/neon.md.
+#   docker compose -f compose.neon.yaml up -d --build
+name: legaldeadline-flow-neon
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: legaldeadline-flow-backend:local
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Configura DATABASE_URL de Neon en .env}
+      JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET de al menos 32 bytes en .env}
+      JWT_EXPIRATION_SECONDS: ${JWT_EXPIRATION_SECONDS:-3600}
+      SERVER_PORT: "8081"
+      SPRING_PROFILES_ACTIVE: neon,${SPRING_PROFILES_ACTIVE:-demo}
+      LEGALDEADLINE_DEMO_ENABLED: ${DEMO_ENABLED:-true}
+      TZ: America/Lima
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8081}:8081"
+    healthcheck:
+      # En el perfil neon el chequeo no toca la base, así Neon puede suspenderse.
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8081/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: legaldeadline-flow-frontend:local
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-4200}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

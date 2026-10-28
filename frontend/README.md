@@ -108,7 +108,7 @@ Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-
 
 ## Desplegar en la nube
 
-1. **Base de datos:** crea un proyecto PostgreSQL en Neon (plan gratuito). Usa la cadena de conexión **directa** (sin `-pooler`) y pásala al backend como `SPRING_DATASOURCE_URL=jdbc:postgresql://<host>/<db>?sslmode=require`, junto con `DB_USER` y `DB_PASSWORD`.
+1. **Base de datos:** crea un proyecto PostgreSQL en Neon (plan gratuito) y pasa su cadena de conexión **directa** (sin `-pooler`) al backend como `DATABASE_URL`, con el perfil `neon`. Pasos en [docs/neon.md](../docs/neon.md).
 2. **Backend:** publícalo con su `Dockerfile` en un servicio que acepte contenedores. Define `JWT_SECRET` y `CORS_ALLOWED_ORIGINS=https://<dominio-del-frontend>`.
 3. **Frontend:** si se publica en otro dominio (Vercel, Netlify, etc.), cambia `apiUrl` en `src/environments/environment.ts` a `https://<backend>/api/v1` y publica `dist/frontend/browser`. Configura la reescritura de rutas a `index.html`.
 

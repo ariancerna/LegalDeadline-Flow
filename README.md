@@ -83,6 +83,16 @@ La respuesta contiene `accessToken`, `tokenType`, `expiresIn` y los datos del us
 
 Establece `DEMO_ENABLED=false` para detener futuras cargas de ejemplo. No elimina los registros ya existentes.
 
+## Base de datos en Neon (nube)
+
+Para usar PostgreSQL en la nube en lugar del contenedor local, crea un proyecto en [Neon](https://neon.com), pega su cadena de conexión en `.env` como `DATABASE_URL` y ejecuta con el perfil `neon`:
+
+```powershell
+docker compose -f compose.neon.yaml up -d --build
+```
+
+La guía completa, con la configuración de IntelliJ y Maven, está en [docs/neon.md](docs/neon.md).
+
 ## Ejecutar Java en el equipo
 
 ### IntelliJ IDEA (perfil local)
@@ -201,6 +211,7 @@ El [modelo relacional](docs/modelo-relacional.md) documenta tablas, relaciones e
 | `BACKEND_PORT` | Puerto del host publicado por Compose |
 | `FRONTEND_PORT` | Puerto del host para la aplicación web en Compose: 4200 por defecto |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por comas: `http://localhost:4200,http://localhost:5173` por defecto |
+| `DATABASE_URL` | Cadena `postgresql://usuario:clave@host/base` de un proveedor en la nube (Neon); reemplaza a `DB_*`. Ver [docs/neon.md](docs/neon.md) |
 | `SPRING_DATASOURCE_URL` | URL JDBC completa; reemplaza a `DB_HOST`, `DB_PORT` y `DB_NAME` (por ejemplo, PostgreSQL en la nube con `?sslmode=require`) |
 | `DEMO_ENABLED` | Carga de ejemplo en Compose |
 | `LEGALDEADLINE_DEMO_ENABLED` | Carga de ejemplo en Java directo |
