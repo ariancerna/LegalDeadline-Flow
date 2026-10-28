@@ -3,6 +3,8 @@ package pe.edu.utp.legaldeadlineflow.service;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
@@ -69,7 +71,16 @@ public class PlazoService {
             if (hasta != null) filtros.add(cb.lessThanOrEqualTo(root.get("fechaLimite"), hasta));
             return cb.and(filtros.toArray(Predicate[]::new));
         };
-        return plazoRepository.findAll(spec, ExpedienteService.pagina(page, size)).map(this::toResponse);
+        Page<Plazo> pagina = plazoRepository.findAll(spec, ExpedienteService.pagina(page, size));
+        // Una sola consulta agrupada da las tareas activas de los expedientes de la página.
+        List<Long> expedientes = pagina.getContent().stream().map(p -> p.getExpediente().getId()).distinct().toList();
+        Map<Long, Long> pendientes = new HashMap<>();
+        if (!expedientes.isEmpty()) {
+            tareaRepository.contarActivasPorExpediente(expedientes, TareaService.ESTADOS_ACTIVOS)
+                    .forEach(r -> pendientes.put((Long) r[0], ((Number) r[1]).longValue()));
+        }
+        LocalDate hoy = LocalDate.now(clock);
+        return pagina.map(p -> toResponse(p, hoy, pendientes.getOrDefault(p.getExpediente().getId(), 0L)));
     }
 
     @Transactional
@@ -133,9 +144,17 @@ public class PlazoService {
         trazabilidadService.registrar(tipo, "PLAZO", plazo.getId(), detalle);
     }
     private PlazoResponse toResponse(Plazo plazo) {
-        return new PlazoResponse(plazo.getId(), plazo.getExpediente().getId(), plazo.getTipo(), plazo.getFechaLimite(),
-                plazo.getEstado(), plazo.getMotivoAnulacion(), plazo.getCreadoEn(), plazo.getAnuladoEn(),
-                plazo.getActualizadoEn(), plazo.getVersion());
+        return toResponse(plazo, LocalDate.now(clock), tareaRepository.countByExpedienteIdAndEstadoIn(
+                plazo.getExpediente().getId(), TareaService.ESTADOS_ACTIVOS));
+    }
+
+    private PlazoResponse toResponse(Plazo plazo, LocalDate hoy, long tareasPendientes) {
+        Expediente expediente = plazo.getExpediente();
+        long dias = ChronoUnit.DAYS.between(hoy, plazo.getFechaLimite());
+        return new PlazoResponse(plazo.getId(), expediente.getId(), expediente.getCodigo(), expediente.getAsunto(),
+                plazo.getTipo(), plazo.getFechaLimite(), plazo.getEstado(), plazo.getMotivoAnulacion(),
+                plazo.getCreadoEn(), plazo.getAnuladoEn(), plazo.getActualizadoEn(), plazo.getVersion(),
+                clasificar(plazo.getEstado(), dias, tareasPendientes), dias, tareasPendientes);
     }
 }
 

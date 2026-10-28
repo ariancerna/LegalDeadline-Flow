@@ -33,4 +33,5 @@ Si Render asigna otra dirección (por ejemplo, porque el nombre ya estaba tomado
 
 - El plan gratuito de Render **apaga el backend tras 15 minutos sin visitas**. La primera visita después tarda alrededor de un minuto mientras arranca. Abre la aplicación unos minutos antes de presentar.
 - Neon también se suspende sin uso; despierta en uno o dos segundos.
-- Con el perfil `demo`, el primer arranque carga la cartera de ejemplo. Para no volver a cargarla en una base nueva, cambia `SPRING_PROFILES_ACTIVE` a `neon` en Render.
+- Con el perfil `demo`, el arranque completa la cartera de presentación hasta **5000 expedientes** (variable `DEMO_VOLUMEN`; ver el README). Si la base ya tiene la cartera pequeña, el siguiente despliegue le agrega el resto; si ya tiene 5000, no hace nada. En el registro de Render aparece `Cartera de demostración lista en N s`. Para no volver a cargar datos en una base nueva, cambia `SPRING_PROFILES_ACTIVE` a `neon` en Render.
+- Para comprobar el volumen en Neon, ejecuta en el **SQL Editor**: `select estado, count(*) from expedientes group by estado;`

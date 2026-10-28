@@ -144,26 +144,11 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
     if (this.eventos() !== null) this.cargarActividad();
   }
 
-  /**
-   * Historial del expediente: eventos del propio expediente y de sus tareas y plazos.
-   * La API filtra por tipo, usuario y fecha; aquí se filtran los recursos de este expediente.
-   */
+  /** Historial del expediente: la API devuelve sus eventos y los de sus tareas y plazos. */
   private cargarActividad(): void {
     if (!this.auth.puedeVerAuditoria()) return;
-    const id = Number(this.id());
-    this.consultas.eventos({ size: 100 }).subscribe({
-      next: (p) => {
-        const tareas = new Set(this.tareas().map((t) => t.id));
-        const plazos = new Set(this.plazos().map((x) => x.id));
-        this.eventos.set(
-          p.content.filter(
-            (e) =>
-              (e.recurso === 'EXPEDIENTE' && e.recursoId === id) ||
-              (e.recurso === 'TAREA' && tareas.has(e.recursoId)) ||
-              (e.recurso === 'PLAZO' && plazos.has(e.recursoId)),
-          ),
-        );
-      },
+    this.consultas.eventos({ expedienteId: Number(this.id()), size: 100 }).subscribe({
+      next: (p) => this.eventos.set(p.content),
       error: () => this.eventos.set([]),
     });
   }

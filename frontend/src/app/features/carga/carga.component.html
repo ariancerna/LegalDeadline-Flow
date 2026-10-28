@@ -120,7 +120,7 @@
               tiene capacidad libre bajo el umbral.
             </div>
           } @else {
-            @for (s of sugerencias(); track s.tarea.id) {
+            @for (s of sugerenciasVisibles(); track s.tarea.id) {
               <article class="sugerencia">
                 <div class="tarea">
                   <span [class]="'prioridad p-' + s.tarea.prioridad"
@@ -172,6 +172,11 @@
                   </button>
                 }
               </article>
+            }
+            @if (sugerencias().length > sugerenciasVisibles().length) {
+              <button type="button" class="btn btn-secundario ver-mas" (click)="verTodas.set(true)">
+                Ver las {{ sugerencias().length - sugerenciasVisibles().length }} propuestas restantes
+              </button>
             }
           }
         </div>

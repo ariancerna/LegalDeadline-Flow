@@ -18,6 +18,7 @@ import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import pe.edu.utp.legaldeadlineflow.api.dto.ExpedienteRequest;
+import pe.edu.utp.legaldeadlineflow.config.CarteraVolumenSeeder;
 import pe.edu.utp.legaldeadlineflow.config.DemoDataSeeder;
 import pe.edu.utp.legaldeadlineflow.domain.*;
 import pe.edu.utp.legaldeadlineflow.repository.*;
@@ -56,6 +58,7 @@ class ApiIntegrationTest {
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired PlatformTransactionManager transactionManager;
     @Autowired ExpedienteService expedienteService;
+    @Autowired JdbcTemplate jdbc;
     private final Map<Rol,Usuario> cuentas=new EnumMap<>(Rol.class);
     private final Map<Rol,String> tokens=new EnumMap<>(Rol.class);
     private Usuario otroResponsable;
@@ -349,6 +352,77 @@ class ApiIntegrationTest {
         assertThat(metric.get("expedientesCerrados").asLong()).isEqualTo(1);
         assertThat(metric.get("expedientesArchivados").asLong()).isEqualTo(1);
         assertThat(metric.get("tareasCanceladas").asLong()).isEqualTo(1);
+    }
+
+    @Test
+    void carteraDeVolumenRespetaLasReglasDelNegocioYEsIdempotente() throws Exception {
+        new DemoDataSeeder(usuarios,expedientes,tareas,plazos,eventos,passwordEncoder,clock).run(new DefaultApplicationArguments());
+        CarteraVolumenSeeder volumen=new CarteraVolumenSeeder(jdbc,transactionManager,passwordEncoder,clock,600,5);
+        volumen.run(new DefaultApplicationArguments());
+        assertThat(expedientes.count()).isEqualTo(600);
+        long tareasAntes=tareas.count(), plazosAntes=plazos.count(), eventosAntes=eventos.count(), usuariosAntes=usuarios.count();
+        volumen.run(new DefaultApplicationArguments());
+        assertThat(expedientes.count()).isEqualTo(600);
+        assertThat(tareas.count()).isEqualTo(tareasAntes);
+        assertThat(plazos.count()).isEqualTo(plazosAntes);
+        assertThat(eventos.count()).isEqualTo(eventosAntes);
+        assertThat(usuarios.count()).isEqualTo(usuariosAntes);
+
+        // RF06: un expediente cerrado o archivado no conserva tareas ni plazos activos.
+        assertThat(jdbc.queryForObject("""
+                select count(*) from tareas t join expedientes e on e.id = t.expediente_id
+                where e.estado <> 'ABIERTO' and t.estado in ('PENDIENTE', 'EN_PROGRESO')""", Long.class)).isZero();
+        assertThat(jdbc.queryForObject("""
+                select count(*) from plazos p join expedientes e on e.id = p.expediente_id
+                where e.estado <> 'ABIERTO' and p.estado = 'ACTIVO'""", Long.class)).isZero();
+        // RF08: sin tareas activas equivalentes en un mismo expediente.
+        assertThat(jdbc.queryForObject("""
+                select count(*) from (select expediente_id from tareas where estado in ('PENDIENTE', 'EN_PROGRESO')
+                group by expediente_id, titulo_normalizado, tipo having count(*) > 1) duplicadas""", Long.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from eventos where fecha > ?", Long.class,
+                clock.instant().atOffset(java.time.ZoneOffset.UTC))).isZero();
+
+        String supervisor=login("supervisor@legaldeadline.local","SupervisorDemo123!");
+        JsonNode carga=call(get("/api/v1/responsables/carga"),supervisor,null,200);
+        long sobrecargados=0; for (JsonNode r:carga) if (r.get("sobrecargado").asBoolean()) sobrecargados++;
+        assertThat(carga.size()).isGreaterThan(30);
+        assertThat(sobrecargados).isPositive().isLessThan(carga.size()/4);
+        // Los responsables nuevos entran con la contraseña de la demo.
+        String nuevo=jdbc.queryForObject("select max(email) from usuarios where rol = 'RESPONSABLE' and email like '%@legaldeadline.local'",String.class);
+        login(nuevo,"ResponsableDemo123!");
+
+        // La identidad continúa después de los ids insertados por lotes.
+        JsonNode creado=expediente("EXP-TRAS-VOLUMEN",responsableId());
+        assertThat(creado.get("id").asLong()).isGreaterThan(jdbc.queryForObject("select max(id) from expedientes where codigo <> 'EXP-TRAS-VOLUMEN'",Long.class));
+        assertThat(call(get("/api/v1/expedientes").param("q","juzgado civil").param("size","5"),supervisor,null,200).get("totalElements").asLong()).isPositive();
+
+        // Los listados traen el riesgo (RN04) y el código del expediente: no hace falta una consulta por fila.
+        JsonNode pagina=call(get("/api/v1/plazos").param("estado","ACTIVO").param("size","100"),supervisor,null,200);
+        assertThat(pagina.get("content").size()).isPositive();
+        for (JsonNode plazo:pagina.get("content")) {
+            JsonNode riesgo=call(get("/api/v1/plazos/"+plazo.get("id").asLong()+"/riesgo"),supervisor,null,200);
+            assertThat(plazo.get("nivelRiesgo").asText()).isEqualTo(riesgo.get("nivel").asText());
+            assertThat(plazo.get("tareasPendientes").asLong()).isEqualTo(riesgo.get("tareasPendientes").asLong());
+            assertThat(plazo.get("expedienteCodigo").asText()).isNotBlank();
+        }
+        JsonNode tarea=call(get("/api/v1/tareas").param("size","1"),supervisor,null,200).get("content").get(0);
+        assertThat(tarea.get("expedienteCodigo").asText()).isNotBlank();
+
+        // Historial de un expediente: sus eventos y los de sus tareas y plazos, sin mezclar otros.
+        long expedienteId=pagina.get("content").get(0).get("expedienteId").asLong();
+        JsonNode historial=call(get("/api/v1/auditoria/eventos").param("expedienteId",String.valueOf(expedienteId)).param("size","100"),supervisor,null,200);
+        Set<Long> tareasDel=new HashSet<>(jdbc.queryForList("select id from tareas where expediente_id = ?",Long.class,expedienteId));
+        Set<Long> plazosDel=new HashSet<>(jdbc.queryForList("select id from plazos where expediente_id = ?",Long.class,expedienteId));
+        assertThat(historial.get("totalElements").asLong()).isGreaterThanOrEqualTo(2);
+        for (JsonNode e:historial.get("content")) {
+            long recursoId=e.get("recursoId").asLong();
+            switch (e.get("recurso").asText()) {
+                case "EXPEDIENTE" -> assertThat(recursoId).isEqualTo(expedienteId);
+                case "TAREA" -> assertThat(tareasDel).contains(recursoId);
+                case "PLAZO" -> assertThat(plazosDel).contains(recursoId);
+                default -> fail("Recurso inesperado "+e);
+            }
+        }
     }
 
     private JsonNode expediente(String codigo,Long responsable) throws Exception {

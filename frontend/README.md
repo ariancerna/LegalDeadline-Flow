@@ -80,6 +80,15 @@ El asunto de un expediente puede seguir la convención `Materia · Partes · Ór
 
 Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-static`. Para usar uno nuevo, agrega su nombre a la lista del script y vuelve a ejecutarlo.
 
+## Volumen de datos
+
+La demostración trae 5000 expedientes, unas 10 000 tareas y 14 000 eventos. La interfaz está preparada para ese volumen:
+
+- Los listados de plazos ya traen el **riesgo** (RN04) y el **código y asunto del expediente**, así que el tablero, la campana, el calendario y las tablas hacen una sola consulta en lugar de una por fila. `GET /plazos/{id}/riesgo` sigue disponible.
+- Al registrar una tarea o un plazo, el expediente se elige con un **buscador** (`shared/selector-expediente.component.ts`) que consulta `GET /expedientes?q` mientras escribes, en lugar de un desplegable con todos los expedientes.
+- El calendario pide todas las páginas del mes y muestra primero los plazos de mayor riesgo de cada día.
+- La pestaña **Actividad** de un expediente usa `GET /auditoria/eventos?expedienteId=`, que filtra en el servidor sus eventos y los de sus tareas y plazos.
+
 ## Seguridad en el cliente
 
 - El JWT se guarda en `sessionStorage`, así que la sesión termina al cerrar la pestaña. `authInterceptor` lo envía como `Authorization: Bearer` solo a la API.

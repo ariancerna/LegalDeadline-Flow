@@ -1,8 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { PlazosService } from './api/plazos.service';
-import { ExpedientesCache } from './expedientes.cache';
-import { Plazo, RiesgoPlazo } from './models';
+import { Plazo, RiesgoPlazo, riesgoDe } from './models';
 import { hoyLima, sumarDias } from '../shared/fechas';
 
 export interface Alerta {
@@ -23,7 +21,6 @@ const DIAS_ALERTA = 10;
 @Injectable({ providedIn: 'root' })
 export class AlertasStore {
   private readonly plazosApi = inject(PlazosService);
-  private readonly expedientes = inject(ExpedientesCache);
 
   /** Todos los plazos del horizonte con su riesgo, ordenados por fecha. */
   readonly proximos = signal<Alerta[] | null>(null);
@@ -47,26 +44,14 @@ export class AlertasStore {
 
   recargar(): void {
     this.plazosApi
-      .listar({ estado: 'ACTIVO', hasta: sumarDias(hoyLima(), HORIZONTE_DIAS), size: 100 })
-      .pipe(
-        switchMap((pagina) =>
-          pagina.content.length === 0
-            ? of([] as Alerta[])
-            : forkJoin(
-                pagina.content.map((plazo) =>
-                  this.plazosApi.riesgo(plazo.id).pipe(
-                    map((riesgo): Alerta | null => ({ plazo, riesgo })),
-                    catchError(() => of(null)),
-                  ),
-                ),
-              ).pipe(map((l) => l.filter((a): a is Alerta => a !== null))),
-        ),
-      )
+      .listarTodo({ estado: 'ACTIVO', hasta: sumarDias(hoyLima(), HORIZONTE_DIAS) }, 3)
       .subscribe({
-        next: (todas) => {
-          this.expedientes.cargar(todas.map((a) => a.plazo.expedienteId));
+        next: (plazos) => {
+          // Cada plazo ya trae su riesgo: una sola consulta aunque la cartera tenga miles de expedientes.
           this.proximos.set(
-            [...todas].sort((a, b) => a.plazo.fechaLimite.localeCompare(b.plazo.fechaLimite)),
+            plazos
+              .map((plazo) => ({ plazo, riesgo: riesgoDe(plazo) }))
+              .sort((a, b) => a.plazo.fechaLimite.localeCompare(b.plazo.fechaLimite)),
           );
         },
         error: () => this.proximos.set([]),

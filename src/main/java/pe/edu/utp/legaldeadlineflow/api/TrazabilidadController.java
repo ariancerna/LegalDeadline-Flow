@@ -32,7 +32,8 @@ public class TrazabilidadController {
             @RequestParam(required = false) Long usuarioId,
             @RequestParam(required = false) Instant desde,
             @RequestParam(required = false) Instant hasta,
+            @RequestParam(required = false) Long expedienteId,
             @PageableDefault(size = 20, sort = "fecha", direction = Sort.Direction.DESC) Pageable pageable) {
-        return trazabilidadService.consultar(tipo, usuarioId, desde, hasta, pageable);
+        return trazabilidadService.consultar(tipo, usuarioId, desde, hasta, expedienteId, pageable);
     }
 }

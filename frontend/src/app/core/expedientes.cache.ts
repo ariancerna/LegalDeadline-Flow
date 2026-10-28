@@ -28,6 +28,20 @@ export class ExpedientesCache {
     this.datos.update((m) => new Map(m).set(id, { codigo, asunto }));
   }
 
+  /** Registra el expediente que acompaña a cada tarea o plazo de un listado. */
+  registrarVarios(
+    filas: readonly { expedienteId: number; expedienteCodigo?: string; expedienteAsunto?: string }[],
+  ): void {
+    const nuevas = filas.filter((f) => f.expedienteCodigo && !this.datos().has(f.expedienteId));
+    if (nuevas.length === 0) return;
+    this.datos.update((m) => {
+      const copia = new Map(m);
+      for (const f of nuevas)
+        copia.set(f.expedienteId, { codigo: f.expedienteCodigo!, asunto: f.expedienteAsunto ?? '' });
+      return copia;
+    });
+  }
+
   /** Consulta los expedientes que aún no están en caché. */
   cargar(ids: number[]): void {
     const faltantes = [...new Set(ids)].filter((id) => !this.datos().has(id));

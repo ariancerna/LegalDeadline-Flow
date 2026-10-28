@@ -510,12 +510,12 @@ WHERE e.codigo IN ('00412-2026-0-1801','00198-2026-0-1801','00057-2026-0-1801','
 ORDER BY e.codigo;
 ```
 
-The second start should not duplicate these rows. In a fresh, otherwise untouched demo seed there are six demo accounts, seven cases (five open, one closed, one archived), seventeen tasks, and eleven deadlines. The case numbers, parties and courts are fictitious. An existing database may have legitimately changed; compare before/after rather than forcing those totals on it. The seed is not a reset function.
+The second start should not duplicate these rows. In a fresh, otherwise untouched demo seed there are six demo accounts, seven cases (five open, one closed, one archived), seventeen tasks, and eleven deadlines. With the `demo` profile, `CarteraVolumenSeeder` then fills the database up to `DEMO_VOLUMEN` cases (5000 by default) with a generated, fictitious portfolio; the seven cases above keep their codes. Count `SELECT COUNT(*) FROM expedientes` before and after a restart: it stays at 5000. The case numbers, parties and courts are fictitious. An existing database may have legitimately changed; compare before/after rather than forcing those totals on it. The seed is not a reset function.
 
 The isolated integration test gives reproducible evidence:
 
 ```powershell
-.\mvnw.cmd "-Dtest=ApiIntegrationTest#demostracionIdempotenteYEscenariosDeIndicadores" test
+.\mvnw.cmd "-Dtest=ApiIntegrationTest#demostracionIdempotenteYEscenariosDeIndicadores+carteraDeVolumenRespetaLasReglasDelNegocioYEsIdempotente" test
 ```
 
 ### Complete automated verification

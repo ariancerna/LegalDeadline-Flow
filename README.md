@@ -58,7 +58,22 @@ Compose activa el perfil `demo` y `DEMO_ENABLED=true`. La carga es idempotente: 
 | Responsable | `paola.vargas@legaldeadline.local` | `ResponsableDemo123!` |
 | Responsable | `diego.ramirez@legaldeadline.local` | `ResponsableDemo123!` |
 
-La cartera de demostración tiene siete expedientes con números, partes y juzgados ficticios (por ejemplo, `00412-2026-0-1801`). El asunto sigue la convención `Materia · Partes · Órgano jurisdiccional`, que el frontend muestra por separado. Un responsable supera el umbral de carga para mostrar la detección de sobrecarga.
+La demostración se carga en dos pasos, ambos con números, partes y juzgados ficticios:
+
+1. **Cartera base** (`DemoDataSeeder`): siete expedientes conocidos, como `00412-2026-0-1801`, con sus tareas y plazos. Sirven para el guion de la presentación y para las pruebas.
+2. **Cartera de volumen** (`CarteraVolumenSeeder`): completa hasta **5000 expedientes** (variable `DEMO_VOLUMEN`) para presentar el sistema con un volumen realista y medir la búsqueda (RF04, RNF05).
+
+La cartera de volumen se parece a la de un estudio con varios años de actividad:
+
+| Registro | Cantidad aproximada | Detalle |
+|---|---|---|
+| Expedientes | 5000 | ~800 abiertos y el resto cerrados o archivados, ingresados de 2019 a hoy; materias civiles, laborales, de familia, alimentos, comerciales y apelaciones en Sala |
+| Responsables | 39 | Los 3 de la demostración y 36 más (`nombre.apellido@legaldeadline.local`, contraseña `ResponsableDemo123!`) |
+| Tareas | 10 000 | Historial cerrado o cancelado y unas 180 activas; solo unas 6 personas superan el umbral de carga |
+| Plazos | 600 | En días hábiles, la mayoría por venir, pocos vencidos y algunos anulados con motivo |
+| Eventos de auditoría | 14 000 | Registro y cierre de cada expediente, y la actividad de los últimos tres meses |
+
+Respeta las reglas del negocio: un expediente cerrado o archivado no tiene tareas ni plazos activos (RF06), no hay tareas activas duplicadas (RF08) y ningún registro tiene fecha futura. Es determinista (siempre genera la misma cartera para la misma fecha), se inserta por lotes en una transacción (segundos, no minutos) y no se repite: si la base ya tiene 5000 expedientes, no hace nada. Con `DEMO_VOLUMEN=0` solo se carga la cartera base. En PostgreSQL ocupa unos 17 MB.
 
 Solicita un token:
 
@@ -214,6 +229,7 @@ El [modelo relacional](docs/modelo-relacional.md) documenta tablas, relaciones e
 | `DATABASE_URL` | Cadena `postgresql://usuario:clave@host/base` de un proveedor en la nube (Neon); reemplaza a `DB_*`. Ver [docs/neon.md](docs/neon.md) |
 | `SPRING_DATASOURCE_URL` | URL JDBC completa; reemplaza a `DB_HOST`, `DB_PORT` y `DB_NAME` (por ejemplo, PostgreSQL en la nube con `?sslmode=require`) |
 | `DEMO_ENABLED` | Carga de ejemplo en Compose |
+| `DEMO_VOLUMEN` | Expedientes que debe tener la demostración: 5000 con el perfil `demo`; `0` carga solo la cartera base |
 | `LEGALDEADLINE_DEMO_ENABLED` | Carga de ejemplo en Java directo |
 
 Imágenes base: [PostgreSQL oficial](https://hub.docker.com/_/postgres), [Maven oficial](https://hub.docker.com/_/maven) y [Eclipse Temurin oficial](https://hub.docker.com/_/eclipse-temurin).

@@ -41,6 +41,11 @@ export class CargaComponent implements OnInit {
     Math.max(this.umbral() + 2, ...this.lista().map((r) => r.tareasActivas)),
   );
   protected readonly sobrecargados = computed(() => this.lista().filter((r) => r.sobrecargado));
+  /** Con un equipo grande la lista es larga: se muestran las primeras y el resto a pedido. */
+  protected readonly verTodas = signal(false);
+  protected readonly sugerenciasVisibles = computed(() =>
+    this.verTodas() ? this.sugerencias() : this.sugerencias().slice(0, 6),
+  );
   protected readonly sugerencias = computed<Sugerencia[]>(() =>
     recomendarReasignaciones(this.lista(), this.tareasSobrecargados()),
   );

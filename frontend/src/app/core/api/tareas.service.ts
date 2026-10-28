@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina, Prioridad, Tarea, TareaEstado } from '../models';
+import { ExpedientesCache } from '../expedientes.cache';
 import { aParams } from './params';
 
 export interface FiltrosTarea {
@@ -28,10 +29,14 @@ export interface TareaDatos {
 @Injectable({ providedIn: 'root' })
 export class TareasService {
   private readonly http = inject(HttpClient);
+  private readonly cache = inject(ExpedientesCache);
   private readonly url = `${environment.apiUrl}/tareas`;
 
+  /** Cada tarea trae el código y el asunto de su expediente: se guardan para las demás tablas. */
   listar(filtros: FiltrosTarea = {}): Observable<Pagina<Tarea>> {
-    return this.http.get<Pagina<Tarea>>(this.url, { params: aParams({ ...filtros }) });
+    return this.http
+      .get<Pagina<Tarea>>(this.url, { params: aParams({ ...filtros }) })
+      .pipe(tap((p) => this.cache.registrarVarios(p.content)));
   }
 
   obtener(id: number): Observable<Tarea> {

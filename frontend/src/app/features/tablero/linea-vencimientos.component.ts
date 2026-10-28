@@ -93,6 +93,10 @@ export class LineaVencimientosComponent {
         porFecha.get(a.plazo.fechaLimite)!.push(a);
       }
     }
+    // En un día con muchos plazos se ven primero los de mayor riesgo.
+    const gravedad = ['CRITICO', 'ALTO', 'MEDIO', 'BAJO'];
+    for (const lista of porFecha.values())
+      lista.sort((x, y) => gravedad.indexOf(x.riesgo.nivel) - gravedad.indexOf(y.riesgo.nivel));
     const columnas: Columna[] = [];
     if (vencidos.length > 0) {
       columnas.push({

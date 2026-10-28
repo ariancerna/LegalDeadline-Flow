@@ -8,6 +8,7 @@ import java.util.Locale;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import pe.edu.utp.legaldeadlineflow.repository.*;
  * muestra por separado. La carga es idempotente: no se repite si el expediente principal existe.
  */
 @Component
+@Order(1)
 @ConditionalOnProperty(name = "legaldeadline.demo.enabled", havingValue = "true")
 public class DemoDataSeeder implements ApplicationRunner {
     static final String EXPEDIENTE_PRINCIPAL = "00412-2026-0-1801";

@@ -34,6 +34,10 @@ const ETIQUETAS: Record<string, string> = {
   PERICIA: 'Pericia',
   APELACION: 'Apelación',
   CASACION: 'Casación',
+  AUDIENCIA_UNICA: 'Audiencia única',
+  AUDIENCIA_JUZGAMIENTO: 'Audiencia de juzgamiento',
+  INFORME_ORAL: 'Informe oral',
+  CONTRADICCION: 'Contradicción',
   ESCRITO: 'Escrito',
   REVISION: 'Revisión',
   NOTIFICACION: 'Notificación',
@@ -46,6 +50,7 @@ const CORTAS: Record<string, string> = {
   AUDIENCIA_CONCILIACION: 'Conciliación',
   OFRECIMIENTO_PRUEBAS: 'Pruebas',
   PRESENTACION_DEMANDA: 'Demanda',
+  AUDIENCIA_JUZGAMIENTO: 'Juzgamiento',
 };
 
 /** Versión breve para espacios estrechos (línea de tiempo, calendario). */

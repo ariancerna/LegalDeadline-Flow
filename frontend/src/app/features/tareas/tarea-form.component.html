@@ -17,12 +17,7 @@
       [class.invalido]="form.controls.expedienteId.invalid && form.controls.expedienteId.touched"
     >
       <label for="t-exp">Expediente</label>
-      <select id="t-exp" formControlName="expedienteId">
-        <option [ngValue]="null" disabled>Selecciona un expediente abierto…</option>
-        @for (e of expedientesAbiertos(); track e.id) {
-          <option [ngValue]="e.id">{{ e.codigo }} — {{ e.asunto }}</option>
-        }
-      </select>
+      <app-selector-expediente idCampo="t-exp" formControlName="expedienteId" />
       <app-error-campo
         [control]="form.controls.expedienteId"
         [servidor]="camposServidor()['expedienteId']"

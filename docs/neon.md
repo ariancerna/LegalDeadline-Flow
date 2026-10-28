@@ -59,7 +59,7 @@ En los tres casos la API queda en `http://localhost:8081` y el frontend (`npm st
 
 ## Cuidar el plan gratuito
 
-El plan Free incluye 0,5 GB de almacenamiento (la demo ocupa unos pocos MB) y un número limitado de horas de cómputo al mes. Neon suspende la base cuando lleva 5 minutos sin conexiones y no cobra ese tiempo. El perfil `neon` está preparado para eso:
+El plan Free incluye 0,5 GB de almacenamiento (la cartera de 5000 expedientes ocupa unos 17 MB) y un número limitado de horas de cómputo al mes. Neon suspende la base cuando lleva 5 minutos sin conexiones y no cobra ese tiempo. El perfil `neon` está preparado para eso:
 
 - El pool de conexiones se vacía tras un minuto sin uso, en lugar de mantener conexiones abiertas.
 - `/actuator/health` no consulta la base, así el healthcheck de Docker no la despierta cada 15 segundos.

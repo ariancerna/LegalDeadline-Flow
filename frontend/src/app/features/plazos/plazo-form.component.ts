@@ -1,19 +1,19 @@
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ExpedientesService } from '../../core/api/expedientes.service';
 import { PlazosService } from '../../core/api/plazos.service';
 import { interpretarError } from '../../core/errores';
-import { Expediente, Plazo } from '../../core/models';
+import { Plazo } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
 import { IconoComponent } from '../../shared/icono.component';
 import { hoyLima } from '../../shared/fechas';
+import { SelectorExpedienteComponent } from '../../shared/selector-expediente.component';
 import { noSoloEspacios } from '../../shared/validadores';
 
 /** RF12 / RF13: registrar o editar un plazo activo. */
 @Component({
   selector: 'app-plazo-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, IconoComponent],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, IconoComponent, SelectorExpedienteComponent],
   template: `
     <form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       @if (error(); as mensaje) {
@@ -29,12 +29,7 @@ import { noSoloEspacios } from '../../shared/validadores';
           "
         >
           <label for="p-exp">Expediente</label>
-          <select id="p-exp" formControlName="expedienteId">
-            <option [ngValue]="null" disabled>Selecciona un expediente abierto…</option>
-            @for (e of expedientesAbiertos(); track e.id) {
-              <option [ngValue]="e.id">{{ e.codigo }} — {{ e.asunto }}</option>
-            }
-          </select>
+          <app-selector-expediente idCampo="p-exp" formControlName="expedienteId" />
           <app-error-campo [control]="form.controls.expedienteId" />
         </div>
       }
@@ -91,7 +86,6 @@ import { noSoloEspacios } from '../../shared/validadores';
 })
 export class PlazoFormComponent implements OnInit {
   private readonly servicio = inject(PlazosService);
-  private readonly expedientesServicio = inject(ExpedientesService);
   private readonly avisos = inject(NotificacionesService);
 
   readonly plazo = input<Plazo | null>(null);
@@ -99,7 +93,6 @@ export class PlazoFormComponent implements OnInit {
   readonly guardado = output<Plazo>();
   readonly cancelar = output<void>();
 
-  protected readonly expedientesAbiertos = signal<Expediente[]>([]);
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly camposServidor = signal<Record<string, string>>({});
@@ -122,10 +115,6 @@ export class PlazoFormComponent implements OnInit {
     } else if (this.expedienteId() !== null) {
       this.form.controls.expedienteId.setValue(this.expedienteId());
       this.form.controls.expedienteId.disable();
-    } else {
-      this.expedientesServicio
-        .listar({ estado: 'ABIERTO', size: 100 })
-        .subscribe({ next: (r) => this.expedientesAbiertos.set(r.content) });
     }
   }
 

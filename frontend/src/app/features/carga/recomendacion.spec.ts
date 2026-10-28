@@ -16,6 +16,8 @@ function tarea(id: number, prioridad: Prioridad, fechaLimite: string, responsabl
   return {
     id,
     expedienteId: 1,
+    expedienteCodigo: '00001-2026-0-1801',
+    expedienteAsunto: '',
     titulo: `T${id}`,
     tipo: 'ESCRITO',
     responsableId,

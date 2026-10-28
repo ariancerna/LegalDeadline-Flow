@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina, Plazo, PlazoEstado, RiesgoPlazo } from '../models';
+import { ExpedientesCache } from '../expedientes.cache';
 import { aParams } from './params';
 
 export interface FiltrosPlazo {
@@ -23,10 +24,40 @@ export interface PlazoDatos {
 @Injectable({ providedIn: 'root' })
 export class PlazosService {
   private readonly http = inject(HttpClient);
+  private readonly cache = inject(ExpedientesCache);
   private readonly url = `${environment.apiUrl}/plazos`;
 
+  /** Cada plazo trae el código y el asunto de su expediente: se guardan para las demás tablas. */
   listar(filtros: FiltrosPlazo = {}): Observable<Pagina<Plazo>> {
-    return this.http.get<Pagina<Plazo>>(this.url, { params: aParams({ ...filtros }) });
+    return this.http
+      .get<Pagina<Plazo>>(this.url, { params: aParams({ ...filtros }) })
+      .pipe(tap((p) => this.cache.registrarVarios(p.content)));
+  }
+
+  /**
+   * Todas las páginas de un rango (por ejemplo, un mes del calendario), hasta `maxPaginas`.
+   * Con 5000 expedientes un mes puede superar las 100 filas de una página.
+   */
+  listarTodo(filtros: FiltrosPlazo, maxPaginas = 5): Observable<Plazo[]> {
+    return new Observable<Plazo[]>((sub) => {
+      const acumulado: Plazo[] = [];
+      let cancelado = false;
+      const pedir = (page: number): void => {
+        this.listar({ ...filtros, page, size: 100 }).subscribe({
+          next: (p) => {
+            if (cancelado) return;
+            acumulado.push(...p.content);
+            if (page + 1 >= Math.min(p.totalPages, maxPaginas)) {
+              sub.next(acumulado);
+              sub.complete();
+            } else pedir(page + 1);
+          },
+          error: (e) => sub.error(e),
+        });
+      };
+      pedir(0);
+      return () => (cancelado = true);
+    });
   }
 
   crear(expedienteId: number, datos: PlazoDatos): Observable<Plazo> {

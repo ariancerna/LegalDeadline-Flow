@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { PlazosService } from '../../core/api/plazos.service';
 import { ExpedientesCache } from '../../core/expedientes.cache';
 import { NivelRiesgo, Plazo } from '../../core/models';
@@ -18,6 +17,8 @@ interface Celda {
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 /** Calendario mensual de plazos coloreados por riesgo (RF12 / RF15). */
+const GRAVEDAD: NivelRiesgo[] = ['CRITICO', 'ALTO', 'MEDIO', 'BAJO'];
+
 @Component({
   selector: 'app-plazos-calendario',
   imports: [EtiquetaPipe, IconoComponent],
@@ -63,6 +64,9 @@ export class PlazosCalendarioComponent {
       if (!porFecha.has(p.fechaLimite)) porFecha.set(p.fechaLimite, []);
       porFecha.get(p.fechaLimite)!.push(p);
     }
+    // Cada día muestra 3 plazos: primero los de mayor riesgo, los anulados al final.
+    const orden = (p: Plazo) => (p.estado === 'ANULADO' ? 9 : GRAVEDAD.indexOf(p.nivelRiesgo));
+    for (const lista of porFecha.values()) lista.sort((x, y) => orden(x) - orden(y));
     const celdas: Celda[] = [];
     for (let f = inicio; f <= fin; f = sumarDias(f, 1)) {
       celdas.push({
@@ -114,28 +118,17 @@ export class PlazosCalendarioComponent {
 
   private cargar(desde: string, hasta: string): void {
     this.cargando.set(true);
-    this.servicio
-      .listar({ desde, hasta, size: 100 })
-      .pipe(
-        switchMap((pagina) => {
-          this.plazos.set(pagina.content);
-          this.expedientes.cargar(pagina.content.map((p) => p.expedienteId));
-          const activos = pagina.content.filter((p) => p.estado === 'ACTIVO');
-          return activos.length === 0
-            ? of([])
-            : forkJoin(
-                activos.map((p) => this.servicio.riesgo(p.id).pipe(catchError(() => of(null)))),
-              );
-        }),
-      )
-      .subscribe({
-        next: (riesgos) => {
-          this.niveles.set(
-            new Map(riesgos.filter((r) => r !== null).map((r) => [r!.plazoId, r!.nivel])),
-          );
-          this.cargando.set(false);
-        },
-        error: () => this.cargando.set(false),
-      });
+    // Un mes puede tener más de 100 plazos: se piden todas las páginas, cada plazo con su riesgo.
+    this.servicio.listarTodo({ desde, hasta }).subscribe({
+      next: (plazos) => {
+        this.plazos.set(plazos);
+        this.niveles.set(
+          new Map(plazos.filter((p) => p.estado === 'ACTIVO').map((p) => [p.id, p.nivelRiesgo])),
+        );
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false),
+    });
   }
+
 }

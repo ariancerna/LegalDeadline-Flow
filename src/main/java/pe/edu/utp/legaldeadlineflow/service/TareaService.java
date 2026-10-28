@@ -188,7 +188,9 @@ public class TareaService {
         trazabilidadService.registrar(tipo, "TAREA", tarea.getId(), detalle);
     }
     private TareaResponse toResponse(Tarea tarea) {
-        return new TareaResponse(tarea.getId(), tarea.getExpediente().getId(), tarea.getTitulo(), tarea.getTipo(),
+        Expediente expediente = tarea.getExpediente();
+        return new TareaResponse(tarea.getId(), expediente.getId(), expediente.getCodigo(), expediente.getAsunto(),
+                tarea.getTitulo(), tarea.getTipo(),
                 tarea.getResponsableId(), tarea.getPrioridad(), tarea.getFechaLimite(), tarea.getEstado(),
                 tarea.getCreadoEn(), tarea.getActualizadoEn(), tarea.getVersion());
     }

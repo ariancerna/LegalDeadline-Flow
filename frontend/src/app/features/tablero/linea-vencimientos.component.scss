@@ -121,11 +121,12 @@
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1.2;
+    // Hasta dos líneas, con guiones en las sílabas del español (Ape-lación) y no en cualquier letra.
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
   .exp {

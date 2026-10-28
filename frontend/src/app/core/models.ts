@@ -84,6 +84,8 @@ export interface Expediente {
 export interface Tarea {
   id: number;
   expedienteId: number;
+  expedienteCodigo: string;
+  expedienteAsunto: string;
   titulo: string;
   tipo: string;
   responsableId: number;
@@ -98,6 +100,8 @@ export interface Tarea {
 export interface Plazo {
   id: number;
   expedienteId: number;
+  expedienteCodigo: string;
+  expedienteAsunto: string;
   tipo: string;
   fechaLimite: string;
   estado: PlazoEstado;
@@ -106,6 +110,10 @@ export interface Plazo {
   anuladoEn: string | null;
   actualizadoEn: string;
   version: number;
+  /** Riesgo calculado por el backend (RN04) al consultar el plazo. */
+  nivelRiesgo: NivelRiesgo;
+  diasRestantes: number;
+  tareasPendientes: number;
 }
 
 export interface RiesgoPlazo {
@@ -114,6 +122,17 @@ export interface RiesgoPlazo {
   nivel: NivelRiesgo;
   diasRestantes: number;
   tareasPendientes: number;
+}
+
+/** El riesgo que ya trae el plazo, con la misma forma que GET /plazos/{id}/riesgo. */
+export function riesgoDe(p: Plazo): RiesgoPlazo {
+  return {
+    plazoId: p.id,
+    estado: p.estado,
+    nivel: p.nivelRiesgo,
+    diasRestantes: p.diasRestantes,
+    tareasPendientes: p.tareasPendientes,
+  };
 }
 
 export interface CargaResponsable {

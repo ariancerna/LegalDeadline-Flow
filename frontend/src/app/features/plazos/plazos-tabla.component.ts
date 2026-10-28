@@ -1,12 +1,11 @@
 import { Component, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, forkJoin, of } from 'rxjs';
 import { PlazosService } from '../../core/api/plazos.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
 import { ExpedientesCache } from '../../core/expedientes.cache';
-import { Plazo, RiesgoPlazo } from '../../core/models';
+import { Plazo, RiesgoPlazo, riesgoDe } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { DialogoComponent } from '../../shared/dialogo.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
@@ -107,17 +106,8 @@ export class PlazosTablaComponent {
     this.cambio.emit();
   }
 
+  /** El riesgo llega con cada plazo del listado (RN04). */
   private cargarRiesgos(lista: Plazo[]): void {
-    if (lista.length === 0) {
-      this.riesgos.set(new Map());
-      return;
-    }
-    forkJoin(
-      lista.map((p) => this.servicio.riesgo(p.id).pipe(catchError(() => of(null)))),
-    ).subscribe((r) =>
-      this.riesgos.set(
-        new Map(r.filter((x): x is RiesgoPlazo => x !== null).map((x) => [x.plazoId, x])),
-      ),
-    );
+    this.riesgos.set(new Map(lista.map((p) => [p.id, riesgoDe(p)])));
   }
 }

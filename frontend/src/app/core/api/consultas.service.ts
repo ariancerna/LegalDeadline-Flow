@@ -12,6 +12,8 @@ export interface FiltrosEvento {
   usuarioId?: number | null;
   desde?: string; // ISO-8601 instant
   hasta?: string;
+  /** Historial de un expediente: sus eventos y los de sus tareas y plazos. */
+  expedienteId?: number;
 }
 
 /** Consultas de solo lectura: carga (RF16), indicadores (RF17) y auditoría (RF18). */

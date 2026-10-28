@@ -1,17 +1,17 @@
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ExpedientesService } from '../../core/api/expedientes.service';
 import { TareasService } from '../../core/api/tareas.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
-import { Expediente, PRIORIDADES, Prioridad, Tarea } from '../../core/models';
+import { PRIORIDADES, Prioridad, Tarea } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
 import { IconoComponent } from '../../shared/icono.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { hoyLima } from '../../shared/fechas';
+import { SelectorExpedienteComponent } from '../../shared/selector-expediente.component';
 import { noSoloEspacios } from '../../shared/validadores';
 
 /**
@@ -21,7 +21,13 @@ import { noSoloEspacios } from '../../shared/validadores';
  */
 @Component({
   selector: 'app-tarea-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe, IconoComponent],
+  imports: [
+    ReactiveFormsModule,
+    ErrorCampoComponent,
+    EtiquetaPipe,
+    IconoComponent,
+    SelectorExpedienteComponent,
+  ],
   styles: `
     .prioridades {
       display: flex;
@@ -44,7 +50,6 @@ import { noSoloEspacios } from '../../shared/validadores';
 })
 export class TareaFormComponent implements OnInit {
   private readonly servicio = inject(TareasService);
-  private readonly expedientesServicio = inject(ExpedientesService);
   private readonly avisos = inject(NotificacionesService);
   protected readonly auth = inject(AuthService);
   protected readonly responsables = inject(ResponsablesStore);
@@ -57,7 +62,6 @@ export class TareaFormComponent implements OnInit {
   readonly guardado = output<Tarea>();
   readonly cancelar = output<void>();
 
-  protected readonly expedientesAbiertos = signal<Expediente[]>([]);
   protected readonly enviando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly duplicada = signal(false);
@@ -114,10 +118,6 @@ export class TareaFormComponent implements OnInit {
       if (fijo !== null) {
         this.form.controls.expedienteId.setValue(fijo);
         this.form.controls.expedienteId.disable();
-      } else {
-        this.expedientesServicio
-          .listar({ estado: 'ABIERTO', size: 100 })
-          .subscribe({ next: (p) => this.expedientesAbiertos.set(p.content) });
       }
       if (!this.auth.esGestor()) {
         // Un responsable solo puede asignarse tareas a sí mismo.
