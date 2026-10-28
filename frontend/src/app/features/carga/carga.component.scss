@@ -10,16 +10,12 @@
   gap: 2px;
   font-size: 0.85rem;
   font-weight: 600;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.05em;
   color: var(--texto-2);
 
   strong {
     order: -1;
-    font-family: $fuente-titulo;
+    @include cifra;
     font-size: 2.4rem;
-    font-weight: 500;
-    font-variant-caps: normal;
     letter-spacing: -0.02em;
     color: var(--texto);
     line-height: 1.1;

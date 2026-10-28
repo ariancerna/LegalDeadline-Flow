@@ -42,7 +42,7 @@ const ICONOS: Record<TipoNotificacion, NombreIcono> = {
       gap: 12px;
       align-items: flex-start;
       padding: 12px 12px 12px 14px;
-      border-radius: 12px;
+      border-radius: var(--radio-l);
       background: var(--superficie);
       border: 1px solid var(--borde);
       box-shadow: var(--sombra-3);
@@ -82,7 +82,7 @@ const ICONOS: Record<TipoNotificacion, NombreIcono> = {
       color: var(--texto-3);
       cursor: pointer;
       padding: 2px;
-      border-radius: 6px;
+      border-radius: var(--radio-l);
     }
     button:hover {
       background: var(--superficie-hover);

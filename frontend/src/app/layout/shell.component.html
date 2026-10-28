@@ -1,25 +1,24 @@
-<div class="app" [class.compacto]="compacto()" [class.menu-abierto]="menuMovil()">
-  <aside class="menu" aria-label="Navegación principal">
-    <a class="marca" routerLink="/tablero" (click)="menuMovil.set(false)">
-      <span class="logo"><app-icono nombre="scale" [tamano]="20" [grosor]="1.75" /></span>
-      <span class="nombre">
-        <strong>LegalDeadline</strong>
-        <small>Flow</small>
-      </span>
-    </a>
+<div class="app" [class.menu-abierto]="menuMovil()">
+  <header class="barra">
+    <div class="barra-interior">
+      <button
+        type="button"
+        class="hamburguesa"
+        aria-label="Abrir menú"
+        (click)="menuMovil.set(true)"
+      >
+        <app-icono nombre="menu" [tamano]="20" />
+      </button>
 
-    <nav>
-      @for (g of grupos(); track g.nombre) {
-        <p class="grupo">{{ g.nombre }}</p>
-        @for (e of g.enlaces; track e.ruta) {
-          <a
-            [routerLink]="e.ruta"
-            routerLinkActive="activo"
-            [attr.title]="compacto() ? e.texto : null"
-            (click)="menuMovil.set(false)"
-          >
-            <app-icono [nombre]="e.icono" [tamano]="18" />
-            <span class="texto">{{ e.texto }}</span>
+      <a class="marca" routerLink="/tablero" aria-label="LegalDeadline Flow, ir al tablero">
+        <span class="carpeta" aria-hidden="true"></span>
+        <span class="nombre">LegalDeadline<em>Flow</em></span>
+      </a>
+
+      <nav class="nav" aria-label="Navegación principal">
+        @for (e of enlaces(); track e.ruta) {
+          <a [routerLink]="e.ruta" routerLinkActive="activo">
+            {{ e.texto }}
             @if (contador(e) > 0) {
               <span class="contador" [class.urgente]="e.contador === 'alertas'">{{
                 contador(e)
@@ -27,188 +26,155 @@
             }
           </a>
         }
-      }
-    </nav>
-
-    <div class="pie">
-      <button
-        type="button"
-        class="colapsar"
-        (click)="alternarCompacto()"
-        [attr.aria-label]="compacto() ? 'Expandir menú' : 'Contraer menú'"
-      >
-        <app-icono [nombre]="compacto() ? 'panel-left-open' : 'panel-left-close'" [tamano]="18" />
-        <span class="texto">Contraer menú</span>
-      </button>
-      @if (auth.usuario(); as u) {
-        <div class="tarjeta-usuario">
-          <app-avatar [nombre]="u.nombre" [tamano]="34" />
-          <div class="texto">
-            <strong>{{ u.nombre }}</strong>
-            <small>{{ u.rol | etiqueta }}</small>
-          </div>
-        </div>
-      }
-    </div>
-  </aside>
-
-  <div class="principal">
-    <header class="barra">
-      <button
-        type="button"
-        class="btn btn-fantasma btn-icono hamburguesa"
-        aria-label="Abrir menú"
-        (click)="menuMovil.set(true)"
-      >
-        <app-icono nombre="menu" [tamano]="20" />
-      </button>
-
-      <nav class="migas" aria-label="Ruta">
-        <a [routerLink]="migaActual().ruta">
-          <app-icono [nombre]="migaActual().icono" [tamano]="15" />
-          {{ migaActual().seccion }}
-        </a>
-        @if (migaActual().detalle; as d) {
-          <app-icono nombre="chevron-right" [tamano]="14" class="sep" />
-          <span class="mono actual">{{ d }}</span>
-        }
       </nav>
 
-      <button type="button" class="buscar" (click)="paleta.abrir()">
+      <button type="button" class="buscar" (click)="paleta.abrir()" aria-label="Buscar o ir a">
         <app-icono nombre="search" [tamano]="15" />
-        <span>Buscar o ir a…</span>
-        <kbd>{{ esMac ? '⌘' : 'Ctrl' }}</kbd
-        ><kbd>K</kbd>
+        <span class="texto">Buscar expediente…</span>
+        <kbd>{{ esMac ? '⌘' : 'Ctrl' }} K</kbd>
       </button>
 
-      <div class="herramientas">
+      <div class="ancla">
         <button
           type="button"
-          class="btn btn-fantasma btn-icono"
-          [attr.aria-label]="tema.esOscuro() ? 'Modo claro' : 'Modo oscuro'"
-          (click)="tema.alternar()"
+          class="icono-barra"
+          aria-label="Alertas de plazos"
+          [attr.aria-expanded]="abierto() === 'alertas'"
+          (click)="alternarMenu('alertas', $event)"
         >
-          <app-icono [nombre]="tema.esOscuro() ? 'sun' : 'moon'" [tamano]="18" />
+          <app-icono nombre="bell" [tamano]="18" />
+          @if (alertas.total() > 0) {
+            <span class="punto" [class.critico]="alertas.criticas() > 0">{{
+              alertas.total()
+            }}</span>
+          }
         </button>
-
-        <div class="ancla">
-          <button
-            type="button"
-            class="btn btn-fantasma btn-icono"
-            aria-label="Alertas de plazos"
-            [attr.aria-expanded]="abierto() === 'alertas'"
-            (click)="alternarMenu('alertas', $event)"
-          >
-            <app-icono nombre="bell" [tamano]="18" />
-            @if (alertas.total() > 0) {
-              <span class="punto" [class.critico]="alertas.criticas() > 0">{{
-                alertas.total()
-              }}</span>
-            }
-          </button>
-          @if (abierto() === 'alertas') {
-            <div class="desplegable panel-alertas" (click)="$event.stopPropagation()">
-              <div class="cab">
-                <strong>Alertas de plazos</strong>
-                <span class="texto-3 texto-chico">Crítico o alto · próximos 10 días</span>
-              </div>
+        @if (abierto() === 'alertas') {
+          <div class="desplegable panel-alertas" (click)="$event.stopPropagation()">
+            <div class="cab">
+              <strong>Plazos por atender</strong>
+              <span class="texto-3 texto-chico">Riesgo crítico o alto, próximos 10 días</span>
+            </div>
+            <div class="lista-alertas">
               @for (a of alertas.lista() ?? []; track a.plazo.id) {
                 <a
                   class="alerta"
                   [routerLink]="['/expedientes', a.plazo.expedienteId]"
                   (click)="cerrarMenus()"
                 >
-                  <span class="barra-riesgo" [class]="'barra-riesgo r-' + a.riesgo.nivel"></span>
-                  <span class="cuerpo">
-                    <span
-                      ><strong>{{ a.plazo.tipo | etiqueta }}</strong> ·
-                      <span class="mono">{{ expedientes.codigo(a.plazo.expedienteId) }}</span></span
+                  <span class="dias" [class]="'dias r-' + a.riesgo.nivel">
+                    <strong
+                      >{{ a.riesgo.diasRestantes < 0 ? '−' : ''
+                      }}{{ abs(a.riesgo.diasRestantes) }}</strong
                     >
+                    <small>{{ abs(a.riesgo.diasRestantes) === 1 ? 'día' : 'días' }}</small>
+                  </span>
+                  <span class="cuerpo">
+                    <strong>{{ a.plazo.tipo | etiqueta }}</strong>
                     <small
-                      >{{ a.plazo.fechaLimite | fecha }} ·
-                      {{ textoDias(a.riesgo.diasRestantes) }}</small
+                      ><span class="codigo">{{ expedientes.codigo(a.plazo.expedienteId) }}</span> ·
+                      {{ a.plazo.fechaLimite | fecha }}</small
                     >
                   </span>
-                  <span
-                    class="estado sin-punto"
-                    [class]="'estado sin-punto riesgo-' + a.riesgo.nivel"
-                    >{{ a.riesgo.nivel | etiqueta }}</span
-                  >
                 </a>
               } @empty {
-                <div class="vacio-alertas">
-                  <app-icono nombre="circle-check" [tamano]="20" />
-                  Sin plazos urgentes. Todo bajo control.
-                </div>
+                <p class="vacio-alertas">Nada urgente en los próximos 10 días.</p>
               }
-              <a class="ver-todo" routerLink="/plazos" (click)="cerrarMenus()"
-                >Ver todos los plazos <app-icono nombre="arrow-right" [tamano]="14"
-              /></a>
             </div>
-          }
-        </div>
-
-        <div class="ancla">
-          @if (auth.usuario(); as u) {
-            <button
-              type="button"
-              class="usuario"
-              aria-label="Menú de usuario"
-              [attr.aria-expanded]="abierto() === 'usuario'"
-              (click)="alternarMenu('usuario', $event)"
+            <a class="ver-todo" routerLink="/plazos" (click)="cerrarMenus()"
+              >Ver todos los plazos</a
             >
-              <app-avatar [nombre]="u.nombre" [tamano]="32" />
-            </button>
-            @if (abierto() === 'usuario') {
-              <div class="desplegable menu-usuario" (click)="$event.stopPropagation()">
-                <div class="cab-usuario">
-                  <app-avatar [nombre]="u.nombre" [tamano]="38" />
-                  <div>
-                    <strong>{{ u.nombre }}</strong>
-                    <small>{{ u.email }}</small>
-                  </div>
-                </div>
-                <div class="separador"></div>
-                <p class="etiqueta">Tema</p>
-                <div class="temas">
-                  <button
-                    type="button"
-                    [class.activo]="tema.modo() === 'claro'"
-                    (click)="cambiarTema('claro')"
-                  >
-                    <app-icono nombre="sun" [tamano]="15" />Claro
-                  </button>
-                  <button
-                    type="button"
-                    [class.activo]="tema.modo() === 'oscuro'"
-                    (click)="cambiarTema('oscuro')"
-                  >
-                    <app-icono nombre="moon" [tamano]="15" />Oscuro
-                  </button>
-                  <button
-                    type="button"
-                    [class.activo]="tema.modo() === 'sistema'"
-                    (click)="cambiarTema('sistema')"
-                  >
-                    <app-icono nombre="monitor" [tamano]="15" />Sistema
-                  </button>
-                </div>
-                <div class="separador"></div>
-                <button type="button" class="opcion" (click)="salir()">
-                  <app-icono nombre="log-out" [tamano]="16" /> Cerrar sesión
+          </div>
+        }
+      </div>
+
+      <div class="ancla">
+        @if (auth.usuario(); as u) {
+          <button
+            type="button"
+            class="usuario"
+            aria-label="Menú de usuario"
+            [attr.aria-expanded]="abierto() === 'usuario'"
+            (click)="alternarMenu('usuario', $event)"
+          >
+            <app-avatar [nombre]="u.nombre" [tamano]="28" />
+            <span class="quien">
+              <strong>{{ primerNombre(u.nombre) }}</strong>
+              <small>{{ u.rol | etiqueta }}</small>
+            </span>
+            <app-icono nombre="chevron-down" [tamano]="14" class="flecha" />
+          </button>
+          @if (abierto() === 'usuario') {
+            <div class="desplegable menu-usuario" (click)="$event.stopPropagation()">
+              <div class="cab-usuario">
+                <strong>{{ u.nombre }}</strong>
+                <small>{{ u.email }}</small>
+              </div>
+              <div class="separador"></div>
+              <p class="etiqueta">Apariencia</p>
+              <div class="temas segmentado">
+                <button
+                  type="button"
+                  [class.activo]="tema.modo() === 'claro'"
+                  (click)="cambiarTema('claro')"
+                >
+                  Claro
+                </button>
+                <button
+                  type="button"
+                  [class.activo]="tema.modo() === 'oscuro'"
+                  (click)="cambiarTema('oscuro')"
+                >
+                  Oscuro
+                </button>
+                <button
+                  type="button"
+                  [class.activo]="tema.modo() === 'sistema'"
+                  (click)="cambiarTema('sistema')"
+                >
+                  Sistema
                 </button>
               </div>
-            }
+              <div class="separador"></div>
+              <button type="button" class="opcion" (click)="salir()">Cerrar sesión</button>
+            </div>
           }
-        </div>
+        }
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main class="contenido">
-      <router-outlet />
-    </main>
-  </div>
+  <!-- Menú en pantallas angostas -->
+  <aside class="cajon" aria-label="Menú" [attr.aria-hidden]="!menuMovil()">
+    <div class="cajon-cab">
+      <span class="nombre">LegalDeadline<em>Flow</em></span>
+      <button
+        type="button"
+        class="icono-barra"
+        aria-label="Cerrar menú"
+        (click)="menuMovil.set(false)"
+      >
+        <app-icono nombre="x" [tamano]="20" />
+      </button>
+    </div>
+    <nav>
+      @for (e of enlaces(); track e.ruta) {
+        <a [routerLink]="e.ruta" routerLinkActive="activo" (click)="menuMovil.set(false)">
+          {{ e.texto }}
+          @if (contador(e) > 0) {
+            <span class="contador" [class.urgente]="e.contador === 'alertas'">{{
+              contador(e)
+            }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </aside>
   <div class="cortina" (click)="menuMovil.set(false)"></div>
+
+  <main class="contenido">
+    <router-outlet />
+  </main>
 </div>
 <app-paleta-comandos />
 <app-notificaciones />

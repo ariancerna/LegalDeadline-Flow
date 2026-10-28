@@ -12,14 +12,16 @@
   }
 
   @if (expediente(); as e) {
+    <div class="pestana-exp">
+      Expediente N.º <span class="codigo">{{ e.codigo }}</span>
+    </div>
     <header class="cabecera tarjeta">
       @if (e.asunto | asunto; as a) {
         <div class="identidad">
-          <p class="rotulo">
-            Expediente N.º <span class="mono codigo">{{ e.codigo }}</span>
+          <h1>
+            {{ a.titulo }}
             <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
-          </p>
-          <h1>{{ a.titulo }}</h1>
+          </h1>
           @if (a.materia) {
             <p class="materia">{{ a.materia }}</p>
           }
@@ -62,7 +64,7 @@
             <dt>Última modificación</dt>
             <dd>
               {{ haceCuanto(e.actualizadoEn) }}
-              <span class="mono texto-3" title="Versión para control de concurrencia (RN11)"
+              <span class="texto-3" title="Versión para control de concurrencia (RN11)"
                 >· v{{ e.version }}</span
               >
             </dd>
@@ -80,7 +82,7 @@
             [class.activa]="pestana() === 'tareas'"
             (click)="cambiarPestana('tareas')"
           >
-            <app-icono nombre="list-checks" [tamano]="15" />Tareas
+            Tareas
             <span class="contador">{{ tareas().length }}</span>
           </button>
           <button
@@ -89,7 +91,7 @@
             [class.activa]="pestana() === 'plazos'"
             (click)="cambiarPestana('plazos')"
           >
-            <app-icono nombre="calendar-clock" [tamano]="15" />Plazos
+            Plazos
             <span class="contador">{{ plazos().length }}</span>
           </button>
           @if (auth.puedeVerAuditoria()) {
@@ -99,7 +101,7 @@
               [class.activa]="pestana() === 'actividad'"
               (click)="cambiarPestana('actividad')"
             >
-              <app-icono nombre="history" [tamano]="15" />Actividad
+              Actividad
             </button>
           }
           <span class="crece"></span>
@@ -173,9 +175,7 @@
                 <ol class="linea-tiempo">
                   @for (ev of lista; track ev.id) {
                     <li>
-                      <span [class]="'punto t-' + eventosInfo[ev.tipo].tono"
-                        ><app-icono [nombre]="eventosInfo[ev.tipo].icono" [tamano]="13"
-                      /></span>
+                      <span [class]="'punto t-' + eventosInfo[ev.tipo].tono"></span>
                       <div>
                         <p>
                           <strong>{{ responsables.autor(ev.usuarioId, ev.usuarioEmail) }}</strong>
@@ -202,7 +202,7 @@
           <div class="tarjeta-cuerpo">
             <h3>Avance de tareas</h3>
             <div class="avance">
-              <strong class="num">{{ progreso() }}%</strong>
+              <strong class="num">{{ progreso() }}<small>%</small></strong>
               <span class="texto-3 texto-chico"
                 >{{ tareasCerradas() }} de {{ tareasActivas() + tareasCerradas() }} cerradas</span
               >

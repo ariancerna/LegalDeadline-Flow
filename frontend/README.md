@@ -3,7 +3,12 @@
 Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y muestra cada pantalla según el rol del usuario. Cubre RF20–RF23 y RNF19–RNF20 del informe.
 
 - **Angular 21** (componentes standalone, signals, formularios reactivos) y **SASS**.
-- Estilo **«despacho editorial»** en `src/styles/`: papel, tinta y un burdeos de sello; títulos y cifras en serif (Source Serif 4), rótulos en versalitas, líneas finas en lugar de sombras y color reservado para el riesgo. Variables CSS con modo claro y **noche** (`_tema.scss`). Texto de interfaz en Inter e iconos de [Lucide](https://lucide.dev).
+- Estilo de **mesa de partes** en `src/styles/`, pensado como herramienta de trabajo diario:
+  - Una sola familia tipográfica, [Archivo](https://fonts.google.com/specimen/Archivo), con eje de ancho: condensada y gruesa en títulos y cifras, normal en el texto. Los números de expediente usan cifras de ancho fijo.
+  - Grises neutros, tinta casi negra en la acción principal, un azul de sello para enlaces y foco, y el manila de las carpetas de expediente en la carátula y en la marca.
+  - El color se reserva para el riesgo y sube de intensidad: «Crítico» va en rojo lleno; «Bajo» es solo texto gris.
+  - Tablas densas, esquinas casi rectas y sin sombras salvo en menús. Modo claro y oscuro (`_tema.scss`).
+  - Iconos de [Lucide](https://lucide.dev) solo donde ayudan a actuar (buscar, alertas, editar), no como adorno.
 - `@angular/cdk` solo para arrastrar y soltar en el tablero Kanban.
 - Pruebas unitarias con **Vitest** (el runner por defecto de Angular 21).
 
@@ -11,7 +16,7 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 
 | Pantalla | Qué ofrece |
 |---|---|
-| Login | Pantalla dividida con presentación del sistema y accesos rápidos a las cuentas demo. |
+| Login | Formulario, tabla de cuentas demo y la carátula de un expediente con su sello de vencimiento. |
 | Tablero | Registro de vencimientos: franja de cifras, calendario de 14 días con los plazos marcados por riesgo, registro de plazos, riesgo de la cartera, carga del equipo y diario de actividad. |
 | Expedientes | Pestañas por estado con contadores, búsqueda con tiempo de respuesta (RF04) y carátula de cada expediente (número, partes, materia, órgano jurisdiccional), con avance, próximos vencimientos e historial. |
 | Tareas | Vista **Lista** o **Tablero Kanban**: arrastrar una tarjeta cambia el estado y respeta las transiciones y la confirmación ALTA. |
@@ -24,7 +29,8 @@ En toda la aplicación:
 
 - **Ctrl/⌘ + K** abre el buscador: ir a una sección, crear registros o encontrar un expediente por código o asunto.
 - La **campana** muestra los plazos críticos o altos de los próximos 10 días.
-- El menú lateral se puede contraer y muestra contadores (plazos críticos, personas sobrecargadas).
+- La barra superior muestra la navegación del rol con contadores (plazos críticos, personas sobrecargadas). En pantallas angostas se abre como menú lateral.
+- La pestaña del navegador muestra el número del expediente abierto.
 - Formularios en paneles laterales, confirmaciones en ventanas, skeletons de carga y estados vacíos con acciones.
 - Tema claro, oscuro o el del sistema (menú del usuario).
 
@@ -64,7 +70,7 @@ src/app/
     api/           un servicio por recurso: expedientes, tareas, plazos, usuarios, consultas
     auth/          AuthService, authInterceptor, guards, permisos por rol
   shared/          icono, avatar, diálogo/panel, skeleton, estado vacío, paginador, pipes, fechas de Lima
-  layout/          menú lateral por rol, barra superior, buscador Ctrl+K, alertas, notificaciones
+  layout/          barra superior por rol, menú móvil, buscador Ctrl+K, alertas, notificaciones
   features/
     auth/          login
     tablero/       indicadores, distribución del riesgo, alertas de plazos
@@ -121,5 +127,4 @@ El frontend se publica en Vercel con **Root Directory** `frontend`. `vercel.json
 
 ## Créditos
 
-- Fotografía del inicio de sesión: Palacio de Justicia de Montpellier, por [Nathan Cima](https://unsplash.com/@nathan_cima) en [Unsplash](https://unsplash.com/photos/OHE90W2rQF4), bajo la [licencia de Unsplash](https://unsplash.com/license). Se usa en blanco y negro bajo una capa de color (`public/img/login-tribunal.webp`).
-- Iconos de [Lucide](https://lucide.dev) (licencia ISC). Tipografías Inter y Source Serif 4 (licencia SIL Open Font).
+- Iconos de [Lucide](https://lucide.dev) (licencia ISC). Tipografía Archivo, de Omnibus-Type (licencia SIL Open Font).

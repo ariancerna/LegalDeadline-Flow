@@ -1,108 +1,114 @@
-// Estilo "despacho editorial": papel, tinta y un burdeos de sello.
-// El color se reserva para el riesgo y los estados; el resto es tipografía y líneas finas.
+// Colores de LegalDeadline Flow: papel gris, tinta casi negra para la acción principal, azul de sello
+// para enlaces y foco, y el manila de las carpetas de expediente. El rojo, naranja y ocre quedan
+// reservados al riesgo de los plazos.
 :root {
   color-scheme: light;
-  --fondo: #f6f4ef;
-  --superficie: #fdfcf9;
-  --superficie-2: #f1eee7;
-  --superficie-hover: #f0ece4;
-  --borde: #e3ddd2;
-  --borde-fuerte: #cbc3b5;
-  --regla: #1c1a17; // líneas de énfasis (encabezados de tabla, separadores fuertes)
-  --texto: #1c1a17;
-  --texto-2: #57524a;
-  --texto-3: #8b857a;
+  --fondo: #f3f3f1;
+  --superficie: #ffffff;
+  --superficie-2: #f7f7f5;
+  --superficie-hover: #f1f1ee;
+  --borde: #e1e0db;
+  --borde-fuerte: #c9c7c0;
+  --regla: #17181a;
+  --texto: #17181a;
+  --texto-2: #4b4d52;
+  --texto-3: #7f8187;
 
-  --marca: #1f2b45; // tinta azul para acciones principales
-  --marca-hover: #162036;
-  --marca-suave: #e6e9ef;
-  --marca-texto: #1f2b45;
-  --sobre-marca: #fdfcf9;
-  --acento: #8a2c2c; // burdeos del sello
-  --acento-suave: #f2e5e1;
+  --marca: #17181a; // botón principal: tinta
+  --marca-hover: #000000;
+  --marca-suave: #e9ecfa;
+  --marca-texto: #2a45bd; // azul de sello: enlaces y foco
+  --sobre-marca: #ffffff;
+  --sello: #2a45bd;
+  --acento: #2a45bd;
+  --acento-suave: #e9ecfa;
 
-  --exito: #2f6b45;
-  --exito-suave: #e6efe7;
-  --peligro: #b3261e;
-  --peligro-suave: #f8e7e3;
-  --aviso: #9a5800;
-  --aviso-suave: #f6ecdc;
-  --info: #2b5c8a;
-  --info-suave: #e5edf4;
-  --neutro-suave: #ece8e0;
+  --manila: #f1e6c6;
+  --manila-borde: #dcc78e;
+  --manila-texto: #5f4b17;
 
-  --riesgo-critico: #b3261e;
-  --riesgo-alto: #c35e0c;
-  --riesgo-medio: #a07c10;
-  --riesgo-bajo: #3d7a50;
+  --barra: #17181a; // barra superior
+  --barra-texto: #c9cacd;
+  --barra-activo: #ffffff;
+  --barra-borde: #2b2d31;
 
-  --menu-fondo: #efebe3;
-  --menu-borde: #e0d9cc;
-  --menu-texto: #57524a;
-  --menu-texto-activo: #1c1a17;
-  --menu-hover: rgba(28, 26, 23, 0.05);
-  --menu-activo: rgba(28, 26, 23, 0.08);
+  --exito: #2b7148;
+  --exito-suave: #e3f0e7;
+  --peligro: #c0261b;
+  --peligro-suave: #fbe6e3;
+  --aviso: #a25f00;
+  --aviso-suave: #fbefd9;
+  --info: #2a45bd;
+  --info-suave: #e9ecfa;
+  --neutro-suave: #ebebe7;
 
-  --anillo: 0 0 0 3px rgba(31, 43, 69, 0.16);
+  --riesgo-critico: #c0261b;
+  --riesgo-alto: #d9650f;
+  --riesgo-medio: #b48c0c;
+  --riesgo-bajo: #7f8187;
+
+  --anillo: 0 0 0 2px var(--superficie), 0 0 0 4px rgba(42, 69, 189, 0.55);
   --sombra-1: none;
-  --sombra-2: 0 1px 0 rgba(28, 26, 23, 0.04);
-  --sombra-3: 0 10px 28px -10px rgba(28, 26, 23, 0.22), 0 2px 6px -2px rgba(28, 26, 23, 0.08);
-  --sombra-flotante: 0 28px 60px -16px rgba(28, 26, 23, 0.35);
-  --velo: rgba(28, 26, 23, 0.32);
+  --sombra-2: none;
+  --sombra-3: 0 12px 32px -12px rgba(23, 24, 26, 0.28), 0 2px 6px rgba(23, 24, 26, 0.06);
+  --sombra-flotante: 0 24px 64px -16px rgba(23, 24, 26, 0.4);
+  --velo: rgba(23, 24, 26, 0.4);
 
-  --radio-s: 3px;
-  --radio: 4px;
-  --radio-l: 6px;
+  --radio-s: 2px;
+  --radio: 3px;
+  --radio-l: 4px;
 }
 
 @mixin oscuro {
   color-scheme: dark;
-  --fondo: #151412;
-  --superficie: #1b1a17;
-  --superficie-2: #211f1c;
-  --superficie-hover: #24221f;
-  --borde: #302d28;
-  --borde-fuerte: #47423a;
-  --regla: #d9d3c8;
-  --texto: #ece8e0;
-  --texto-2: #b3ada2;
-  --texto-3: #7f796e;
+  --fondo: #111214;
+  --superficie: #18191c;
+  --superficie-2: #1d1e21;
+  --superficie-hover: #222327;
+  --borde: #2c2e32;
+  --borde-fuerte: #41444a;
+  --regla: #e6e6e3;
+  --texto: #ebebe8;
+  --texto-2: #b0b2b7;
+  --texto-3: #7c7f86;
 
-  --marca: #e6e0d4; // en la noche la acción principal es tinta clara sobre papel oscuro
-  --marca-hover: #fdfcf9;
-  --marca-suave: rgba(230, 224, 212, 0.1);
-  --marca-texto: #d9d3c8;
-  --sobre-marca: #151412;
-  --acento: #d39283;
-  --acento-suave: rgba(211, 146, 131, 0.14);
+  --marca: #ebebe8;
+  --marca-hover: #ffffff;
+  --marca-suave: rgba(140, 160, 255, 0.14);
+  --marca-texto: #9aabff;
+  --sobre-marca: #111214;
+  --sello: #9aabff;
+  --acento: #9aabff;
+  --acento-suave: rgba(140, 160, 255, 0.14);
 
-  --exito: #7fbf8f;
-  --exito-suave: rgba(127, 191, 143, 0.12);
-  --peligro: #ef8a7e;
-  --peligro-suave: rgba(239, 138, 126, 0.13);
-  --aviso: #e2b064;
-  --aviso-suave: rgba(226, 176, 100, 0.12);
-  --info: #8fb4d9;
-  --info-suave: rgba(143, 180, 217, 0.12);
-  --neutro-suave: rgba(236, 232, 224, 0.07);
+  --manila: #2f2a1c;
+  --manila-borde: #574b29;
+  --manila-texto: #e3cf95;
 
-  --riesgo-critico: #ef8a7e;
-  --riesgo-alto: #e7a15f;
-  --riesgo-medio: #d8c06a;
-  --riesgo-bajo: #7fbf8f;
+  --barra: #0b0c0d;
+  --barra-texto: #a7a9ae;
+  --barra-activo: #ffffff;
+  --barra-borde: #26282c;
 
-  --menu-fondo: #121110;
-  --menu-borde: #282520;
-  --menu-texto: #a39d92;
-  --menu-texto-activo: #ece8e0;
-  --menu-hover: rgba(236, 232, 224, 0.05);
-  --menu-activo: rgba(236, 232, 224, 0.08);
+  --exito: #78c194;
+  --exito-suave: rgba(120, 193, 148, 0.13);
+  --peligro: #f08377;
+  --peligro-suave: rgba(240, 131, 119, 0.14);
+  --aviso: #e7ad5c;
+  --aviso-suave: rgba(231, 173, 92, 0.13);
+  --info: #9aabff;
+  --info-suave: rgba(140, 160, 255, 0.14);
+  --neutro-suave: rgba(235, 235, 232, 0.08);
 
-  --anillo: 0 0 0 3px rgba(230, 224, 212, 0.18);
-  --sombra-2: none;
-  --sombra-3: 0 12px 32px -10px rgba(0, 0, 0, 0.7);
-  --sombra-flotante: 0 28px 60px -16px rgba(0, 0, 0, 0.8);
-  --velo: rgba(0, 0, 0, 0.55);
+  --riesgo-critico: #e5574b;
+  --riesgo-alto: #ef9447;
+  --riesgo-medio: #d8b84f;
+  --riesgo-bajo: #8a8d94;
+
+  --anillo: 0 0 0 2px var(--superficie), 0 0 0 4px rgba(154, 171, 255, 0.6);
+  --sombra-3: 0 14px 36px -12px rgba(0, 0, 0, 0.75);
+  --sombra-flotante: 0 28px 64px -16px rgba(0, 0, 0, 0.85);
+  --velo: rgba(0, 0, 0, 0.6);
 }
 
 :root[data-tema='oscuro'] {

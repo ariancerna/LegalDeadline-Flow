@@ -2,7 +2,6 @@
   @for (col of columnas; track col.estado) {
     <section class="columna" [class]="'columna c-' + col.estado">
       <header>
-        <app-icono [nombre]="col.icono" [tamano]="15" />
         <h3>{{ col.estado | etiqueta }}</h3>
         <span class="cuenta num">{{ totales()?.[col.estado] ?? local()[col.estado].length }}</span>
       </header>

@@ -1,17 +1,7 @@
 <div class="pagina">
   <header class="pagina-encabezado">
     <div>
-      <p class="antetitulo"><app-icono nombre="list-checks" [tamano]="13" />Gestión</p>
       <h1>Tareas</h1>
-      <p class="subtitulo">
-        Actividades de
-        {{
-          auth.lecturaGlobal() ? 'todos los expedientes' : 'los expedientes que tienes asignados'
-        }}.
-        @if (vista() === 'tablero' && auth.puedeEscribir()) {
-          Arrastra una tarjeta para cambiar su estado.
-        }
-      </p>
     </div>
     <div class="acciones">
       <div class="segmentado" role="tablist" aria-label="Vista">
@@ -21,7 +11,7 @@
           [class.activo]="vista() === 'lista'"
           (click)="cambiarVista('lista')"
         >
-          <app-icono nombre="list" [tamano]="15" />Lista
+          Lista
         </button>
         <button
           type="button"
@@ -29,7 +19,7 @@
           [class.activo]="vista() === 'tablero'"
           (click)="cambiarVista('tablero')"
         >
-          <app-icono nombre="square-kanban" [tamano]="15" />Tablero
+          Tablero
         </button>
       </div>
       @if (auth.puedeEscribir()) {
@@ -46,7 +36,6 @@
       role="search"
       [style.border-bottom]="vista() === 'tablero' ? 'none' : null"
     >
-      <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
       @if (vista() === 'lista') {
         <select
           id="f-estado"

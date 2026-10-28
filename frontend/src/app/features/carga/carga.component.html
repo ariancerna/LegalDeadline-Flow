@@ -1,12 +1,7 @@
 <div class="pagina">
   <header class="pagina-encabezado">
     <div>
-      <p class="antetitulo"><app-icono nombre="scale" [tamano]="13" />Control</p>
       <h1>Carga de trabajo</h1>
-      <p class="subtitulo">
-        Tareas activas (pendientes y en progreso) por responsable. Superar el umbral es sobrecarga;
-        igualarlo no (RN06).
-      </p>
     </div>
     <button type="button" class="btn btn-secundario" (click)="recargar()">
       <app-icono nombre="refresh-cw" [tamano]="15" />Actualizar
@@ -40,7 +35,9 @@
     <div class="tarjeta-encabezado">
       <div>
         <h2>Balance por responsable</h2>
-        <p class="descripcion">Cada bloque es una tarea activa. La línea dorada marca el umbral.</p>
+        <p class="descripcion">
+          Cada bloque es una tarea activa; la línea vertical marca el umbral.
+        </p>
       </div>
     </div>
     <ul class="personas">
@@ -175,7 +172,8 @@
             }
             @if (sugerencias().length > sugerenciasVisibles().length) {
               <button type="button" class="btn btn-secundario ver-mas" (click)="verTodas.set(true)">
-                Ver las {{ sugerencias().length - sugerenciasVisibles().length }} propuestas restantes
+                Ver las {{ sugerencias().length - sugerenciasVisibles().length }} propuestas
+                restantes
               </button>
             }
           }

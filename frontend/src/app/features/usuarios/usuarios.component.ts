@@ -10,15 +10,7 @@ import { DialogoComponent } from '../../shared/dialogo.component';
 import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { IconoComponent } from '../../shared/icono.component';
-import { NombreIcono } from '../../shared/iconos.generados';
 import { UsuarioFormComponent } from './usuario-form.component';
-
-const ICONO_ROL: Record<Rol, NombreIcono> = {
-  ADMINISTRADOR: 'key-round',
-  SUPERVISOR: 'shield-check',
-  RESPONSABLE: 'briefcase',
-  AUDITOR: 'scroll-text',
-};
 
 /** RF02: administración de cuentas y roles. */
 @Component({
@@ -39,7 +31,12 @@ export class UsuariosComponent implements OnInit {
   private readonly avisos = inject(NotificacionesService);
   private readonly responsables = inject(ResponsablesStore);
   protected readonly auth = inject(AuthService);
-  protected readonly iconoRol = ICONO_ROL;
+  protected readonly plurales: Record<Rol, string> = {
+    ADMINISTRADOR: 'Administradores',
+    SUPERVISOR: 'Supervisores',
+    RESPONSABLE: 'Responsables',
+    AUDITOR: 'Auditores',
+  };
 
   protected readonly usuarios = signal<Usuario[] | null>(null);
   protected readonly editando = signal<Usuario | 'nuevo' | null>(null);

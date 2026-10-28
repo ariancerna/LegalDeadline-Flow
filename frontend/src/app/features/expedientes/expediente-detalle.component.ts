@@ -1,3 +1,4 @@
+import { Title } from '@angular/platform-browser';
 import { Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AlertasStore } from '../../core/alertas.store';
@@ -7,7 +8,6 @@ import { PlazosService } from '../../core/api/plazos.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
 import { ExpedientesCache } from '../../core/expedientes.cache';
-import { MigasService } from '../../core/migas.service';
 import { Evento, Expediente, Plazo, Tarea } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
@@ -58,7 +58,7 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
   private readonly consultas = inject(ConsultasService);
   private readonly avisos = inject(NotificacionesService);
   private readonly cache = inject(ExpedientesCache);
-  private readonly migas = inject(MigasService);
+  private readonly tituloPagina = inject(Title);
   private readonly alertas = inject(AlertasStore);
   protected readonly auth = inject(AuthService);
   protected readonly responsables = inject(ResponsablesStore);
@@ -110,9 +110,7 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
     this.cargar();
   }
 
-  ngOnDestroy(): void {
-    this.migas.detalle.set(null);
-  }
+  ngOnDestroy(): void {}
 
   protected dias(p: Plazo): number {
     return diasHasta(p.fechaLimite, this.hoy);
@@ -130,7 +128,8 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
       next: (e) => {
         this.expediente.set(e);
         this.cache.registrar(e.id, e.codigo, e.asunto);
-        this.migas.detalle.set(e.codigo);
+        // La pestaña del navegador muestra el número del expediente abierto.
+        this.tituloPagina.setTitle(`${e.codigo} · LegalDeadline Flow`);
       },
       error: (e) => this.error.set(interpretarError(e).mensaje),
     });

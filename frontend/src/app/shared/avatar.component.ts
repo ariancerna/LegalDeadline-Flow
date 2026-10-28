@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-/** Iniciales en monograma: tinta sobre papel, sin colores de adorno. */
+/** Iniciales de la persona en un cuadro gris; sin colores de adorno. */
 @Component({
   selector: 'app-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,13 +20,12 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     .avatar {
       display: inline-grid;
       place-items: center;
-      border-radius: 50%;
-      font-family: 'Source Serif 4 Variable', Georgia, serif;
-      font-weight: 600;
-      letter-spacing: 0.02em;
+      border-radius: var(--radio);
+      font-stretch: 85%;
+      font-weight: 700;
+      letter-spacing: 0.01em;
       color: var(--texto-2);
-      background: var(--superficie-2);
-      border: 1px solid var(--borde-fuerte);
+      background: var(--neutro-suave);
     }
   `,
 })

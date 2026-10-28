@@ -45,39 +45,10 @@ export class TableroComponent implements OnInit {
   protected readonly niveles = NIVELES_RIESGO;
 
   protected readonly hoy = hoyLima();
-  protected readonly fechaHoy = fechaLarga(this.hoy);
+  protected readonly fechaHoy = capitalizar(fechaLarga(this.hoy));
   protected readonly indicadores = signal<Indicadores | null>(null);
   protected readonly actividad = signal<Evento[] | null>(null);
   protected readonly error = signal<string | null>(null);
-
-  protected readonly saludo = computed(() => {
-    const hora = Number(
-      new Intl.DateTimeFormat('en-GB', {
-        hour: 'numeric',
-        hour12: false,
-        timeZone: 'America/Lima',
-      }).format(new Date()),
-    );
-    const parte = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-    const nombre = this.auth.usuario()?.nombre.split(' ')[0] ?? '';
-    return `${parte}, ${nombre}.`;
-  });
-
-  protected readonly resumen = computed(() => {
-    const i = this.indicadores();
-    if (!i) return '';
-    const criticos = i.riesgoPlazosActivos.CRITICO ?? 0;
-    const partes: string[] = [];
-    if (criticos > 0)
-      partes.push(`${criticos} ${criticos === 1 ? 'plazo crítico' : 'plazos críticos'}`);
-    if (i.tareasVencidas > 0)
-      partes.push(
-        `${i.tareasVencidas} ${i.tareasVencidas === 1 ? 'tarea vencida' : 'tareas vencidas'}`,
-      );
-    if (partes.length === 0)
-      return 'Sin plazos críticos ni tareas vencidas. La cartera está al día.';
-    return `Requieren atención hoy: ${partes.join(' y ')}.`;
-  });
 
   /** Registro: plazos del horizonte, primero los vencidos. */
   protected readonly registro = computed(() => (this.alertas.proximos() ?? []).slice(0, 10));
@@ -125,4 +96,8 @@ export class TableroComponent implements OnInit {
   protected diaSemana(fecha: string): string {
     return DIAS_SEMANA[new Date(`${fecha}T12:00:00Z`).getUTCDay()];
   }
+}
+
+function capitalizar(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }

@@ -1,21 +1,13 @@
 <div class="pagina">
   <header class="pagina-encabezado">
     <div>
-      <p class="antetitulo"><app-icono nombre="shield-check" [tamano]="13" />Control</p>
       <h1>Auditoría</h1>
-      <p class="subtitulo">
-        Eventos inmutables de las operaciones críticas: altas, cambios de estado, reasignaciones y
-        anulaciones, con su autor.
-      </p>
     </div>
-    <span class="estado e-marca sin-punto"
-      ><app-icono nombre="lock" [tamano]="12" />Solo lectura</span
-    >
+    <span class="estado">Solo lectura</span>
   </header>
 
   <section class="tarjeta">
     <div class="barra-filtros" role="search">
-      <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
       <select
         id="f-tipo"
         aria-label="Tipo de evento"
@@ -85,18 +77,15 @@
             @for (e of d.eventos; track e.id) {
               <li class="evento">
                 <span class="hora num">{{ hora(e.fecha) }}</span>
-                <span [class]="'punto t-' + info[e.tipo].tono"
-                  ><app-icono [nombre]="info[e.tipo].icono" [tamano]="14"
-                /></span>
+                <span [class]="'punto t-' + info[e.tipo].tono"></span>
                 <div class="contenido">
                   <p>
                     <strong>{{ responsables.autor(e.usuarioId, e.usuarioEmail) }}</strong>
                     {{ info[e.tipo].verbo }}
-                    <span class="recurso mono">{{ e.recurso }} #{{ e.recursoId }}</span>
                   </p>
                   <p class="detalle-evento">{{ detalleLegible(e.detalle) }}</p>
                 </div>
-                <span class="tipo estado sin-punto">{{ e.tipo | etiqueta }}</span>
+                <span class="recurso">{{ e.recurso | etiqueta }} {{ e.recursoId }}</span>
               </li>
             }
           </ol>

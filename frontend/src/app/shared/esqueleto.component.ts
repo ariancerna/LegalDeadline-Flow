@@ -12,7 +12,10 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
           <span class="esqueleto" style="width: 42%; height: 12px"></span>
           <span class="esqueleto" style="width: 68%; height: 10px"></span>
         </div>
-        <span class="esqueleto" style="width: 72px; height: 20px; border-radius: 999px"></span>
+        <span
+          class="esqueleto"
+          style="width: 72px; height: 20px; border-radius: var(--radio-s)"
+        ></span>
       </div>
     }
   `,
@@ -30,7 +33,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     .circ {
       width: 30px;
       height: 30px;
-      border-radius: 50%;
+      border-radius: var(--radio-s);
       flex-shrink: 0;
     }
     .lineas {

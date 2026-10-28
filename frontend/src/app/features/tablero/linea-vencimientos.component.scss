@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 :host {
   display: block;
   overflow-x: auto;
@@ -30,60 +32,51 @@
   }
 
   &.vencidos {
-    background: var(--peligro-suave);
+    background: color-mix(in srgb, var(--riesgo-critico) 7%, var(--superficie));
 
     .dia,
     .numero {
-      color: var(--peligro);
+      color: var(--riesgo-critico);
     }
   }
 }
 
 .fecha {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 4px 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px 8px 7px;
   border-bottom: 1px solid var(--borde);
-  line-height: 1.1;
+  line-height: 1;
 
   .dia {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.06em;
     color: var(--texto-3);
   }
 
   .numero {
-    margin-top: 4px;
-    font-family: 'Source Serif 4 Variable', Georgia, serif;
-    font-size: 1.25rem;
-    font-variant-numeric: lining-nums;
+    @include cifra;
+    font-size: 1.3rem;
     color: var(--texto);
   }
 
   .mes {
-    font-size: 0.72rem;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.06em;
-    color: var(--texto-3);
+    display: none;
   }
 }
 
-.hoy .fecha {
-  .dia {
-    color: var(--acento);
-  }
+.hoy {
+  background: color-mix(in srgb, var(--manila) 55%, transparent);
 
-  .numero {
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--texto);
-    color: var(--fondo);
+  .fecha {
+    border-bottom: 3px solid var(--texto);
+    padding-bottom: 5px;
+
+    .dia {
+      color: var(--texto);
+    }
   }
 }
 
@@ -100,7 +93,8 @@
   flex-direction: column;
   padding: 4px 5px 4px 7px;
   border-left: 3px solid var(--c);
-  background: color-mix(in srgb, var(--c) 9%, var(--superficie));
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--c) 10%, var(--superficie));
   color: var(--texto);
   text-decoration: none;
   line-height: 1.2;
@@ -130,13 +124,25 @@
   }
 
   .exp {
-    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-    font-size: 0.62rem;
+    font-stretch: $semicondensada;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
     color: var(--texto-3);
   }
 
+  // Crítico va lleno: es lo primero que debe verse en la semana.
   &.r-CRITICO {
     --c: var(--riesgo-critico);
+    background: var(--riesgo-critico);
+    color: #fff;
+
+    .exp {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--riesgo-critico) 85%, #000);
+    }
   }
   &.r-ALTO {
     --c: var(--riesgo-alto);

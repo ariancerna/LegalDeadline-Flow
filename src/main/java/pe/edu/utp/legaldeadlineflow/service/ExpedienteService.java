@@ -147,11 +147,15 @@ public class ExpedienteService {
     }
 
     static Pageable pagina(int page, int size) {
+        return pagina(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    }
+
+    static Pageable pagina(int page, int size, Sort orden) {
         if (page < 0 || size < 1 || size > 100) {
             throw new ApiException(org.springframework.http.HttpStatus.BAD_REQUEST, "PAGINACION_INVALIDA",
                     "page debe ser mayor o igual a 0 y size debe estar entre 1 y 100");
         }
-        return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        return PageRequest.of(page, size, orden);
     }
 
     private static String escaparBusqueda(String texto) {

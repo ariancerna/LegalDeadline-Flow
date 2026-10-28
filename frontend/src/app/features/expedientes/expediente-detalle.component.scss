@@ -5,21 +5,41 @@
   align-items: center;
   gap: 6px;
   color: var(--texto-2);
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 600;
+  font-size: 0.85rem;
   width: fit-content;
-  margin-bottom: -6px;
+}
+
+// Pestaña de carpeta manila con el número del expediente, pegada a la carátula.
+.pestana-exp {
+  align-self: flex-start;
+  margin-bottom: -16px;
+  padding: 7px 16px 6px;
+  background: var(--manila);
+  border: 1px solid var(--manila-borde);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  color: var(--manila-texto);
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  .codigo {
+    margin-left: 4px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--texto);
+  }
 }
 
 .cabecera {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 18px;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 26px 28px 24px;
-  border-top: 2px solid var(--regla);
-  border-radius: 0 0 var(--radio-l) var(--radio-l);
+  padding: 20px 22px 18px;
+  border-top: 4px solid var(--manila-borde);
+  border-radius: 0 var(--radio-l) var(--radio-l) var(--radio-l);
 }
 
 .identidad {
@@ -27,37 +47,25 @@
   flex: 1 1 480px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   h1 {
-    font-size: 1.9rem;
-    line-height: 1.15;
-  }
-}
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 2rem;
 
-.rotulo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.06em;
-  color: var(--acento);
-
-  .codigo {
-    font-variant-caps: normal;
-    letter-spacing: 0;
-    font-size: 0.85rem;
-    color: var(--texto);
+    .estado {
+      font-stretch: 100%;
+      letter-spacing: 0;
+    }
   }
 }
 
 .materia {
-  font-family: $fuente-titulo;
-  font-style: italic;
-  font-size: 1.05rem;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--texto-2);
 }
 
@@ -66,29 +74,29 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin: 0;
-  border-top: 1px solid var(--borde);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
 
   div {
-    padding: 12px 20px 0;
+    padding: 10px 14px;
     border-left: 1px solid var(--borde);
 
     &:first-child {
-      padding-left: 0;
       border-left: none;
     }
   }
 
   dt {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.05em;
     color: var(--texto-3);
   }
 
   dd {
-    margin: 3px 0 0;
+    margin: 2px 0 0;
     font-size: 0.875rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -97,9 +105,12 @@
   @media (max-width: 1000px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
-    div {
-      padding-left: 0;
+    div:nth-child(odd) {
       border-left: none;
+    }
+
+    div:nth-child(-n + 2) {
+      border-bottom: 1px solid var(--borde);
     }
   }
 }
@@ -144,9 +155,13 @@
   margin: 10px 0 8px;
 
   strong {
-    font-family: $fuente-titulo;
-    font-size: 2.2rem;
-    font-weight: 500;
+    @include cifra;
+    font-size: 2.4rem;
+
+    small {
+      font-size: 1.1rem;
+      color: var(--texto-3);
+    }
   }
 }
 
@@ -186,8 +201,8 @@
   }
 
   .marca-dia {
-    width: 4px;
-    border-radius: 4px;
+    width: 3px;
+    border-radius: 0;
     background: var(--borde-fuerte);
   }
 
@@ -209,22 +224,17 @@
 .linea-tiempo {
   list-style: none;
   margin: 0;
-  padding: 20px 24px;
+  padding: 8px 18px 12px;
 
   li {
     position: relative;
     display: flex;
-    gap: 14px;
-    padding-bottom: 20px;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--borde);
 
-    &:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      left: 13px;
-      top: 30px;
-      bottom: 0;
-      width: 2px;
-      background: var(--borde);
+    &:last-child {
+      border-bottom: none;
     }
   }
 
@@ -233,37 +243,25 @@
   }
 }
 
+// Marca del tipo de evento: un cuadrado de color, sin iconos decorativos.
 .punto {
-  position: relative;
-  z-index: 1;
-  width: 28px;
-  height: 28px;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
   flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--neutro-suave);
-  color: var(--texto-2);
-  box-shadow: 0 0 0 4px var(--superficie);
+  background: var(--borde-fuerte);
 
-  &.t-marca {
-    background: var(--marca-suave);
-    color: var(--marca-texto);
+  &.t-marca,
+  &.t-info {
+    background: var(--sello);
   }
   &.t-exito {
-    background: var(--exito-suave);
-    color: var(--exito);
-  }
-  &.t-info {
-    background: var(--info-suave);
-    color: var(--info);
+    background: var(--exito);
   }
   &.t-peligro {
-    background: var(--peligro-suave);
-    color: var(--peligro);
+    background: var(--riesgo-critico);
   }
   &.t-aviso {
-    background: var(--aviso-suave);
-    color: var(--aviso);
+    background: var(--riesgo-alto);
   }
 }

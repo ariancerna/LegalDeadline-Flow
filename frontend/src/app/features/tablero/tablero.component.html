@@ -1,17 +1,13 @@
 <div class="pagina">
   <header class="pagina-encabezado">
-    <div>
-      <p class="antetitulo">{{ fechaHoy }}</p>
-      <h1>{{ saludo() }}</h1>
-      <p class="subtitulo">
-        {{ resumen() }}
-        @if (!auth.lecturaGlobal()) {
-          <span class="texto-3">Ves solo los expedientes que tienes asignados.</span>
-        }
-      </p>
-    </div>
+    <h1>
+      {{ fechaHoy }}
+      @if (!auth.lecturaGlobal()) {
+        <span class="alcance">Tus expedientes</span>
+      }
+    </h1>
     <div class="acciones">
-      <a routerLink="/plazos" class="btn btn-secundario">Ver plazos</a>
+      <a routerLink="/plazos" class="btn btn-secundario">Plazos</a>
       @if (auth.esGestor()) {
         <a routerLink="/expedientes" [queryParams]="{ nuevo: 1 }" class="btn btn-primario"
           ><app-icono nombre="plus" [tamano]="15" />Nuevo expediente</a
@@ -30,26 +26,24 @@
   <section class="cifras" aria-label="Resumen">
     @if (indicadores(); as i) {
       <a class="cifra" routerLink="/expedientes">
-        <span class="valor cifra-serif">{{ i.expedientesAbiertos }}</span>
+        <span class="valor">{{ i.expedientesAbiertos }}</span>
         <span class="rotulo">Expedientes abiertos</span>
         <span class="nota">{{ i.expedientesCerrados + i.expedientesArchivados }} concluidos</span>
       </a>
       <a class="cifra" routerLink="/tareas">
-        <span class="valor cifra-serif">{{ i.tareasActivas }}</span>
+        <span class="valor">{{ i.tareasActivas }}</span>
         <span class="rotulo">Tareas activas</span>
         <span class="nota" [class.mala]="i.tareasVencidas > 0"
           >{{ i.tareasVencidas }} {{ i.tareasVencidas === 1 ? 'vencida' : 'vencidas' }}</span
         >
       </a>
       <a class="cifra" routerLink="/plazos">
-        <span class="valor cifra-serif">{{ i.plazosProximos }}</span>
+        <span class="valor">{{ i.plazosProximos }}</span>
         <span class="rotulo">Plazos en 7 días</span>
         <span class="nota">{{ i.plazosActivos }} activos en total</span>
       </a>
       <a class="cifra" routerLink="/plazos">
-        <span class="valor cifra-serif" [class.mala]="i.plazosVencidos > 0">{{
-          i.plazosVencidos
-        }}</span>
+        <span class="valor" [class.mala]="i.plazosVencidos > 0">{{ i.plazosVencidos }}</span>
         <span class="rotulo">Plazos vencidos</span>
         <span class="nota"
           >{{ i.plazosAnulados }} {{ i.plazosAnulados === 1 ? 'anulado' : 'anulados' }} con
@@ -57,7 +51,7 @@
         >
       </a>
       <div class="cifra">
-        <span class="valor cifra-serif"
+        <span class="valor"
           >{{ i.porcentajeTareasCerradas | number: '1.0-1' }}<small>%</small></span
         >
         <span class="rotulo">Tareas cerradas</span>
@@ -73,12 +67,7 @@
   <!-- Línea de tiempo -->
   <section class="bloque">
     <header class="bloque-cabecera">
-      <div>
-        <h2>Calendario de vencimientos</h2>
-        <p class="texto-3 texto-chico">
-          Plazos activos de las próximas dos semanas, por nivel de riesgo.
-        </p>
-      </div>
+      <h2>Próximos 14 días</h2>
       <ul class="leyenda">
         <li><i class="r-CRITICO"></i>Crítico</li>
         <li><i class="r-ALTO"></i>Alto</li>
@@ -97,13 +86,13 @@
     <!-- Registro de plazos -->
     <section class="bloque">
       <header class="bloque-cabecera">
-        <div>
-          <h2>Registro de plazos</h2>
-          <p class="texto-3 texto-chico">En orden de vencimiento. Los vencidos aparecen primero.</p>
-        </div>
-        <a routerLink="/plazos" class="btn btn-fantasma btn-chico"
-          >Ver todos <app-icono nombre="arrow-right" [tamano]="14"
-        /></a>
+        <h2>
+          Agenda de plazos
+          @if (alertas.proximos(); as lista) {
+            <span class="cuenta">{{ lista.length }}</span>
+          }
+        </h2>
+        <a routerLink="/plazos" class="enlace-cab">Ver todos</a>
       </header>
       @if (alertas.proximos(); as lista) {
         @if (lista.length === 0) {
@@ -127,7 +116,7 @@
                 @for (a of registro(); track a.plazo.id) {
                   <tr [class.vencido]="a.riesgo.diasRestantes < 0">
                     <td class="fecha-celda">
-                      <span class="dia cifra-serif">{{ a.plazo.fechaLimite.slice(8, 10) }}</span>
+                      <span class="dia">{{ a.plazo.fechaLimite.slice(8, 10) }}</span>
                       <span class="mes"
                         >{{ mesCorto(a.plazo.fechaLimite) }} ·
                         {{ diaSemana(a.plazo.fechaLimite) }}</span
@@ -135,13 +124,13 @@
                     </td>
                     <td class="ocultar-movil">
                       <a class="exp" [routerLink]="['/expedientes', a.plazo.expedienteId]">
-                        <span class="mono">{{ expedientes.codigo(a.plazo.expedienteId) }}</span>
+                        <span class="codigo">{{ expedientes.codigo(a.plazo.expedienteId) }}</span>
                         <span class="partes">{{ expedientes.titulo(a.plazo.expedienteId) }}</span>
                       </a>
                     </td>
                     <td>
                       <div class="titulo-celda">{{ a.plazo.tipo | etiqueta }}</div>
-                      <div class="sub-celda mono solo-movil">
+                      <div class="sub-celda codigo solo-movil">
                         {{ expedientes.codigo(a.plazo.expedienteId) }}
                       </div>
                       <div class="sub-celda" [class.mala]="a.riesgo.diasRestantes < 0">
@@ -167,7 +156,11 @@
     <aside class="lateral">
       <!-- Riesgo de la cartera -->
       <section class="bloque">
-        <header class="bloque-cabecera"><h2>Riesgo de la cartera</h2></header>
+        <header class="bloque-cabecera">
+          <h2>
+            Riesgo de la cartera <span class="cuenta">{{ totalRiesgo() }}</span>
+          </h2>
+        </header>
         <div class="cuerpo">
           @if (indicadores()) {
             <div
@@ -185,7 +178,7 @@
               @for (n of niveles; track n) {
                 <div>
                   <dt><i [class]="'r-' + n"></i>{{ n | etiqueta }}</dt>
-                  <dd class="cifra-serif">{{ cantidad(n) }}</dd>
+                  <dd>{{ cantidad(n) }}</dd>
                 </div>
               }
             </dl>
@@ -196,10 +189,8 @@
       <!-- Carga del equipo -->
       <section class="bloque">
         <header class="bloque-cabecera">
-          <h2>Carga del equipo</h2>
-          <a routerLink="/carga" class="btn btn-fantasma btn-chico"
-            >Balance <app-icono nombre="arrow-right" [tamano]="14"
-          /></a>
+          <h2>Más cargados</h2>
+          <a routerLink="/carga" class="enlace-cab">Balance</a>
         </header>
         <ul class="equipo">
           @for (r of equipo(); track r.responsableId) {
@@ -225,10 +216,8 @@
       @if (auth.puedeVerAuditoria()) {
         <section class="bloque">
           <header class="bloque-cabecera">
-            <h2>Diario</h2>
-            <a routerLink="/auditoria" class="btn btn-fantasma btn-chico"
-              >Bitácora <app-icono nombre="arrow-right" [tamano]="14"
-            /></a>
+            <h2>Actividad reciente</h2>
+            <a routerLink="/auditoria" class="enlace-cab">Bitácora</a>
           </header>
           <ol class="diario">
             @for (e of actividad() ?? []; track e.id) {

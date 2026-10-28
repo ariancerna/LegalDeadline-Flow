@@ -22,11 +22,6 @@ import { NombreIcono } from './iconos.generados';
       tabindex="-1"
     >
       <header>
-        @if (icono(); as i) {
-          <span class="icono-titulo" [class.peligro]="tono() === 'peligro'"
-            ><app-icono [nombre]="i" [tamano]="18"
-          /></span>
-        }
         <div class="titulos">
           <h2>{{ titulo() }}</h2>
           @if (descripcion()) {
@@ -50,6 +45,7 @@ import { NombreIcono } from './iconos.generados';
 export class DialogoComponent {
   readonly titulo = input.required<string>();
   readonly descripcion = input<string>('');
+  /** Se conserva por compatibilidad; el encabezado ya no muestra icono. */
   readonly icono = input<NombreIcono | null>(null);
   readonly tono = input<'normal' | 'peligro'>('normal');
   readonly lateral = input(false);

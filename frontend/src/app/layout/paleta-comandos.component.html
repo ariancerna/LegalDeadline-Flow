@@ -28,9 +28,8 @@
             (mouseenter)="indice.set(item.i)"
             (click)="item.c.ejecutar()"
           >
-            <span class="icono"><app-icono [nombre]="item.c.icono" [tamano]="16" /></span>
             <span class="texto">
-              <span [class.mono]="g[0] === 'Expedientes'">{{ item.c.texto }}</span>
+              <span [class.codigo]="g[0] === 'Expedientes'">{{ item.c.texto }}</span>
               @if (item.c.detalle) {
                 <small>{{ item.c.detalle }}</small>
               }

@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .plazo {
   display: flex;
   align-items: center;
@@ -5,42 +7,37 @@
   min-width: 200px;
 }
 
+// Día y mes del vencimiento en cifras condensadas; una franja a la izquierda marca el riesgo alto o crítico.
 .calendario {
-  width: 40px;
-  height: 42px;
+  width: 44px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.05;
-  border-radius: 9px;
-  border: 1px solid var(--borde);
-  background: var(--superficie-2);
-  border-top: 3px solid var(--borde-fuerte);
+  align-items: flex-start;
+  padding-left: 8px;
+  line-height: 1;
+  border-left: 3px solid transparent;
 
   strong {
-    font-size: 0.95rem;
+    @include cifra;
+    font-size: 1.45rem;
   }
 
   small {
-    font-size: 0.62rem;
-    font-weight: 600;
-    text-transform: uppercase;
+    margin-top: 2px;
+    font-size: 0.72rem;
     color: var(--texto-3);
   }
 
   &.r-CRITICO {
-    border-top-color: var(--riesgo-critico);
+    border-left-color: var(--riesgo-critico);
+
+    strong {
+      color: var(--riesgo-critico);
+    }
   }
   &.r-ALTO {
-    border-top-color: var(--riesgo-alto);
-  }
-  &.r-MEDIO {
-    border-top-color: var(--riesgo-medio);
-  }
-  &.r-BAJO {
-    border-top-color: var(--riesgo-bajo);
+    border-left-color: var(--riesgo-alto);
   }
 }
 

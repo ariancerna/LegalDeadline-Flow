@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +28,7 @@ type Pestana = ExpedienteEstado | '';
 @Component({
   selector: 'app-expedientes-lista',
   imports: [
+    DecimalPipe,
     FormsModule,
     EtiquetaPipe,
     PaginadorComponent,
@@ -55,7 +57,7 @@ export class ExpedientesListaComponent implements OnInit {
   protected readonly estado = signal<Pestana>('');
   protected readonly responsableId = signal<number | null>(null);
   protected readonly pagina = signal(0);
-  protected readonly tamano = 10;
+  protected readonly tamano = 15;
   protected readonly datos = signal<Expediente[]>([]);
   protected readonly total = signal(0);
   protected readonly cargando = signal(true);

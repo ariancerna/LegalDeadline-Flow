@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,7 +72,9 @@ public class PlazoService {
             if (hasta != null) filtros.add(cb.lessThanOrEqualTo(root.get("fechaLimite"), hasta));
             return cb.and(filtros.toArray(Predicate[]::new));
         };
-        Page<Plazo> pagina = plazoRepository.findAll(spec, ExpedienteService.pagina(page, size));
+        // Un registro de plazos se lee por fecha de vencimiento; a igual fecha, por orden de registro.
+        Page<Plazo> pagina = plazoRepository.findAll(spec, ExpedienteService.pagina(page, size,
+                Sort.by(Sort.Order.asc("fechaLimite"), Sort.Order.asc("id"))));
         // Una sola consulta agrupada da las tareas activas de los expedientes de la página.
         List<Long> expedientes = pagina.getContent().stream().map(p -> p.getExpediente().getId()).distinct().toList();
         Map<Long, Long> pendientes = new HashMap<>();

@@ -24,7 +24,7 @@ export const NAVEGACION: EnlaceNav[] = [
   },
   {
     ruta: '/carga',
-    texto: 'Carga de trabajo',
+    texto: 'Carga',
     icono: 'scale',
     grupo: 'Control',
     contador: 'sobrecarga',

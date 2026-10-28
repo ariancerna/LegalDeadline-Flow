@@ -1,12 +1,7 @@
 <div class="pagina">
   <header class="pagina-encabezado">
     <div>
-      <p class="antetitulo"><app-icono nombre="calendar-clock" [tamano]="13" />Gestión</p>
       <h1>Plazos</h1>
-      <p class="subtitulo">
-        Vencimientos con su riesgo calculado automáticamente según días restantes y tareas
-        pendientes.
-      </p>
     </div>
     <div class="acciones">
       <div class="segmentado" role="tablist" aria-label="Vista">
@@ -16,7 +11,7 @@
           [class.activo]="vista() === 'lista'"
           (click)="cambiarVista('lista')"
         >
-          <app-icono nombre="list" [tamano]="15" />Lista
+          Lista
         </button>
         <button
           type="button"
@@ -24,7 +19,7 @@
           [class.activo]="vista() === 'calendario'"
           (click)="cambiarVista('calendario')"
         >
-          <app-icono nombre="calendar" [tamano]="15" />Calendario
+          Calendario
         </button>
       </div>
       @if (auth.puedeEscribir()) {
@@ -54,7 +49,7 @@
           [class.activa]="rapido() === 'proximos'"
           (click)="atajo('proximos')"
         >
-          <app-icono nombre="hourglass" [tamano]="14" />Próximos 10 días
+          Próximos 10 días
         </button>
         <button
           type="button"
@@ -62,11 +57,10 @@
           [class.activa]="rapido() === 'vencidos'"
           (click)="atajo('vencidos')"
         >
-          <app-icono nombre="triangle-alert" [tamano]="14" />Vencidos
+          Vencidos
         </button>
       </div>
       <div class="barra-filtros" role="search">
-        <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
         <select
           id="f-estado"
           aria-label="Estado"

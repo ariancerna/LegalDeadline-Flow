@@ -5,30 +5,20 @@
 }
 
 .rol {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  .icono {
-    color: var(--texto-3);
-  }
-
   div {
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    gap: 3px;
   }
 
   strong {
-    font-family: $fuente-titulo;
-    font-size: 1.8rem;
-    font-weight: 500;
+    @include cifra;
+    font-size: 2rem;
   }
 
   small {
-    color: var(--texto-3);
-    font-variant-caps: all-small-caps;
-    letter-spacing: 0.05em;
+    color: var(--texto-2);
+    font-size: 0.82rem;
     font-weight: 600;
   }
 }
@@ -40,7 +30,7 @@
 .tu {
   margin-left: 6px;
   padding: 1px 6px;
-  border-radius: 5px;
+  border-radius: var(--radio-l);
   background: var(--acento-suave);
   color: var(--acento);
   font-size: 0.68rem;

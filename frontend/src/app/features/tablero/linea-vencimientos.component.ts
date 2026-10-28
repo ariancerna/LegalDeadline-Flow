@@ -16,7 +16,7 @@ interface Columna {
   plazos: Alerta[];
 }
 
-const INICIALES = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+const INICIALES = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const VISIBLES = 3;
 
 /** Regla de 14 días con los plazos activos marcados en su fecha y coloreados por riesgo. */

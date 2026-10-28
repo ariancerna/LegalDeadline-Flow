@@ -1,11 +1,7 @@
 <div class="pagina">
   <header class="pagina-encabezado">
     <div>
-      <p class="antetitulo"><app-icono nombre="users" [tamano]="13" />Administración</p>
       <h1>Usuarios</h1>
-      <p class="subtitulo">
-        Cuentas, roles y estado de acceso. Las cuentas se desactivan, no se eliminan.
-      </p>
     </div>
     <button type="button" class="btn btn-primario" (click)="editando.set('nuevo')">
       <app-icono nombre="user-plus" [tamano]="16" />Nuevo usuario
@@ -15,10 +11,9 @@
   <section class="roles franja-cifras">
     @for (r of porRol(); track r.rol) {
       <div class="rol">
-        <span class="icono"><app-icono [nombre]="iconoRol[r.rol]" [tamano]="17" /></span>
         <div>
           <strong class="num">{{ r.cuenta }}</strong>
-          <small>{{ r.rol | etiqueta }}{{ r.cuenta === 1 ? '' : 'es' }}</small>
+          <small>{{ r.cuenta === 1 ? (r.rol | etiqueta) : plurales[r.rol] }}</small>
         </div>
       </div>
     }
@@ -47,7 +42,7 @@
               <tr [class.inactivo]="!u.activo">
                 <td>
                   <span class="persona">
-                    <app-avatar [nombre]="u.nombre" [tamano]="34" />
+                    <app-avatar [nombre]="u.nombre" [tamano]="30" />
                     <span>
                       <span class="titulo-celda"
                         >{{ u.nombre }}
@@ -60,11 +55,7 @@
                   </span>
                 </td>
                 <td class="ocultar-movil">
-                  <span class="rol-chip"
-                    ><app-icono [nombre]="iconoRol[u.rol]" [tamano]="13" />{{
-                      u.rol | etiqueta
-                    }}</span
-                  >
+                  <span class="rol-chip">{{ u.rol | etiqueta }}</span>
                 </td>
                 <td>
                   <span [class]="'estado ' + (u.activo ? 'e-exito' : '')">{{

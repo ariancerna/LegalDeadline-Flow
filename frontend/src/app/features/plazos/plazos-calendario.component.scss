@@ -31,8 +31,6 @@
   padding: 8px 10px;
   font-size: 0.72rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--texto-3);
   background: var(--superficie-2);
   border-bottom: 1px solid var(--borde);
@@ -72,7 +70,7 @@
   height: 24px;
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: var(--radio-s);
   font-size: 0.78rem;
   font-weight: 600;
   margin-bottom: 2px;
@@ -87,7 +85,7 @@
   padding: 3px 6px 3px 8px;
   border: none;
   border-left: 3px solid var(--c);
-  border-radius: 5px;
+  border-radius: var(--radio-l);
   background: color-mix(in srgb, var(--c) 12%, transparent);
   color: var(--texto);
   font: inherit;
