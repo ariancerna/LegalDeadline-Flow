@@ -111,3 +111,8 @@ Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-
 1. **Base de datos:** crea un proyecto PostgreSQL en Neon (plan gratuito). Usa la cadena de conexión **directa** (sin `-pooler`) y pásala al backend como `SPRING_DATASOURCE_URL=jdbc:postgresql://<host>/<db>?sslmode=require`, junto con `DB_USER` y `DB_PASSWORD`.
 2. **Backend:** publícalo con su `Dockerfile` en un servicio que acepte contenedores. Define `JWT_SECRET` y `CORS_ALLOWED_ORIGINS=https://<dominio-del-frontend>`.
 3. **Frontend:** si se publica en otro dominio (Vercel, Netlify, etc.), cambia `apiUrl` en `src/environments/environment.ts` a `https://<backend>/api/v1` y publica `dist/frontend/browser`. Configura la reescritura de rutas a `index.html`.
+
+## Créditos
+
+- Fotografía del inicio de sesión: Palacio de Justicia de Montpellier, por [Nathan Cima](https://unsplash.com/@nathan_cima) en [Unsplash](https://unsplash.com/photos/OHE90W2rQF4), bajo la [licencia de Unsplash](https://unsplash.com/license). Se usa en blanco y negro bajo una capa de color (`public/img/login-tribunal.webp`).
+- Iconos de [Lucide](https://lucide.dev) (licencia ISC). Tipografías Inter y Source Serif 4 (licencia SIL Open Font).

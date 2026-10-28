@@ -13,8 +13,18 @@
   gap: 44px;
   padding: 48px 56px;
   color: #c9cdd6;
-  background: #1f2b45;
   border-right: 1px solid #141c2e;
+  // Foto en blanco y negro bajo una capa de tinta: duotono que mantiene legible el texto.
+  background:
+    linear-gradient(
+      90deg,
+      rgba(20, 28, 47, 0.94) 0%,
+      rgba(20, 28, 47, 0.84) 45%,
+      rgba(20, 28, 47, 0.5) 100%
+    ),
+    linear-gradient(180deg, rgba(20, 28, 47, 0.55) 0%, transparent 30%, transparent 65%, rgba(17, 24, 41, 0.9) 100%),
+    var(--foto, none) 70% 30% / cover no-repeat,
+    #1f2b45;
 }
 
 .marca {
@@ -113,7 +123,7 @@
   display: grid;
   gap: 18px;
   max-width: 470px;
-  border-top: 1px solid rgba(247, 243, 236, 0.14);
+  border-top: 1px solid rgba(247, 243, 236, 0.2);
 
   li {
     display: flex;
@@ -135,14 +145,32 @@
   p {
     margin-top: 2px;
     font-size: 0.85rem;
-    color: #949cad;
+    color: #a7afc0;
   }
 }
 
 .pie {
   margin-top: auto;
+  display: grid;
+  gap: 4px;
   font-size: 0.75rem;
-  color: #79839a;
+  color: #8a94aa;
+
+  .credito {
+    font-size: 0.7rem;
+    color: #6f7a92;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.25);
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: #c9cdd6;
+    }
+  }
 }
 
 .acceso {
