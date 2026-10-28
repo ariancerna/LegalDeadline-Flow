@@ -19,7 +19,10 @@ body {
   color: var(--texto);
   background: var(--fondo);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: 'cv11', 'ss01';
+  font-feature-settings:
+    'cv11',
+    'ss01',
+    'tnum' 0;
   transition: background-color 0.2s ease;
 }
 
@@ -35,19 +38,36 @@ h4 {
 
 h1 {
   font-family: $fuente-titulo;
-  font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-optical-sizing: auto;
 }
 
 h2 {
-  font-size: 1rem;
-  font-weight: 650;
+  font-family: $fuente-titulo;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: 0.9rem;
-  font-weight: 650;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+// Etiquetas en versalitas: encabezados de tabla, rótulos y antetítulos.
+.versalitas {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+// Cifras en serif con números de ancho fijo.
+.cifra-serif {
+  font-family: $fuente-titulo;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 500;
 }
 
 p {

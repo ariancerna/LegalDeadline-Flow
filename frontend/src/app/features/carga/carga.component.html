@@ -19,18 +19,18 @@
     </div>
   }
 
-  <section class="resumen">
-    <div class="dato tarjeta">
+  <section class="resumen franja-cifras">
+    <div class="dato">
       <span class="texto-3">Umbral por persona</span><strong class="num">{{ umbral() }}</strong>
     </div>
-    <div class="dato tarjeta">
+    <div class="dato">
       <span class="texto-3">Tareas activas</span><strong class="num">{{ totalActivas() }}</strong>
     </div>
-    <div class="dato tarjeta" [class.malo]="sobrecargados().length > 0">
+    <div class="dato" [class.malo]="sobrecargados().length > 0">
       <span class="texto-3">Sobrecargados</span
       ><strong class="num">{{ sobrecargados().length }}</strong>
     </div>
-    <div class="dato tarjeta">
+    <div class="dato">
       <span class="texto-3">Capacidad libre</span
       ><strong class="num">{{ capacidadLibre() }}</strong>
     </div>

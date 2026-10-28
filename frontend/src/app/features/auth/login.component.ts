@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -68,7 +69,7 @@ const BENEFICIOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
 /** RF01 / RF20: inicio de sesión con JWT. */
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, IconoComponent],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, IconoComponent, DecimalPipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

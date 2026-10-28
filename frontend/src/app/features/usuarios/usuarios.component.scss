@@ -1,29 +1,16 @@
 @use 'tokens' as *;
 
 .roles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  --columnas: 4;
 }
 
 .rol {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 18px;
 
   .icono {
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    border-radius: 11px;
-    background: var(--marca-suave);
-    color: var(--marca-texto);
+    color: var(--texto-3);
   }
 
   div {
@@ -34,12 +21,15 @@
 
   strong {
     font-family: $fuente-titulo;
-    font-size: 1.6rem;
-    font-weight: 600;
+    font-size: 1.8rem;
+    font-weight: 500;
   }
 
   small {
     color: var(--texto-3);
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.05em;
+    font-weight: 600;
   }
 }
 

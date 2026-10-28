@@ -16,22 +16,38 @@
   align-items: flex-end;
   justify-content: space-between;
 
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--borde);
+
   .antetitulo {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
+    gap: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
+    font-variant-caps: all-small-caps;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: var(--acento);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+
+    // Un filete corto en lugar de iconos: rótulo de sección al estilo editorial.
+    &::before {
+      content: '';
+      width: 18px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    app-icono {
+      display: none !important;
+    }
   }
 
   .subtitulo {
-    margin-top: 6px;
+    margin-top: 8px;
     color: var(--texto-2);
-    max-width: 640px;
+    max-width: 680px;
+    font-size: 0.95rem;
   }
 }
 
@@ -40,7 +56,6 @@
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio-l);
-  box-shadow: var(--sombra-1);
 }
 
 .tarjeta-encabezado {
@@ -55,6 +70,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 1.1rem;
+
+    app-icono {
+      display: none !important;
+    }
   }
 
   .descripcion {
@@ -77,7 +97,7 @@
 
 // ================= Botones =================
 .btn {
-  --alto: 36px;
+  --alto: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -87,8 +107,8 @@
   border-radius: var(--radio);
   border: 1px solid transparent;
   font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 550;
   line-height: 1;
   cursor: pointer;
   text-decoration: none;
@@ -118,9 +138,6 @@
 .btn-primario {
   background: var(--marca);
   color: var(--sobre-marca);
-  box-shadow:
-    var(--sombra-1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
   &:hover:not(:disabled) {
     background: var(--marca-hover);
@@ -128,10 +145,9 @@
 }
 
 .btn-secundario {
-  background: var(--superficie);
+  background: transparent;
   color: var(--texto);
   border-color: var(--borde-fuerte);
-  box-shadow: var(--sombra-1);
 
   &:hover:not(:disabled) {
     background: var(--superficie-hover);
@@ -263,7 +279,6 @@ tr:hover .acciones-fila,
   background: var(--superficie);
   color: var(--texto);
   width: 100%;
-  box-shadow: var(--sombra-1);
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -400,7 +415,7 @@ select.control {
     height: 30px;
     padding: 0 12px;
     border: none;
-    border-radius: 7px;
+    border-radius: 3px;
     background: transparent;
     color: var(--texto-2);
     font: inherit;
@@ -411,7 +426,7 @@ select.control {
     &.activo {
       background: var(--superficie);
       color: var(--texto);
-      box-shadow: var(--sombra-2);
+      box-shadow: 0 0 0 1px var(--borde-fuerte);
     }
   }
 }
@@ -479,12 +494,15 @@ table.tabla {
     position: sticky;
     top: 0;
     z-index: 1;
-    font-size: 0.72rem;
+    padding-top: 10px;
+    padding-bottom: 8px;
+    font-size: 0.82rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--texto-3);
-    background: var(--superficie-2);
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.06em;
+    color: var(--texto-2);
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde-fuerte);
     white-space: nowrap;
   }
 
@@ -530,20 +548,23 @@ table.tabla {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 22px;
-  padding: 0 9px;
-  border-radius: 999px;
-  font-size: 0.75rem;
+  height: 21px;
+  padding: 0 7px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--c) 38%, transparent);
+  font-size: 0.8rem;
   font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   color: var(--c);
-  background: var(--f);
+  background: transparent;
 
-  &::before {
+  // Sello del riesgo: un cuadrado lleno; los demás estados van sin marca.
+  &[class*='riesgo-']::before {
     content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+    width: 7px;
+    height: 7px;
     background: currentColor;
   }
 
@@ -642,18 +663,19 @@ table.tabla {
 
     &.activa {
       color: var(--texto);
-      border-bottom-color: var(--marca);
+      border-bottom-color: var(--regla);
     }
   }
 
   .contador {
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    border-radius: 999px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 2px;
     background: var(--neutro-suave);
     color: var(--texto-2);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
     display: inline-grid;
     place-items: center;
   }
@@ -679,7 +701,7 @@ table.tabla {
 
 // ================= Progreso =================
 .progreso {
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
   background: var(--neutro-suave);
   overflow: hidden;
@@ -828,5 +850,40 @@ kbd,
 @include movil {
   .ocultar-movil {
     display: none !important;
+  }
+}
+
+// Franja de cifras (tablero, carga, usuarios): filete superior en tinta y separadores verticales.
+.franja-cifras {
+  display: grid;
+  grid-template-columns: repeat(var(--columnas, 4), minmax(0, 1fr));
+  border-top: 2px solid var(--regla);
+  border-bottom: 1px solid var(--borde);
+
+  > * {
+    padding: 16px 20px 14px;
+    border-right: 1px solid var(--borde);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  @include movil {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > * {
+      border-bottom: 1px solid var(--borde);
+    }
+  }
+}
+
+.solo-movil {
+  display: none !important;
+}
+
+@include movil {
+  .solo-movil {
+    display: revert !important;
   }
 }

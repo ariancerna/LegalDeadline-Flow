@@ -9,6 +9,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
 import { Expediente, ExpedienteEstado, Indicadores } from '../../core/models';
 import { ResponsablesStore } from '../../core/responsables.store';
+import { AsuntoPipe } from '../../shared/asunto.pipe';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { DialogoComponent } from '../../shared/dialogo.component';
 import { EsqueletoComponent } from '../../shared/esqueleto.component';
@@ -35,6 +36,7 @@ type Pestana = ExpedienteEstado | '';
     AvatarComponent,
     EsqueletoComponent,
     VacioComponent,
+    AsuntoPipe,
   ],
   templateUrl: './expedientes-lista.component.html',
   styleUrl: './expedientes-lista.component.scss',

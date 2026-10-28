@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { ConsultasService } from '../../core/api/consultas.service';
 import { UsuariosService } from '../../core/api/usuarios.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { ResponsablesStore } from '../../core/responsables.store';
 import { interpretarError } from '../../core/errores';
 import { EVENTO_TIPOS, Evento, EventoTipo, Usuario } from '../../core/models';
 import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
-import { EVENTOS, nombreDesdeEmail } from '../../shared/eventos';
+import { EVENTOS, detalleLegible } from '../../shared/eventos';
 import { fechaLarga, haceCuanto, hoyLima, localLimaAIso, sumarDias } from '../../shared/fechas';
 import { IconoComponent } from '../../shared/icono.component';
 import { PaginadorComponent } from '../../shared/paginador.component';
@@ -50,9 +51,10 @@ export class AuditoriaComponent implements OnInit {
   private readonly consultas = inject(ConsultasService);
   private readonly usuariosServicio = inject(UsuariosService);
   private readonly auth = inject(AuthService);
+  protected readonly responsables = inject(ResponsablesStore);
   protected readonly tipos = EVENTO_TIPOS;
   protected readonly info = EVENTOS;
-  protected readonly nombreDesdeEmail = nombreDesdeEmail;
+  protected readonly detalleLegible = detalleLegible;
   protected readonly haceCuanto = haceCuanto;
 
   protected readonly filtros = signal<FiltrosVista>({

@@ -1,26 +1,28 @@
 @use 'tokens' as *;
 
 .resumen {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  --columnas: 4;
 }
 
 .dato {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 16px 18px;
-  font-size: 0.8125rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  color: var(--texto-2);
 
   strong {
+    order: -1;
     font-family: $fuente-titulo;
-    font-size: 1.9rem;
-    font-weight: 600;
+    font-size: 2.4rem;
+    font-weight: 500;
+    font-variant-caps: normal;
+    letter-spacing: -0.02em;
+    color: var(--texto);
+    line-height: 1.1;
   }
 
   &.malo strong {
@@ -86,7 +88,7 @@
   transition: background-color 0.3s;
 
   &.lleno {
-    background: var(--marca);
+    background: var(--texto);
   }
 
   &.exceso {

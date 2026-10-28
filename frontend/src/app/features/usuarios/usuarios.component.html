@@ -12,9 +12,9 @@
     </button>
   </header>
 
-  <section class="roles">
+  <section class="roles franja-cifras">
     @for (r of porRol(); track r.rol) {
-      <div class="rol tarjeta">
+      <div class="rol">
         <span class="icono"><app-icono [nombre]="iconoRol[r.rol]" [tamano]="17" /></span>
         <div>
           <strong class="num">{{ r.cuenta }}</strong>

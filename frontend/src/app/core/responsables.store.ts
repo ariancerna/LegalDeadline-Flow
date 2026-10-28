@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, finalize, shareReplay, tap } from 'rxjs';
 import { ConsultasService } from './api/consultas.service';
 import { CargaResponsable } from './models';
+import { nombreDesdeEmail } from '../shared/eventos';
 
 /**
  * Lista de responsables asignables (rol RESPONSABLE o SUPERVISOR, activos) con su carga.
@@ -35,6 +36,12 @@ export class ResponsablesStore {
   nombre(id: number | null | undefined): string {
     if (id === null || id === undefined) return '—';
     return this.porId().get(id)?.nombre ?? `Usuario #${id}`;
+  }
+
+  /** Nombre del autor de un evento: el registrado si es asignable; si no, derivado del correo. */
+  autor(usuarioId: number | null, email: string | null): string {
+    const r = usuarioId === null ? undefined : this.porId().get(usuarioId);
+    return r?.nombre ?? nombreDesdeEmail(email);
   }
 
   limpiar(): void {

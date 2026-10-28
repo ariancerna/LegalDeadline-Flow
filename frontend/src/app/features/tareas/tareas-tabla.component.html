@@ -18,7 +18,7 @@
           <td>
             <div class="titulo-celda">{{ t.titulo }}</div>
             <div class="sub-celda">
-              <span class="mono">{{ t.tipo }}</span>
+              <span>{{ t.tipo | etiqueta }}</span>
               @if (mostrarExpediente()) {
                 ·
                 <a class="mono" [routerLink]="['/expedientes', t.expedienteId]">{{

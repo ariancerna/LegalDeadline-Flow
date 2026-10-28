@@ -1,101 +1,108 @@
-// Paleta: tinta (marca), oro (acento), neutros fríos y colores semánticos.
+// Estilo "despacho editorial": papel, tinta y un burdeos de sello.
+// El color se reserva para el riesgo y los estados; el resto es tipografía y líneas finas.
 :root {
   color-scheme: light;
-  --fondo: #f5f6f8;
-  --superficie: #ffffff;
-  --superficie-2: #f9fafb;
-  --superficie-hover: #f3f4f7;
-  --borde: #e5e7eb;
-  --borde-fuerte: #d3d7de;
-  --texto: #101828;
-  --texto-2: #475467;
-  --texto-3: #8b93a1;
+  --fondo: #f6f4ef;
+  --superficie: #fdfcf9;
+  --superficie-2: #f1eee7;
+  --superficie-hover: #f0ece4;
+  --borde: #e3ddd2;
+  --borde-fuerte: #cbc3b5;
+  --regla: #1c1a17; // líneas de énfasis (encabezados de tabla, separadores fuertes)
+  --texto: #1c1a17;
+  --texto-2: #57524a;
+  --texto-3: #8b857a;
 
-  --marca: #1c3a63;
-  --marca-hover: #152d4e;
-  --marca-suave: #e9eff8;
-  --marca-texto: #1c3a63;
-  --sobre-marca: #ffffff;
-  --acento: #b8892b;
-  --acento-suave: #f8f0dd;
+  --marca: #1f2b45; // tinta azul para acciones principales
+  --marca-hover: #162036;
+  --marca-suave: #e6e9ef;
+  --marca-texto: #1f2b45;
+  --sobre-marca: #fdfcf9;
+  --acento: #8a2c2c; // burdeos del sello
+  --acento-suave: #f2e5e1;
 
-  --exito: #15803d;
-  --exito-suave: #e8f6ed;
-  --peligro: #c0262d;
-  --peligro-suave: #fdeceb;
-  --aviso: #b45309;
-  --aviso-suave: #fef3e2;
-  --info: #2457c5;
-  --info-suave: #eaf0fd;
-  --neutro-suave: #f1f3f6;
+  --exito: #2f6b45;
+  --exito-suave: #e6efe7;
+  --peligro: #b3261e;
+  --peligro-suave: #f8e7e3;
+  --aviso: #9a5800;
+  --aviso-suave: #f6ecdc;
+  --info: #2b5c8a;
+  --info-suave: #e5edf4;
+  --neutro-suave: #ece8e0;
 
-  --riesgo-critico: #c0262d;
-  --riesgo-alto: #dc5f0c;
-  --riesgo-medio: #c08a00;
-  --riesgo-bajo: #15803d;
+  --riesgo-critico: #b3261e;
+  --riesgo-alto: #c35e0c;
+  --riesgo-medio: #a07c10;
+  --riesgo-bajo: #3d7a50;
 
-  --menu-fondo: #0e1b2e;
-  --menu-borde: #1b2a41;
-  --menu-texto: #a8b3c4;
-  --menu-texto-activo: #ffffff;
-  --menu-hover: rgba(255, 255, 255, 0.06);
-  --menu-activo: rgba(255, 255, 255, 0.1);
+  --menu-fondo: #efebe3;
+  --menu-borde: #e0d9cc;
+  --menu-texto: #57524a;
+  --menu-texto-activo: #1c1a17;
+  --menu-hover: rgba(28, 26, 23, 0.05);
+  --menu-activo: rgba(28, 26, 23, 0.08);
 
-  --anillo: 0 0 0 3px rgba(28, 58, 99, 0.18);
-  --sombra-1: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --sombra-2: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
-  --sombra-3: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 4px 8px -4px rgba(16, 24, 40, 0.08);
-  --sombra-flotante: 0 24px 64px -12px rgba(16, 24, 40, 0.3);
-  --velo: rgba(10, 18, 32, 0.45);
+  --anillo: 0 0 0 3px rgba(31, 43, 69, 0.16);
+  --sombra-1: none;
+  --sombra-2: 0 1px 0 rgba(28, 26, 23, 0.04);
+  --sombra-3: 0 10px 28px -10px rgba(28, 26, 23, 0.22), 0 2px 6px -2px rgba(28, 26, 23, 0.08);
+  --sombra-flotante: 0 28px 60px -16px rgba(28, 26, 23, 0.35);
+  --velo: rgba(28, 26, 23, 0.32);
 
-  --radio-s: 6px;
-  --radio: 10px;
-  --radio-l: 14px;
+  --radio-s: 3px;
+  --radio: 4px;
+  --radio-l: 6px;
 }
 
 @mixin oscuro {
   color-scheme: dark;
-  --fondo: #0b1220;
-  --superficie: #111a2a;
-  --superficie-2: #0f1726;
-  --superficie-hover: #172235;
-  --borde: #1f2b40;
-  --borde-fuerte: #2b3a54;
-  --texto: #e6eaf1;
-  --texto-2: #a6b0c0;
-  --texto-3: #6f7b90;
+  --fondo: #151412;
+  --superficie: #1b1a17;
+  --superficie-2: #211f1c;
+  --superficie-hover: #24221f;
+  --borde: #302d28;
+  --borde-fuerte: #47423a;
+  --regla: #d9d3c8;
+  --texto: #ece8e0;
+  --texto-2: #b3ada2;
+  --texto-3: #7f796e;
 
-  --marca: #3f72d8;
-  --marca-hover: #3563c2;
-  --marca-suave: rgba(80, 130, 230, 0.16);
-  --marca-texto: #8fb2ff;
-  --acento: #d6a64a;
-  --acento-suave: rgba(214, 166, 74, 0.16);
+  --marca: #e6e0d4; // en la noche la acción principal es tinta clara sobre papel oscuro
+  --marca-hover: #fdfcf9;
+  --marca-suave: rgba(230, 224, 212, 0.1);
+  --marca-texto: #d9d3c8;
+  --sobre-marca: #151412;
+  --acento: #d39283;
+  --acento-suave: rgba(211, 146, 131, 0.14);
 
-  --exito: #4ade80;
-  --exito-suave: rgba(74, 222, 128, 0.13);
-  --peligro: #f87171;
-  --peligro-suave: rgba(248, 113, 113, 0.14);
-  --aviso: #fbbf24;
-  --aviso-suave: rgba(251, 191, 36, 0.13);
-  --info: #7aa7ff;
-  --info-suave: rgba(122, 167, 255, 0.14);
-  --neutro-suave: rgba(148, 163, 184, 0.13);
+  --exito: #7fbf8f;
+  --exito-suave: rgba(127, 191, 143, 0.12);
+  --peligro: #ef8a7e;
+  --peligro-suave: rgba(239, 138, 126, 0.13);
+  --aviso: #e2b064;
+  --aviso-suave: rgba(226, 176, 100, 0.12);
+  --info: #8fb4d9;
+  --info-suave: rgba(143, 180, 217, 0.12);
+  --neutro-suave: rgba(236, 232, 224, 0.07);
 
-  --riesgo-critico: #f26d6d;
-  --riesgo-alto: #fb9a4b;
-  --riesgo-medio: #f2c94c;
-  --riesgo-bajo: #4ade80;
+  --riesgo-critico: #ef8a7e;
+  --riesgo-alto: #e7a15f;
+  --riesgo-medio: #d8c06a;
+  --riesgo-bajo: #7fbf8f;
 
-  --menu-fondo: #080e19;
-  --menu-borde: #151f31;
+  --menu-fondo: #121110;
+  --menu-borde: #282520;
+  --menu-texto: #a39d92;
+  --menu-texto-activo: #ece8e0;
+  --menu-hover: rgba(236, 232, 224, 0.05);
+  --menu-activo: rgba(236, 232, 224, 0.08);
 
-  --anillo: 0 0 0 3px rgba(122, 167, 255, 0.3);
-  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --sombra-2: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --sombra-3: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
-  --sombra-flotante: 0 24px 64px -12px rgba(0, 0, 0, 0.7);
-  --velo: rgba(2, 6, 14, 0.65);
+  --anillo: 0 0 0 3px rgba(230, 224, 212, 0.18);
+  --sombra-2: none;
+  --sombra-3: 0 12px 32px -10px rgba(0, 0, 0, 0.7);
+  --sombra-flotante: 0 28px 60px -16px rgba(0, 0, 0, 0.8);
+  --velo: rgba(0, 0, 0, 0.55);
 }
 
 :root[data-tema='oscuro'] {

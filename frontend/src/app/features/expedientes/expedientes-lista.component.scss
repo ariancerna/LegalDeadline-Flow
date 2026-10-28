@@ -1,26 +1,25 @@
 .expediente {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 260px;
-}
+  flex-direction: column;
+  gap: 1px;
+  min-width: 280px;
 
-.icono-exp {
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 9px;
-  background: var(--acento-suave);
-  color: var(--acento);
-}
+  .numero {
+    font-size: 0.76rem;
+    color: var(--texto-3);
+  }
 
-.asunto {
-  max-width: 420px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  .partes {
+    font-size: 0.95rem;
+    max-width: 520px;
+  }
+
+  .sub-celda {
+    max-width: 520px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .flecha {
@@ -30,6 +29,12 @@
 
 tr:hover .flecha {
   color: var(--texto);
+}
+
+tr:hover .partes {
+  text-decoration: underline;
+  text-decoration-color: var(--borde-fuerte);
+  text-underline-offset: 3px;
 }
 
 .tiempo {

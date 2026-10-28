@@ -44,7 +44,7 @@
           [title]="(p.tipo | etiqueta) + ' · ' + expedientes.codigo(p.expedienteId)"
           (click)="abrir(p)"
         >
-          <span class="texto">{{ p.tipo | etiqueta }}</span>
+          <span class="texto">{{ p.tipo | etiqueta: 'corta' }}</span>
           <span class="mono exp">{{ expedientes.codigo(p.expedienteId) }}</span>
         </button>
       }

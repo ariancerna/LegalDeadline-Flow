@@ -41,9 +41,7 @@
       maxlength="120"
       placeholder="Presentar escrito de contestación"
     />
-    <span class="ayuda"
-      >Se compara sin tildes, mayúsculas ni espacios extra para detectar duplicados.</span
-    >
+    <span class="ayuda">Para detectar duplicados se ignoran mayúsculas y espacios extra.</span>
     <app-error-campo [control]="form.controls.titulo" [servidor]="camposServidor()['titulo']" />
   </div>
 

@@ -3,46 +3,25 @@
 .pantalla {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(380px, 46%) 1fr;
+  grid-template-columns: minmax(400px, 46%) 1fr;
   background: var(--fondo);
 }
 
 .presentacion {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 44px 52px;
-  color: #c9d3e3;
-  background:
-    radial-gradient(1200px 500px at -10% -10%, rgba(214, 166, 74, 0.18), transparent 60%),
-    radial-gradient(800px 600px at 120% 110%, rgba(63, 114, 216, 0.28), transparent 60%),
-    linear-gradient(160deg, #0e1b2e 0%, #0a1424 100%);
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: linear-gradient(180deg, transparent, #000 30%, #000 70%, transparent);
-    pointer-events: none;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  gap: 44px;
+  padding: 48px 56px;
+  color: #c9cdd6;
+  background: #1f2b45;
+  border-right: 1px solid #141c2e;
 }
 
 .marca {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #fff;
+  color: #f4efe6;
 
   span:last-child {
     display: flex;
@@ -53,90 +32,117 @@
   strong {
     font-family: $fuente-titulo;
     font-size: 1.2rem;
-    font-weight: 600;
+    font-weight: 500;
   }
 
   small {
-    color: #d6a64a;
-    font-size: 0.68rem;
+    color: #d9a99c;
+    font-size: 0.85rem;
     font-weight: 600;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.22em;
+  }
+
+  .logo {
+    color: #d9a99c;
+    border-color: #d9a99c;
+    box-shadow:
+      inset 0 0 0 2px #1f2b45,
+      inset 0 0 0 3px rgba(217, 169, 156, 0.45);
   }
 }
 
+// Sello circular (también en la versión móvil).
 .logo {
   width: 40px;
   height: 40px;
   display: grid;
   place-items: center;
-  border-radius: 11px;
-  color: #1a1407;
-  background: linear-gradient(145deg, #e3be6c, #b8892b);
+  border-radius: 50%;
+  color: var(--acento);
+  border: 1px solid var(--acento);
   box-shadow:
-    0 6px 18px -6px rgba(214, 166, 74, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    inset 0 0 0 2px var(--fondo),
+    inset 0 0 0 3px color-mix(in srgb, var(--acento) 45%, transparent);
 }
 
 .mensaje {
   margin-top: auto;
 
-  h1 {
-    color: #fff;
-    font-size: clamp(2rem, 3.2vw, 2.75rem);
-    line-height: 1.12;
-    max-width: 460px;
+  .rotulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #d9a99c;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.1em;
+    margin-bottom: 18px;
+
+    &::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: currentColor;
+    }
   }
 
-  p {
-    margin-top: 16px;
-    max-width: 440px;
+  h1 {
+    color: #f7f3ec;
+    font-size: clamp(2.2rem, 3.4vw, 3rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    max-width: 470px;
+  }
+
+  > p:last-child {
+    margin-top: 18px;
+    max-width: 430px;
     font-size: 1rem;
-    color: #a9b6ca;
+    line-height: 1.6;
+    color: #aab1c0;
   }
 }
 
 .beneficios {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 24px 0 0;
   display: grid;
   gap: 18px;
-  max-width: 460px;
+  max-width: 470px;
+  border-top: 1px solid rgba(247, 243, 236, 0.14);
 
   li {
     display: flex;
-    gap: 14px;
+    gap: 16px;
   }
 
-  .icono {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #d6a64a;
+  .numero {
+    font-family: $fuente-titulo;
+    font-size: 1.05rem;
+    color: #d9a99c;
+    min-width: 24px;
   }
 
   strong {
-    color: #fff;
+    color: #f4efe6;
     font-weight: 600;
   }
 
   p {
     margin-top: 2px;
     font-size: 0.85rem;
-    color: #93a1b7;
+    color: #949cad;
   }
 }
 
 .pie {
   margin-top: auto;
   font-size: 0.75rem;
-  color: #627089;
+  color: #79839a;
 }
 
 .acceso {
@@ -153,16 +159,16 @@
 }
 
 .panel {
-  width: min(400px, 100%);
+  width: min(390px, 100%);
   display: flex;
   flex-direction: column;
   gap: 18px;
   animation: desvanecer 0.35s ease;
 
   h2 {
-    font-family: $fuente-titulo;
-    font-size: 1.75rem;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
   }
 
   > p {
@@ -194,7 +200,7 @@
     display: grid;
     place-items: center;
     border: none;
-    border-radius: 7px;
+    border-radius: 3px;
     background: none;
     color: var(--texto-3);
     cursor: pointer;
@@ -209,17 +215,17 @@
 .demo {
   display: grid;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 8px;
 
   .separador {
     display: flex;
     align-items: center;
     gap: 12px;
     color: var(--texto-3);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
 
     &::before,
     &::after {
@@ -234,41 +240,41 @@
 .cuentas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  overflow: hidden;
 }
 
 .cuenta {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  padding: 11px 12px;
+  border: none;
+  border-right: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
   background: var(--superficie);
   color: var(--texto);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s,
-    transform 0.1s;
+  transition: background-color 0.15s;
+
+  &:nth-child(2n) {
+    border-right: none;
+  }
+
+  &:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
 
   &:hover {
-    border-color: var(--marca);
-    box-shadow: var(--sombra-2);
-    transform: translateY(-1px);
+    background: var(--superficie-hover);
   }
 
   .icono {
-    width: 32px;
-    height: 32px;
+    color: var(--texto-3);
     flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    border-radius: 8px;
-    background: var(--marca-suave);
-    color: var(--marca-texto);
   }
 
   .texto {
@@ -280,6 +286,7 @@
 
   strong {
     font-size: 0.85rem;
+    font-weight: 600;
   }
 
   small {
@@ -308,5 +315,14 @@
 @media (max-width: 420px) {
   .cuentas {
     grid-template-columns: 1fr;
+  }
+
+  .cuenta {
+    border-right: none !important;
+    border-bottom: 1px solid var(--borde) !important;
+
+    &:last-child {
+      border-bottom: none !important;
+    }
   }
 }

@@ -38,12 +38,12 @@
   }
 
   .grupo {
-    margin: 16px 10px 6px;
-    font-size: 0.68rem;
+    margin: 18px 11px 6px;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: #5d6b82;
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
+    color: var(--texto-3);
     white-space: nowrap;
   }
 
@@ -52,9 +52,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 38px;
+    height: 36px;
     padding: 0 11px;
-    border-radius: 9px;
+    border-radius: 4px;
     color: inherit;
     font-weight: 500;
     white-space: nowrap;
@@ -66,11 +66,13 @@
     &:hover {
       background: var(--menu-hover);
       color: var(--menu-texto-activo);
+      text-decoration: none;
     }
 
     &.activo {
       background: var(--menu-activo);
       color: var(--menu-texto-activo);
+      font-weight: 600;
 
       &::before {
         content: '';
@@ -84,7 +86,7 @@
       }
 
       app-icono {
-        color: var(--acento);
+        color: var(--texto);
       }
     }
   }
@@ -99,11 +101,13 @@
     place-items: center;
     font-size: 0.7rem;
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    border-radius: 2px;
+    background: var(--neutro-suave);
+    color: var(--texto-2);
 
     &.urgente {
-      background: #c0262d;
+      background: var(--peligro);
+      color: var(--superficie);
     }
   }
 }
@@ -113,25 +117,26 @@
   align-items: center;
   gap: 11px;
   padding: 4px 6px;
-  color: #fff;
+  color: var(--texto);
   text-decoration: none;
 
   &:hover {
     text-decoration: none;
   }
 
+  // Sello: doble filete circular en burdeos.
   .logo {
     width: 36px;
     height: 36px;
     flex-shrink: 0;
     display: grid;
     place-items: center;
-    border-radius: 10px;
-    color: #1a1407;
-    background: linear-gradient(145deg, #e3be6c, #b8892b);
+    border-radius: 50%;
+    color: var(--acento);
+    border: 1px solid var(--acento);
     box-shadow:
-      0 4px 14px -4px rgba(214, 166, 74, 0.6),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      inset 0 0 0 2px var(--menu-fondo),
+      inset 0 0 0 3px color-mix(in srgb, var(--acento) 45%, transparent);
   }
 
   .nombre {
@@ -142,17 +147,17 @@
 
     strong {
       font-family: $fuente-titulo;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 500;
       letter-spacing: -0.01em;
     }
 
     small {
       color: var(--acento);
-      font-size: 0.66rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      letter-spacing: 0.32em;
-      text-transform: uppercase;
+      font-variant-caps: all-small-caps;
+      letter-spacing: 0.22em;
     }
   }
 }
@@ -172,7 +177,7 @@
   height: 36px;
   padding: 0 11px;
   border: none;
-  border-radius: 9px;
+  border-radius: 4px;
   background: none;
   color: var(--menu-texto);
   font: inherit;
@@ -182,7 +187,7 @@
 
   &:hover {
     background: var(--menu-hover);
-    color: #fff;
+    color: var(--menu-texto-activo);
   }
 }
 
@@ -202,7 +207,7 @@
   }
 
   strong {
-    color: #fff;
+    color: var(--texto);
     font-size: 0.85rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -251,8 +256,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 60px;
-  padding: 0 24px;
+  height: 58px;
+  padding: 0 32px;
   background: color-mix(in srgb, var(--fondo) 82%, transparent);
   backdrop-filter: saturate(1.4) blur(10px);
   border-bottom: 1px solid var(--borde);
@@ -295,13 +300,12 @@
   width: min(300px, 32vw);
   padding: 0 8px 0 12px;
   border: 1px solid var(--borde);
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--superficie);
   color: var(--texto-3);
   font: inherit;
   font-size: 0.8125rem;
   cursor: pointer;
-  box-shadow: var(--sombra-1);
   transition: border-color 0.15s;
 
   span {

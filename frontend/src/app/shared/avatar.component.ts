@@ -1,17 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-const TONOS = [
-  ['#e0e7ff', '#3730a3'],
-  ['#fce7f3', '#9d174d'],
-  ['#dcfce7', '#166534'],
-  ['#fef3c7', '#92400e'],
-  ['#e0f2fe', '#075985'],
-  ['#ede9fe', '#5b21b6'],
-  ['#ffe4e6', '#9f1239'],
-  ['#ccfbf1', '#115e59'],
-];
-
-/** Iniciales con un color estable derivado del nombre. */
+/** Iniciales en monograma: tinta sobre papel, sin colores de adorno. */
 @Component({
   selector: 'app-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,9 +8,7 @@ const TONOS = [
     class="avatar"
     [style.width.px]="tamano()"
     [style.height.px]="tamano()"
-    [style.font-size.px]="tamano() * 0.4"
-    [style.background]="tono()[0]"
-    [style.color]="tono()[1]"
+    [style.font-size.px]="tamano() * 0.38"
     [attr.title]="nombre()"
     >{{ iniciales() }}</span
   >`,
@@ -34,9 +21,12 @@ const TONOS = [
       display: inline-grid;
       place-items: center;
       border-radius: 50%;
-      font-weight: 700;
+      font-family: 'Source Serif 4 Variable', Georgia, serif;
+      font-weight: 600;
       letter-spacing: 0.02em;
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+      color: var(--texto-2);
+      background: var(--superficie-2);
+      border: 1px solid var(--borde-fuerte);
     }
   `,
 })
@@ -47,14 +37,8 @@ export class AvatarComponent {
   protected readonly iniciales = computed(() => {
     const partes = this.nombre().trim().split(/\s+/).filter(Boolean);
     if (partes.length === 0) return '?';
-    return (
-      (partes[0][0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')
-    ).toUpperCase();
-  });
-
-  protected readonly tono = computed(() => {
-    let h = 0;
-    for (const c of this.nombre()) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-    return TONOS[h % TONOS.length];
+    // Nombre + primer apellido (en "Jorge Mendoza Quispe", JM).
+    const segundo = partes.length >= 3 ? partes[partes.length - 2] : partes[partes.length - 1];
+    return ((partes[0][0] ?? '') + (partes.length > 1 ? segundo[0] : '')).toUpperCase();
   });
 }

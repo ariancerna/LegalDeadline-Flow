@@ -1,29 +1,30 @@
 <div class="pantalla">
   <aside class="presentacion">
     <div class="marca">
-      <span class="logo"><app-icono nombre="scale" [tamano]="22" [grosor]="1.75" /></span>
+      <span class="logo"><app-icono nombre="scale" [tamano]="18" [grosor]="1.5" /></span>
       <span><strong>LegalDeadline</strong><small>Flow</small></span>
     </div>
 
     <div class="mensaje">
+      <p class="rotulo">Control de expedientes y plazos</p>
       <h1>Ningún plazo se pierde de vista.</h1>
       <p>
-        Expedientes, tareas y vencimientos de tu estudio en un solo lugar, con prioridades claras y
+        Expedientes, tareas y vencimientos del estudio en un solo registro, con prioridades claras y
         un historial que lo explica todo.
       </p>
     </div>
 
-    <ul class="beneficios">
-      @for (b of beneficios; track b.titulo) {
+    <ol class="beneficios">
+      @for (b of beneficios; track b.titulo; let i = $index) {
         <li>
-          <span class="icono"><app-icono [nombre]="b.icono" [tamano]="18" /></span>
+          <span class="numero">{{ i + 1 | number: '2.0' }}</span>
           <div>
             <strong>{{ b.titulo }}</strong>
             <p>{{ b.texto }}</p>
           </div>
         </li>
       }
-    </ul>
+    </ol>
 
     <p class="pie">Caso académico · Universidad Tecnológica del Perú · Datos ficticios</p>
   </aside>
@@ -40,7 +41,7 @@
 
     <div class="panel">
       <div class="marca-movil">
-        <span class="logo"><app-icono nombre="scale" [tamano]="20" [grosor]="1.75" /></span>
+        <span class="logo"><app-icono nombre="scale" [tamano]="18" [grosor]="1.5" /></span>
       </div>
       <h2>Bienvenido de nuevo</h2>
       <p class="texto-2">Ingresa con tu cuenta del estudio.</p>

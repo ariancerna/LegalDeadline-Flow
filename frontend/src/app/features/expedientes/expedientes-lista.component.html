@@ -120,13 +120,20 @@
             @for (e of datos(); track e.id) {
               <tr class="clicable" (click)="abrir(e)" (keydown.enter)="abrir(e)" tabindex="0">
                 <td>
-                  <div class="expediente">
-                    <span class="icono-exp"><app-icono nombre="folder" [tamano]="16" /></span>
-                    <div>
-                      <div class="titulo-celda mono">{{ e.codigo }}</div>
-                      <div class="sub-celda asunto">{{ e.asunto }}</div>
+                  @if (e.asunto | asunto; as a) {
+                    <div class="expediente">
+                      <span class="mono numero">{{ e.codigo }}</span>
+                      <span class="titulo-celda partes">{{ a.titulo }}</span>
+                      @if (a.materia) {
+                        <span class="sub-celda"
+                          >{{ a.materia }}
+                          @if (a.organo) {
+                            · {{ a.organo }}
+                          }
+                        </span>
+                      }
                     </div>
-                  </div>
+                  }
                 </td>
                 <td class="ocultar-movil">
                   <span class="persona">

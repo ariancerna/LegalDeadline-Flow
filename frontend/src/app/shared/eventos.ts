@@ -1,3 +1,4 @@
+import { etiquetaConocida } from './etiquetas';
 import { EventoTipo } from '../core/models';
 import { NombreIcono } from './iconos.generados';
 
@@ -35,6 +36,15 @@ export const EVENTOS: Record<EventoTipo, PresentacionEvento> = {
 
 export function nombreDesdeEmail(email: string | null): string {
   if (!email) return 'Sistema';
-  const local = email.split('@')[0].replace(/[._-]+/g, ' ');
-  return local.replace(/\b\w/g, (c) => c.toUpperCase());
+  const local = email.split('@')[0];
+  if (local === 'admin') return 'Administración';
+  return local.replace(/[._-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Convierte los valores de enum que trae el detalle (PENDIENTE, AUDIENCIA_SANEAMIENTO) en texto legible. */
+export function detalleLegible(detalle: string): string {
+  return detalle.replace(/\b[A-ZÁÉÍÓÚÑ]{2,}(?:_[A-ZÁÉÍÓÚÑ]+)*\b/g, (token) => {
+    const texto = etiquetaConocida(token);
+    return texto === null ? token : texto.toLowerCase();
+  });
 }

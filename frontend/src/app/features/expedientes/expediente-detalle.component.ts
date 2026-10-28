@@ -11,11 +11,12 @@ import { MigasService } from '../../core/migas.service';
 import { Evento, Expediente, Plazo, Tarea } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
+import { AsuntoPipe } from '../../shared/asunto.pipe';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { DialogoComponent } from '../../shared/dialogo.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { tono } from '../../shared/etiquetas';
-import { EVENTOS, nombreDesdeEmail } from '../../shared/eventos';
+import { EVENTOS, detalleLegible } from '../../shared/eventos';
 import { FechaPipe } from '../../shared/fecha.pipe';
 import { diasHasta, haceCuanto, hoyLima, textoDias } from '../../shared/fechas';
 import { IconoComponent } from '../../shared/icono.component';
@@ -46,6 +47,7 @@ type Pestana = 'tareas' | 'plazos' | 'actividad';
     IconoComponent,
     AvatarComponent,
     VacioComponent,
+    AsuntoPipe,
   ],
   templateUrl: './expediente-detalle.component.html',
   styleUrl: './expediente-detalle.component.scss',
@@ -62,7 +64,7 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
   protected readonly responsables = inject(ResponsablesStore);
   protected readonly tono = tono;
   protected readonly eventosInfo = EVENTOS;
-  protected readonly nombreDesdeEmail = nombreDesdeEmail;
+  protected readonly detalleLegible = detalleLegible;
   protected readonly haceCuanto = haceCuanto;
   protected readonly textoDias = textoDias;
   private readonly hoy = hoyLima();
@@ -127,12 +129,14 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
     this.servicio.obtener(id).subscribe({
       next: (e) => {
         this.expediente.set(e);
-        this.cache.registrar(e.id, e.codigo);
+        this.cache.registrar(e.id, e.codigo, e.asunto);
         this.migas.detalle.set(e.codigo);
       },
       error: (e) => this.error.set(interpretarError(e).mensaje),
     });
-    this.servicio.tareas(id).subscribe({ next: (t) => this.tareas.set(t), error: () => undefined });
+    this.servicio
+      .tareas(id)
+      .subscribe({ next: (t) => this.tareas.set(ordenarTareas(t)), error: () => undefined });
     this.plazosServicio.listar({ expedienteId: id, size: 100 }).subscribe({
       next: (p) => this.plazos.set(p.content),
       error: () => undefined,
@@ -196,4 +200,13 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
       },
     });
   }
+}
+
+/** Primero las activas por fecha de vencimiento; al final las cerradas y canceladas. */
+function ordenarTareas(lista: Tarea[]): Tarea[] {
+  return [...lista].sort(
+    (a, b) =>
+      Number(!esActiva(a.estado)) - Number(!esActiva(b.estado)) ||
+      a.fechaLimite.localeCompare(b.fechaLimite),
+  );
 }

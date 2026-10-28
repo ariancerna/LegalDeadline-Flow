@@ -90,11 +90,11 @@
                 /></span>
                 <div class="contenido">
                   <p>
-                    <strong>{{ nombreDesdeEmail(e.usuarioEmail) }}</strong>
+                    <strong>{{ responsables.autor(e.usuarioId, e.usuarioEmail) }}</strong>
                     {{ info[e.tipo].verbo }}
                     <span class="recurso mono">{{ e.recurso }} #{{ e.recursoId }}</span>
                   </p>
-                  <p class="detalle-evento">{{ e.detalle }}</p>
+                  <p class="detalle-evento">{{ detalleLegible(e.detalle) }}</p>
                 </div>
                 <span class="tipo estado sin-punto">{{ e.tipo | etiqueta }}</span>
               </li>

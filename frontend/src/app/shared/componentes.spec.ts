@@ -1,11 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-import { DonaRiesgoComponent } from '../features/tablero/dona-riesgo.component';
+import { provideRouter } from '@angular/router';
+import { LineaVencimientosComponent } from '../features/tablero/linea-vencimientos.component';
 import { AvatarComponent } from './avatar.component';
-import { EVENTOS, nombreDesdeEmail } from './eventos';
+import { EVENTOS, detalleLegible, nombreDesdeEmail } from './eventos';
 import { IconoComponent } from './icono.component';
 import { EVENTO_TIPOS } from '../core/models';
 
 describe('componentes compartidos', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
+
   it('dibuja un icono de Lucide con elementos SVG nativos', async () => {
     const f = TestBed.createComponent(IconoComponent);
     f.componentRef.setInput('nombre', 'scale');
@@ -19,16 +22,42 @@ describe('componentes compartidos', () => {
     f.componentRef.setInput('nombre', 'Responsable Demo');
     await f.whenStable();
     expect((f.nativeElement as HTMLElement).textContent?.trim()).toBe('RD');
+    f.componentRef.setInput('nombre', 'Jorge Mendoza Quispe');
+    await f.whenStable();
+    expect((f.nativeElement as HTMLElement).textContent?.trim()).toBe('JM');
   });
 
-  it('la dona reparte los plazos por nivel de riesgo', async () => {
-    const f = TestBed.createComponent(DonaRiesgoComponent);
-    f.componentRef.setInput('datos', { CRITICO: 2, ALTO: 1, MEDIO: 1, BAJO: 0 });
+  it('la línea de vencimientos ubica los plazos en su día y agrupa los vencidos', async () => {
+    const f = TestBed.createComponent(LineaVencimientosComponent);
+    const plazo = (id: number, fechaLimite: string) => ({
+      plazo: {
+        id,
+        expedienteId: 1,
+        tipo: 'APELACION',
+        fechaLimite,
+        estado: 'ACTIVO' as const,
+        motivoAnulacion: null,
+        creadoEn: '',
+        anuladoEn: null,
+        actualizadoEn: '',
+        version: 0,
+      },
+      riesgo: {
+        plazoId: id,
+        estado: 'ACTIVO' as const,
+        nivel: 'ALTO' as const,
+        diasRestantes: 0,
+        tareasPendientes: 1,
+      },
+    });
+    f.componentRef.setInput('hoy', '2026-10-28');
+    f.componentRef.setInput('alertas', [plazo(1, '2026-10-27'), plazo(2, '2026-10-30')]);
     await f.whenStable();
-    const el = f.nativeElement as HTMLElement;
-    expect(el.querySelector('.total')?.textContent).toBe('4');
-    expect(el.querySelectorAll('.segmento').length).toBe(3); // BAJO = 0 no se dibuja
-    expect(el.textContent).toContain('50%');
+    const columnas = (f.nativeElement as HTMLElement).querySelectorAll('.columna');
+    expect(columnas.length).toBe(16); // vencidos + hoy + 14 días
+    expect(columnas[0].classList).toContain('vencidos');
+    expect(columnas[3].querySelectorAll('.marca').length).toBe(1); // 30/10
+    expect(columnas[3].textContent).toContain('Apelación');
   });
 
   it('cada tipo de evento de auditoría tiene icono y texto', () => {
@@ -38,5 +67,13 @@ describe('componentes compartidos', () => {
     expect(nombreDesdeEmail('supervisor@legaldeadline.local')).toBe('Supervisor');
     expect(nombreDesdeEmail('maria.perez@x.pe')).toBe('Maria Perez');
     expect(nombreDesdeEmail(null)).toBe('Sistema');
+    expect(nombreDesdeEmail('admin@legaldeadline.local')).toBe('Administración');
+    expect(detalleLegible('Estado cambiado de PENDIENTE a EN_PROGRESO')).toBe(
+      'Estado cambiado de pendiente a en progreso',
+    );
+    expect(detalleLegible('Plazo AUDIENCIA_SANEAMIENTO registrado')).toBe(
+      'Plazo audiencia de saneamiento registrado',
+    );
+    expect(detalleLegible('Resolución N.º 4 de la CSJ')).toBe('Resolución N.º 4 de la CSJ');
   });
 });

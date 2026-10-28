@@ -3,7 +3,7 @@
 Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y muestra cada pantalla según el rol del usuario. Cubre RF20–RF23 y RNF19–RNF20 del informe.
 
 - **Angular 21** (componentes standalone, signals, formularios reactivos) y **SASS**.
-- Sistema de diseño propio en `src/styles/`: variables CSS con **modo claro y oscuro** (`_tema.scss`), tipografías Inter y Source Serif 4, e iconos de [Lucide](https://lucide.dev).
+- Estilo **«despacho editorial»** en `src/styles/`: papel, tinta y un burdeos de sello; títulos y cifras en serif (Source Serif 4), rótulos en versalitas, líneas finas en lugar de sombras y color reservado para el riesgo. Variables CSS con modo claro y **noche** (`_tema.scss`). Texto de interfaz en Inter e iconos de [Lucide](https://lucide.dev).
 - `@angular/cdk` solo para arrastrar y soltar en el tablero Kanban.
 - Pruebas unitarias con **Vitest** (el runner por defecto de Angular 21).
 
@@ -12,8 +12,8 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 | Pantalla | Qué ofrece |
 |---|---|
 | Login | Pantalla dividida con presentación del sistema y accesos rápidos a las cuentas demo. |
-| Tablero | Saludo y resumen del día, 4 indicadores, dona de riesgo, alertas de plazos, agenda de 14 días, carga del equipo y actividad reciente. |
-| Expedientes | Pestañas por estado con contadores, búsqueda con tiempo de respuesta (RF04), detalle con avance, próximos vencimientos e historial. |
+| Tablero | Registro de vencimientos: franja de cifras, calendario de 14 días con los plazos marcados por riesgo, registro de plazos, riesgo de la cartera, carga del equipo y diario de actividad. |
+| Expedientes | Pestañas por estado con contadores, búsqueda con tiempo de respuesta (RF04) y carátula de cada expediente (número, partes, materia, órgano jurisdiccional), con avance, próximos vencimientos e historial. |
 | Tareas | Vista **Lista** o **Tablero Kanban**: arrastrar una tarjeta cambia el estado y respeta las transiciones y la confirmación ALTA. |
 | Plazos | Vista **Lista** (todos, próximos 10 días, vencidos) o **Calendario** mensual coloreado por riesgo. |
 | Carga de trabajo | Bloques de capacidad por persona y recomendaciones de reasignación aplicables con un clic. |
@@ -76,6 +76,8 @@ src/app/
     usuarios/      administración de cuentas
 ```
 
+El asunto de un expediente puede seguir la convención `Materia · Partes · Órgano jurisdiccional` (así lo carga la demostración); en ese caso la interfaz muestra cada parte por separado (`shared/asunto.ts`). Si no la sigue, el asunto completo se usa como título.
+
 Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-static`. Para usar uno nuevo, agrega su nombre a la lista del script y vuelve a ejecutarlo.
 
 ## Seguridad en el cliente
@@ -99,7 +101,7 @@ Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-
 | RF12–RF14 Plazos | `/plazos`, `/plazos/{id}/anulacion` | `features/plazos/*` | E2E: motivo < 10 caracteres bloqueado, anulación |
 | RF15 Riesgo | `GET /plazos/{id}/riesgo` | `plazos-tabla`, `plazos-calendario`, `core/alertas.store` (campana y tablero) | E2E: plazo a 2 días = CRÍTICO |
 | RF16 Sobrecarga | `GET /responsables/carga` | `features/carga/*`, aviso en `tarea-form` | `features/carga/recomendacion.spec.ts` |
-| RF17 Indicadores | `GET /indicadores` | `tablero.component`, `dona-riesgo.component` | `shared/componentes.spec.ts`, E2E: tablero |
+| RF17 Indicadores | `GET /indicadores` | `tablero.component`, `linea-vencimientos.component` | `shared/componentes.spec.ts`, E2E: tablero |
 | RF18 Auditoría | `GET /auditoria/eventos` | `auditoria.component`, pestaña Actividad del expediente | E2E: eventos visibles solo para roles autorizados |
 | RF20 Navegación por rol | — | `layout/shell.component`, `core/auth/guards.ts` | `core/auth/auth.spec.ts` (guards), E2E: el auditor no ve acciones |
 | RF23 Integración | todos | `core/auth/auth.interceptor.ts` | `core/auth/auth.spec.ts` (Bearer, 401) |

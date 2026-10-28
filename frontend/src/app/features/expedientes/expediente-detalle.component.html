@@ -13,34 +13,18 @@
 
   @if (expediente(); as e) {
     <header class="cabecera tarjeta">
-      <div class="identidad">
-        <span class="icono-exp"><app-icono nombre="folder-open" [tamano]="22" /></span>
-        <div class="textos">
-          <div class="fila-codigo">
-            <span class="mono codigo">{{ e.codigo }}</span>
+      @if (e.asunto | asunto; as a) {
+        <div class="identidad">
+          <p class="rotulo">
+            Expediente N.º <span class="mono codigo">{{ e.codigo }}</span>
             <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
-          </div>
-          <h1>{{ e.asunto }}</h1>
-          <div class="meta">
-            <span class="persona"
-              ><app-avatar [nombre]="responsables.nombre(e.responsableId)" [tamano]="22" />{{
-                responsables.nombre(e.responsableId)
-              }}</span
-            >
-            <span
-              ><app-icono nombre="calendar" [tamano]="14" />Registrado
-              {{ e.creadoEn | fecha: 'hora' }}</span
-            >
-            <span
-              ><app-icono nombre="clock" [tamano]="14" />Actualizado
-              {{ haceCuanto(e.actualizadoEn) }}</span
-            >
-            <span class="mono texto-3" title="Versión para control de concurrencia (RN11)"
-              >v{{ e.version }}</span
-            >
-          </div>
+          </p>
+          <h1>{{ a.titulo }}</h1>
+          @if (a.materia) {
+            <p class="materia">{{ a.materia }}</p>
+          }
         </div>
-      </div>
+      }
       @if (auth.esGestor() && e.estado !== 'ARCHIVADO') {
         <div class="acciones">
           @if (abierto()) {
@@ -55,6 +39,35 @@
             <app-icono nombre="archive" [tamano]="15" />Archivar
           </button>
         </div>
+      }
+      @if (e.asunto | asunto; as a) {
+        <dl class="caratula">
+          <div>
+            <dt>Órgano jurisdiccional</dt>
+            <dd>{{ a.organo ?? '—' }}</dd>
+          </div>
+          <div>
+            <dt>Responsable</dt>
+            <dd class="persona">
+              <app-avatar [nombre]="responsables.nombre(e.responsableId)" [tamano]="22" />{{
+                responsables.nombre(e.responsableId)
+              }}
+            </dd>
+          </div>
+          <div>
+            <dt>Registrado</dt>
+            <dd>{{ e.creadoEn | fecha: 'hora' }}</dd>
+          </div>
+          <div>
+            <dt>Última modificación</dt>
+            <dd>
+              {{ haceCuanto(e.actualizadoEn) }}
+              <span class="mono texto-3" title="Versión para control de concurrencia (RN11)"
+                >· v{{ e.version }}</span
+              >
+            </dd>
+          </div>
+        </dl>
       }
     </header>
 
@@ -165,10 +178,10 @@
                       /></span>
                       <div>
                         <p>
-                          <strong>{{ nombreDesdeEmail(ev.usuarioEmail) }}</strong>
+                          <strong>{{ responsables.autor(ev.usuarioId, ev.usuarioEmail) }}</strong>
                           {{ eventosInfo[ev.tipo].verbo }}
                         </p>
-                        <p class="texto-2 texto-chico">{{ ev.detalle }}</p>
+                        <p class="texto-2 texto-chico">{{ detalleLegible(ev.detalle) }}</p>
                         <small class="texto-3"
                           >{{ ev.fecha | fecha: 'hora' }} · {{ haceCuanto(ev.fecha) }}</small
                         >

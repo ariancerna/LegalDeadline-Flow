@@ -21,7 +21,43 @@ const ETIQUETAS: Record<string, string> = {
   ALTO: 'Alto',
   MEDIO: 'Medio',
   BAJO: 'Bajo',
+  // Tipos frecuentes de plazo y de tarea
+  CONTESTACION: 'Contestación de demanda',
+  AUDIENCIA: 'Audiencia',
+  AUDIENCIA_SANEAMIENTO: 'Audiencia de saneamiento',
+  AUDIENCIA_CONCILIACION: 'Audiencia de conciliación',
+  OFRECIMIENTO_PRUEBAS: 'Ofrecimiento de pruebas',
+  ALEGATOS: 'Alegatos',
+  SUBSANACION: 'Subsanación',
+  PRESENTACION_DEMANDA: 'Presentación de demanda',
+  EXCEPCIONES: 'Excepciones',
+  PERICIA: 'Pericia',
+  APELACION: 'Apelación',
+  CASACION: 'Casación',
+  ESCRITO: 'Escrito',
+  REVISION: 'Revisión',
+  NOTIFICACION: 'Notificación',
+  REUNION: 'Reunión',
 };
+
+const CORTAS: Record<string, string> = {
+  CONTESTACION: 'Contestación',
+  AUDIENCIA_SANEAMIENTO: 'Saneamiento',
+  AUDIENCIA_CONCILIACION: 'Conciliación',
+  OFRECIMIENTO_PRUEBAS: 'Pruebas',
+  PRESENTACION_DEMANDA: 'Demanda',
+};
+
+/** Versión breve para espacios estrechos (línea de tiempo, calendario). */
+export function etiquetaCorta(valor: string | null | undefined): string {
+  if (valor && CORTAS[valor]) return CORTAS[valor];
+  return etiqueta(valor);
+}
+
+/** Etiqueta solo si el valor está en el diccionario; null si no se conoce. */
+export function etiquetaConocida(valor: string): string | null {
+  return ETIQUETAS[valor] ?? null;
+}
 
 /** Convierte un valor de enum del backend (EN_PROGRESO) en texto legible (En progreso). */
 export function etiqueta(valor: string | null | undefined): string {
