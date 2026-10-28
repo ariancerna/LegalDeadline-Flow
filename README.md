@@ -229,7 +229,7 @@ El [modelo relacional](docs/modelo-relacional.md) documenta tablas, relaciones e
 | `DATABASE_URL` | Cadena `postgresql://usuario:clave@host/base` de un proveedor en la nube (Neon); reemplaza a `DB_*`. Ver [docs/neon.md](docs/neon.md) |
 | `SPRING_DATASOURCE_URL` | URL JDBC completa; reemplaza a `DB_HOST`, `DB_PORT` y `DB_NAME` (por ejemplo, PostgreSQL en la nube con `?sslmode=require`) |
 | `DEMO_ENABLED` | Carga de ejemplo en Compose |
-| `DEMO_VOLUMEN` | Expedientes que debe tener la demostración: 5000 con el perfil `demo`; `0` carga solo la cartera base |
+| `DEMO_VOLUMEN` | Expedientes que debe tener la demostración cuando está activa (perfil `demo` o `DEMO_ENABLED=true`): 5000 por defecto; `0` carga solo la cartera base |
 | `LEGALDEADLINE_DEMO_ENABLED` | Carga de ejemplo en Java directo |
 
 Imágenes base: [PostgreSQL oficial](https://hub.docker.com/_/postgres), [Maven oficial](https://hub.docker.com/_/maven) y [Eclipse Temurin oficial](https://hub.docker.com/_/eclipse-temurin).
