@@ -1,112 +1,169 @@
-<div class="pagina-encabezado">
-  <div>
-    <h1>Expedientes</h1>
-    <p>Busca por código o asunto y filtra por estado o responsable.</p>
-  </div>
-  @if (auth.esGestor()) {
-    <button type="button" class="btn btn-primario" (click)="creando.set(true)">
-      + Nuevo expediente
-    </button>
-  }
-</div>
-
-<div class="filtros" role="search">
-  <div class="campo">
-    <label for="f-q">Buscar</label>
-    <input
-      id="f-q"
-      type="search"
-      placeholder="Código o asunto"
-      [ngModel]="filtros().q"
-      (ngModelChange)="cambiarFiltro('q', $event)"
-      maxlength="255"
-    />
-  </div>
-  <div class="campo">
-    <label for="f-estado">Estado</label>
-    <select
-      id="f-estado"
-      [ngModel]="filtros().estado"
-      (ngModelChange)="cambiarFiltro('estado', $event)"
-    >
-      <option value="">Todos</option>
-      @for (e of estados; track e) {
-        <option [value]="e">{{ e | etiqueta }}</option>
-      }
-    </select>
-  </div>
-  @if (auth.lecturaGlobal()) {
-    <div class="campo">
-      <label for="f-resp">Responsable</label>
-      <select
-        id="f-resp"
-        [ngModel]="filtros().responsableId"
-        (ngModelChange)="cambiarFiltro('responsableId', $event)"
-      >
-        <option [ngValue]="null">Todos</option>
-        @for (r of responsables.lista(); track r.responsableId) {
-          <option [ngValue]="r.responsableId">{{ r.nombre }}</option>
-        }
-      </select>
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="briefcase" [tamano]="13" />Gestión</p>
+      <h1>Expedientes</h1>
+      <p class="subtitulo">Busca por código o asunto y combina filtros por estado y responsable.</p>
     </div>
-  }
-  <div>
-    <button type="button" class="btn btn-secundario" (click)="limpiar()">Limpiar filtros</button>
-  </div>
-</div>
+    @if (auth.esGestor()) {
+      <button type="button" class="btn btn-primario" (click)="creando.set(true)">
+        <app-icono nombre="plus" [tamano]="16" />Nuevo expediente
+      </button>
+    }
+  </header>
 
-@if (error(); as mensaje) {
-  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-}
-
-<div class="tabla-contenedor">
-  <table class="tabla">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Asunto</th>
-        <th>Responsable</th>
-        <th>Estado</th>
-        <th>Actualizado</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (e of datos(); track e.id) {
-        <tr>
-          <td>
-            <a class="mono" [routerLink]="['/expedientes', e.id]">{{ e.codigo }}</a>
-          </td>
-          <td>{{ e.asunto }}</td>
-          <td>{{ responsables.nombre(e.responsableId) }}</td>
-          <td>
-            <span class="badge" [class]="'badge ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
-          </td>
-          <td class="texto-suave">{{ e.actualizadoEn | fecha: 'hora' }}</td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="5" class="vacia">
-            {{ cargando() ? 'Cargando…' : 'No hay expedientes que coincidan con la búsqueda.' }}
-          </td>
-        </tr>
+  <section class="tarjeta">
+    <div class="pestanas" role="tablist">
+      @for (p of pestanas(); track p.valor) {
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="estado() === p.valor"
+          (click)="elegirEstado(p.valor)"
+        >
+          {{ p.texto }}
+          @if (p.cuenta !== null) {
+            <span class="contador num">{{ p.cuenta }}</span>
+          }
+        </button>
       }
-    </tbody>
-  </table>
-  <app-paginador
-    [pagina]="pagina()"
-    [tamano]="tamano"
-    [total]="total()"
-    (cambiar)="irAPagina($event)"
-  />
+    </div>
+
+    <div class="barra-filtros" role="search">
+      <div class="campo crece con-icono">
+        <app-icono nombre="search" [tamano]="15" />
+        <input
+          id="f-q"
+          type="search"
+          placeholder="Buscar por código o asunto…"
+          [ngModel]="q()"
+          (ngModelChange)="buscar($event)"
+          maxlength="255"
+          aria-label="Buscar"
+        />
+      </div>
+      @if (auth.lecturaGlobal()) {
+        <div class="campo">
+          <select
+            id="f-resp"
+            aria-label="Responsable"
+            [ngModel]="responsableId()"
+            (ngModelChange)="elegirResponsable($event)"
+          >
+            <option [ngValue]="null">Todos los responsables</option>
+            @for (r of responsables.lista(); track r.responsableId) {
+              <option [ngValue]="r.responsableId">{{ r.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+      @if (hayFiltros()) {
+        <button type="button" class="btn btn-fantasma btn-chico" (click)="limpiar()">
+          <app-icono nombre="x" [tamano]="14" />Limpiar
+        </button>
+      }
+      @if (tiempoMs() !== null && !cargando()) {
+        <span
+          class="tiempo texto-3 texto-chico"
+          title="Indicador RF04: tiempo de respuesta de la búsqueda"
+        >
+          <app-icono nombre="zap" [tamano]="13" />{{ total() }} resultados · {{ tiempoMs() }} ms
+        </span>
+      }
+    </div>
+
+    @if (error(); as mensaje) {
+      <div class="aviso aviso-error margen" role="alert">
+        <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+      </div>
+    }
+
+    @if (cargando() && datos().length === 0) {
+      <app-esqueleto [filas]="6" />
+    } @else if (datos().length === 0) {
+      @if (hayFiltros()) {
+        <app-vacio
+          icono="search"
+          titulo="Sin coincidencias"
+          texto="Ningún expediente coincide con la búsqueda. Prueba con otro término."
+        >
+          <button type="button" class="btn btn-secundario" (click)="limpiar()">
+            Limpiar filtros
+          </button>
+        </app-vacio>
+      } @else {
+        <app-vacio
+          icono="folder-open"
+          titulo="Aún no hay expedientes aquí"
+          texto="Los expedientes registrados aparecerán en esta lista."
+        >
+          @if (auth.esGestor()) {
+            <button type="button" class="btn btn-primario" (click)="creando.set(true)">
+              <app-icono nombre="plus" [tamano]="16" />Nuevo expediente
+            </button>
+          }
+        </app-vacio>
+      }
+    } @else {
+      <div class="tabla-contenedor" [class.atenuada]="cargando()">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Expediente</th>
+              <th class="ocultar-movil">Responsable</th>
+              <th>Estado</th>
+              <th class="ocultar-movil">Actualizado</th>
+              <th><span class="sr-only">Abrir</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of datos(); track e.id) {
+              <tr class="clicable" (click)="abrir(e)" (keydown.enter)="abrir(e)" tabindex="0">
+                <td>
+                  <div class="expediente">
+                    <span class="icono-exp"><app-icono nombre="folder" [tamano]="16" /></span>
+                    <div>
+                      <div class="titulo-celda mono">{{ e.codigo }}</div>
+                      <div class="sub-celda asunto">{{ e.asunto }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="ocultar-movil">
+                  <span class="persona">
+                    <app-avatar [nombre]="responsables.nombre(e.responsableId)" [tamano]="26" />
+                    {{ responsables.nombre(e.responsableId) }}
+                  </span>
+                </td>
+                <td>
+                  <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+                </td>
+                <td class="texto-2 texto-chico ocultar-movil" [title]="e.actualizadoEn">
+                  {{ haceCuanto(e.actualizadoEn) }}
+                </td>
+                <td class="flecha"><app-icono nombre="chevron-right" [tamano]="16" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-paginador
+        [pagina]="pagina()"
+        [tamano]="tamano"
+        [total]="total()"
+        (cambiar)="irAPagina($event)"
+      />
+    }
+  </section>
 </div>
-@if (tiempoMs() !== null) {
-  <p class="texto-suave texto-chico">
-    Búsqueda respondida en {{ tiempoMs() }} ms (indicador RF04).
-  </p>
-}
 
 @if (creando()) {
-  <app-dialogo titulo="Nuevo expediente" (cerrar)="creando.set(false)">
-    <app-expediente-form (guardado)="creado($event)" (cancelar)="creando.set(false)" />
+  <app-dialogo
+    titulo="Nuevo expediente"
+    descripcion="Se registra en estado abierto y queda en la bitácora."
+    icono="folder"
+    [lateral]="true"
+    (cerrar)="cerrarCreacion()"
+  >
+    <app-expediente-form (guardado)="creado($event)" (cancelar)="cerrarCreacion()" />
   </app-dialogo>
 }

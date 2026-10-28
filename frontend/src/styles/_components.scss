@@ -1,155 +1,184 @@
-@use 'sass:color';
 @use 'tokens' as *;
 
-// ---------- Encabezado de página ----------
+// ================= Página =================
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  // Solo opacidad: un transform crearía un bloque contenedor y rompería los paneles con position: fixed.
+  animation: desvanecer 0.25s ease;
+}
+
 .pagina-encabezado {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  .antetitulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--acento);
+    margin-bottom: 6px;
+  }
+
+  .subtitulo {
+    margin-top: 6px;
+    color: var(--texto-2);
+    max-width: 640px;
+  }
+}
+
+// ================= Tarjetas =================
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  box-shadow: var(--sombra-1);
+}
+
+.tarjeta-encabezado {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--borde);
 
-  p {
-    margin: 4px 0 0;
-    color: $color-texto-suave;
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .descripcion {
+    color: var(--texto-3);
+    font-size: 0.8125rem;
+    margin-top: 2px;
   }
 }
 
-// ---------- Tarjetas ----------
-.tarjeta {
-  background: $color-superficie;
-  border: 1px solid $color-borde;
-  border-radius: $radio;
-  box-shadow: $sombra;
+.tarjeta-cuerpo {
   padding: 20px;
-
-  & + & {
-    margin-top: 16px;
-  }
-
-  > h2 {
-    margin-bottom: 14px;
-  }
 }
 
-.rejilla {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-
-  @media (max-width: 1100px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  @include movil {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
+.tarjeta-pie {
+  padding: 12px 20px;
+  border-top: 1px solid var(--borde);
+  background: var(--superficie-2);
+  border-radius: 0 0 var(--radio-l) var(--radio-l);
 }
 
-.kpi {
-  @extend .tarjeta;
-  padding: 16px 18px;
-
-  .kpi-valor {
-    font-size: clamp(1.35rem, 4vw, 1.8rem);
-    font-weight: 700;
-    color: $color-primario-oscuro;
-  }
-
-  .kpi-etiqueta {
-    color: $color-texto-suave;
-    font-size: 0.85rem;
-  }
-
-  &.kpi-alerta .kpi-valor {
-    color: $color-error;
-  }
-}
-
-// Las tarjetas dentro de una rejilla no llevan margen superior.
-.rejilla > .kpi,
-.rejilla > .tarjeta {
-  margin-top: 0;
-}
-
-// ---------- Botones ----------
+// ================= Botones =================
 .btn {
+  --alto: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: $radio-chico;
+  gap: 7px;
+  height: var(--alto);
+  padding: 0 14px;
+  border-radius: var(--radio);
   border: 1px solid transparent;
   font: inherit;
+  font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
+  user-select: none;
   transition:
-    background 0.15s,
-    border-color 0.15s;
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s,
+    transform 0.05s;
 
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+  &:hover {
+    text-decoration: none;
   }
 
-  &:focus-visible {
-    outline: 3px solid color.change($color-acento, $alpha: 0.6);
-    outline-offset: 1px;
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .btn-primario {
-  background: $color-primario;
-  color: #fff;
+  background: var(--marca);
+  color: var(--sobre-marca);
+  box-shadow:
+    var(--sombra-1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
   &:hover:not(:disabled) {
-    background: $color-primario-oscuro;
+    background: var(--marca-hover);
   }
 }
 
 .btn-secundario {
-  background: $color-superficie;
-  color: $color-primario;
-  border-color: $color-borde;
+  background: var(--superficie);
+  color: var(--texto);
+  border-color: var(--borde-fuerte);
+  box-shadow: var(--sombra-1);
 
   &:hover:not(:disabled) {
-    border-color: $color-primario;
+    background: var(--superficie-hover);
+  }
+}
+
+.btn-fantasma {
+  background: transparent;
+  color: var(--texto-2);
+
+  &:hover:not(:disabled) {
+    background: var(--superficie-hover);
+    color: var(--texto);
+  }
+
+  &.peligro {
+    color: var(--peligro);
+
+    &:hover:not(:disabled) {
+      background: var(--peligro-suave);
+    }
   }
 }
 
 .btn-peligro {
-  background: $color-error;
+  background: var(--peligro);
   color: #fff;
 
   &:hover:not(:disabled) {
-    background: color.adjust($color-error, $lightness: -6%);
-  }
-}
-
-.btn-enlace {
-  background: none;
-  border: none;
-  padding: 4px 6px;
-  color: $color-primario;
-  font-weight: 600;
-
-  &:hover:not(:disabled) {
-    text-decoration: underline;
-  }
-
-  &.peligro {
-    color: $color-error;
+    filter: brightness(0.94);
   }
 }
 
 .btn-chico {
-  padding: 4px 10px;
-  font-size: 0.85rem;
+  --alto: 30px;
+  padding: 0 10px;
+  font-size: 0.8125rem;
+  border-radius: var(--radio-s);
+}
+
+.btn-icono {
+  width: var(--alto);
+  padding: 0;
+}
+
+.btn-bloque {
+  width: 100%;
 }
 
 .acciones {
@@ -159,258 +188,645 @@
   align-items: center;
 }
 
-// ---------- Formularios ----------
+.acciones-fila {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+tr:hover .acciones-fila,
+.acciones-fila:focus-within {
+  opacity: 1;
+}
+
+.girando {
+  animation: girar 0.8s linear infinite;
+}
+
+// ================= Formularios =================
 .formulario {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .fila-campos {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  min-width: 0;
 
-  label {
+  > label {
     font-weight: 600;
-    font-size: 0.85rem;
-  }
-
-  input,
-  select,
-  textarea {
-    font: inherit;
-    padding: 8px 10px;
-    border: 1px solid $color-borde;
-    border-radius: $radio-chico;
-    background: #fff;
-    color: $color-texto;
-    width: 100%;
-
-    &:focus {
-      outline: none;
-      border-color: $color-primario;
-      box-shadow: 0 0 0 3px color.change($color-primario, $alpha: 0.15);
-    }
-
-    &:disabled {
-      background: $color-fondo;
-    }
-  }
-
-  textarea {
-    min-height: 90px;
-    resize: vertical;
-  }
-
-  &.invalido {
-    input,
-    select,
-    textarea {
-      border-color: $color-error;
-    }
-  }
-
-  .error-campo {
-    color: $color-error;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
+    color: var(--texto);
   }
 
   .ayuda {
-    color: $color-texto-suave;
-    font-size: 0.8rem;
+    color: var(--texto-3);
+    font-size: 0.78rem;
+  }
+
+  .error-campo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--peligro);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  &.invalido .control {
+    border-color: var(--peligro);
+  }
+}
+
+.control,
+.campo input:not([type='checkbox']):not([type='radio']),
+.campo select,
+.campo textarea,
+.barra-filtros > input,
+.barra-filtros > select {
+  font: inherit;
+  font-size: 0.875rem;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  width: 100%;
+  box-shadow: var(--sombra-1);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+  &::placeholder {
+    color: var(--texto-3);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--texto-3);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--marca);
+    box-shadow: var(--anillo);
+  }
+
+  &:disabled {
+    background: var(--superficie-2);
+    color: var(--texto-3);
+    cursor: not-allowed;
+  }
+}
+
+.campo textarea {
+  height: auto;
+  min-height: 96px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.campo select,
+.barra-filtros > select,
+select.control {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b93a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.campo.invalido input,
+.campo.invalido select,
+.campo.invalido textarea {
+  border-color: var(--peligro);
+}
+
+.con-icono {
+  position: relative;
+
+  app-icono {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--texto-3);
+    pointer-events: none;
+  }
+
+  input {
+    padding-left: 36px !important;
   }
 }
 
 .casilla {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
+  cursor: pointer;
+  font-size: 0.875rem;
 
   input {
-    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    accent-color: var(--marca);
   }
 }
 
-.filtros {
-  @extend .tarjeta;
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  align-items: end;
-  margin-bottom: 16px;
-  padding: 16px;
+// Barra de filtros compacta
+.barra-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--borde);
+
+  .campo {
+    gap: 0;
+  }
+
+  .crece {
+    flex: 1 1 240px;
+  }
+
+  input,
+  select {
+    height: 34px !important;
+    font-size: 0.8125rem !important;
+  }
+
+  select {
+    width: auto;
+    min-width: 140px;
+  }
+
+  input[type='date'],
+  input[type='datetime-local'] {
+    width: auto;
+  }
+
+  .etiqueta-filtro {
+    font-size: 0.75rem;
+    color: var(--texto-3);
+    font-weight: 600;
+    margin-right: -4px;
+  }
 }
 
-// ---------- Alertas en línea ----------
+// Control segmentado (cambiar vista)
+.segmentado {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--neutro-suave);
+  border-radius: var(--radio);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--texto-2);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &.activo {
+      background: var(--superficie);
+      color: var(--texto);
+      box-shadow: var(--sombra-2);
+    }
+  }
+}
+
+// ================= Avisos =================
 .aviso {
-  padding: 10px 14px;
-  border-radius: $radio-chico;
-  border: 1px solid;
-  font-size: 0.9rem;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+
+  app-icono {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
 
   &.aviso-error {
-    color: $color-error;
-    background: #fef2f2;
-    border-color: #fecaca;
+    color: var(--peligro);
+    background: var(--peligro-suave);
   }
 
   &.aviso-info {
-    color: $color-info;
-    background: #eff6ff;
-    border-color: #bfdbfe;
+    color: var(--info);
+    background: var(--info-suave);
   }
 
   &.aviso-alerta {
-    color: $color-aviso;
-    background: #fffbeb;
-    border-color: #fde68a;
+    color: var(--aviso);
+    background: var(--aviso-suave);
   }
 
-  ul {
-    margin: 6px 0 0;
-    padding-left: 18px;
+  &.aviso-exito {
+    color: var(--exito);
+    background: var(--exito-suave);
+  }
+
+  strong {
+    font-weight: 650;
   }
 }
 
-// ---------- Tablas ----------
+// ================= Tablas =================
 .tabla-contenedor {
-  @extend .tarjeta;
-  padding: 0;
   overflow-x: auto;
 }
 
 table.tabla {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
 
   th,
   td {
-    padding: 10px 14px;
+    padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid $color-borde;
+    border-bottom: 1px solid var(--borde);
     vertical-align: middle;
   }
 
   th {
-    font-size: 0.78rem;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: $color-texto-suave;
-    background: #f9fafc;
+    letter-spacing: 0.05em;
+    color: var(--texto-3);
+    background: var(--superficie-2);
     white-space: nowrap;
   }
 
-  tbody tr:hover {
-    background: #f9fafc;
+  tbody tr {
+    transition: background-color 0.12s;
+
+    &:hover {
+      background: var(--superficie-hover);
+    }
+
+    &.clicable {
+      cursor: pointer;
+    }
   }
 
   tbody tr:last-child td {
     border-bottom: none;
   }
 
-  .vacia {
-    text-align: center;
-    color: $color-texto-suave;
-    padding: 28px;
+  .titulo-celda {
+    font-weight: 600;
+    color: var(--texto);
+  }
+
+  .sub-celda {
+    color: var(--texto-3);
+    font-size: 0.8rem;
+    margin-top: 2px;
   }
 }
 
-// ---------- Badges ----------
-.badge {
-  display: inline-block;
-  padding: 2px 9px;
+.persona {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+// ================= Estados (pills) =================
+.estado {
+  --c: var(--texto-2);
+  --f: var(--neutro-suave);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 9px;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 600;
   white-space: nowrap;
-  background: #eef1f6;
-  color: $color-primario;
+  color: var(--c);
+  background: var(--f);
 
-  &.badge-exito {
-    background: #dcfce7;
-    color: $color-exito;
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
   }
 
-  &.badge-error {
-    background: #fee2e2;
-    color: $color-error;
+  &.sin-punto::before {
+    display: none;
   }
 
-  &.badge-aviso {
-    background: #fef3c7;
-    color: $color-aviso;
+  &.e-info {
+    --c: var(--info);
+    --f: var(--info-suave);
   }
-
-  &.badge-info {
-    background: #dbeafe;
-    color: $color-info;
+  &.e-exito {
+    --c: var(--exito);
+    --f: var(--exito-suave);
   }
-
-  &.badge-neutro {
-    background: #f1f5f9;
-    color: $color-texto-suave;
+  &.e-aviso {
+    --c: var(--aviso);
+    --f: var(--aviso-suave);
   }
-
-  @each $nivel, $color in $riesgo {
-    &.riesgo-#{$nivel} {
-      background: color.change($color, $alpha: 0.12);
-      color: $color;
-    }
+  &.e-peligro {
+    --c: var(--peligro);
+    --f: var(--peligro-suave);
+  }
+  &.e-marca {
+    --c: var(--marca-texto);
+    --f: var(--marca-suave);
+  }
+  &.e-acento {
+    --c: var(--acento);
+    --f: var(--acento-suave);
+  }
+  &.riesgo-CRITICO {
+    --c: var(--riesgo-critico);
+    --f: var(--peligro-suave);
+  }
+  &.riesgo-ALTO {
+    --c: var(--riesgo-alto);
+    --f: var(--aviso-suave);
+  }
+  &.riesgo-MEDIO {
+    --c: var(--riesgo-medio);
+    --f: var(--acento-suave);
+  }
+  &.riesgo-BAJO {
+    --c: var(--riesgo-bajo);
+    --f: var(--exito-suave);
   }
 }
 
-// ---------- Pestañas ----------
+.prioridad {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--texto-2);
+
+  &.p-ALTA {
+    color: var(--peligro);
+  }
+  &.p-MEDIA {
+    color: var(--aviso);
+  }
+  &.p-BAJA {
+    color: var(--texto-3);
+  }
+}
+
+// ================= Pestañas =================
 .pestanas {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid $color-borde;
-  margin-bottom: 16px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--borde);
+  overflow-x: auto;
 
   button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background: none;
     border: none;
-    padding: 10px 14px;
+    padding: 14px 10px 12px;
     font: inherit;
+    font-size: 0.875rem;
     font-weight: 600;
-    color: $color-texto-suave;
+    color: var(--texto-3);
     border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
     cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--texto);
+    }
 
     &.activa {
-      color: $color-primario;
-      border-bottom-color: $color-acento;
+      color: var(--texto);
+      border-bottom-color: var(--marca);
     }
+  }
+
+  .contador {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    color: var(--texto-2);
+    font-size: 0.72rem;
+    display: inline-grid;
+    place-items: center;
   }
 }
 
-// ---------- Detalle (lista de definición) ----------
+// ================= Detalle =================
 .detalle {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
+  gap: 16px;
   margin: 0;
 
   dt {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    color: $color-texto-suave;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--texto-3);
   }
 
   dd {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
     font-weight: 600;
   }
 }
 
-.cargando {
-  padding: 24px;
-  text-align: center;
-  color: $color-texto-suave;
+// ================= Progreso =================
+.progreso {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--neutro-suave);
+  overflow: hidden;
+
+  > div {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--marca);
+    transition: width 0.4s ease;
+  }
+}
+
+// ================= Esqueleto =================
+.esqueleto {
+  display: block;
+  border-radius: var(--radio-s);
+  background: linear-gradient(
+    90deg,
+    var(--neutro-suave) 0%,
+    var(--superficie-hover) 50%,
+    var(--neutro-suave) 100%
+  );
+  background-size: 200% 100%;
+  animation: brillo 1.3s ease-in-out infinite;
+}
+
+// ================= Teclas =================
+kbd,
+.tecla {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 5px;
+  border: 1px solid var(--borde-fuerte);
+  border-bottom-width: 2px;
+  background: var(--superficie);
+  color: var(--texto-3);
+  font-family: $fuente;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+// ================= Menú desplegable =================
+.desplegable {
+  position: absolute;
+  z-index: 60;
+  min-width: 220px;
+  padding: 6px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-3);
+  animation: aparecer-arriba 0.14s ease both;
+
+  .opcion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: var(--radio-s);
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &.activa {
+      background: var(--superficie-hover);
+    }
+
+    app-icono {
+      color: var(--texto-3);
+    }
+  }
+
+  .separador {
+    height: 1px;
+    margin: 6px 0;
+    background: var(--borde);
+  }
+}
+
+// ================= Animaciones =================
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes aparecer-arriba {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brillo {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Botones al pie de un formulario (alineados a la derecha)
+.pie-formulario {
+  justify-content: flex-end;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--borde);
+  padding-top: 16px;
+}
+
+// Columnas secundarias que se ocultan en pantallas angostas
+@include movil {
+  .ocultar-movil {
+    display: none !important;
+  }
 }

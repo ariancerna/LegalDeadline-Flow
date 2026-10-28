@@ -1,0 +1,173 @@
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  border-radius: var(--radio-l);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    color: var(--texto-2);
+
+    h3 {
+      flex: 1;
+      font-size: 0.85rem;
+      color: var(--texto);
+    }
+  }
+
+  .cuenta {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  &.c-PENDIENTE header app-icono {
+    color: var(--aviso);
+  }
+  &.c-EN_PROGRESO header app-icono {
+    color: var(--info);
+  }
+  &.c-CERRADA header app-icono {
+    color: var(--exito);
+  }
+  &.c-CANCELADA header app-icono {
+    color: var(--texto-3);
+  }
+}
+
+.lista {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 10px 12px;
+  min-height: 80px;
+  border-radius: 0 0 var(--radio-l) var(--radio-l);
+  transition: background-color 0.15s;
+
+  &.cdk-drop-list-receiving {
+    background: var(--marca-suave);
+  }
+}
+
+.tarjeta-tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  box-shadow: var(--sombra-1);
+  cursor: grab;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    border-color: var(--borde-fuerte);
+    box-shadow: var(--sombra-2);
+  }
+
+  &.fija {
+    cursor: default;
+  }
+
+  .arriba,
+  .abajo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .exp {
+    margin-left: auto;
+    font-size: 0.75rem;
+  }
+
+  .titulo {
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .tipo {
+    font-size: 0.7rem;
+    color: var(--texto-3);
+  }
+
+  .vence {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--texto-3);
+    white-space: nowrap;
+
+    &.pronto {
+      color: var(--aviso);
+      font-weight: 600;
+    }
+
+    &.vencida {
+      color: var(--peligro);
+      font-weight: 600;
+    }
+  }
+}
+
+.c-CERRADA .tarjeta-tarea .titulo,
+.c-CANCELADA .tarjeta-tarea .titulo {
+  color: var(--texto-3);
+  text-decoration: line-through;
+}
+
+.cdk-drag-preview {
+  box-shadow: var(--sombra-flotante) !important;
+  transform: rotate(2deg);
+}
+
+.hueco {
+  min-height: 72px;
+  border: 2px dashed var(--borde-fuerte);
+  border-radius: var(--radio);
+  background: transparent;
+}
+
+.cdk-drag-animating {
+  transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.lista.cdk-drop-list-dragging .tarjeta-tarea:not(.cdk-drag-placeholder) {
+  transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.vacia {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 80px;
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio);
+  color: var(--texto-3);
+  font-size: 0.8rem;
+}

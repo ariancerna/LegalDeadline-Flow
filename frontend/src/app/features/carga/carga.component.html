@@ -1,123 +1,181 @@
-<div class="pagina-encabezado">
-  <div>
-    <h1>Carga de trabajo</h1>
-    <p>
-      Tareas activas (pendientes y en progreso) por responsable. Umbral de sobrecarga:
-      {{ umbral() }}.
-    </p>
-  </div>
-  <button type="button" class="btn btn-secundario" (click)="recargar()">Actualizar</button>
-</div>
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="scale" [tamano]="13" />Control</p>
+      <h1>Carga de trabajo</h1>
+      <p class="subtitulo">
+        Tareas activas (pendientes y en progreso) por responsable. Superar el umbral es sobrecarga;
+        igualarlo no (RN06).
+      </p>
+    </div>
+    <button type="button" class="btn btn-secundario" (click)="recargar()">
+      <app-icono nombre="refresh-cw" [tamano]="15" />Actualizar
+    </button>
+  </header>
 
-@if (error(); as mensaje) {
-  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-}
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
 
-<section class="tarjeta">
-  <h2>Balance por responsable</h2>
-  <ul class="barras">
-    @for (r of lista(); track r.responsableId) {
-      <li>
-        <div class="nombre">
-          <strong>{{ r.nombre }}</strong>
-          <span class="texto-suave texto-chico">{{ r.rol | etiqueta }}</span>
-        </div>
-        <div class="pista" [attr.aria-label]="r.tareasActivas + ' de ' + r.umbral + ' tareas'">
-          <div
-            class="relleno"
-            [class.excedido]="r.sobrecargado"
-            [style.width.%]="ancho(r.tareasActivas)"
-          ></div>
-          <div class="marca-umbral" [style.left.%]="ancho(r.umbral)" title="Umbral"></div>
-        </div>
-        <div class="valor">
-          {{ r.tareasActivas }}
-          @if (r.sobrecargado) {
-            <span class="badge badge-error">+{{ r.tareasActivas - r.umbral }} sobre el umbral</span>
-          }
-        </div>
-      </li>
-    } @empty {
-      <li class="texto-suave">Sin responsables activos.</li>
-    }
-  </ul>
-  <p class="texto-suave texto-chico">
-    La línea dorada marca el umbral. Igualar el umbral no es sobrecarga; superarlo sí (RN06).
-  </p>
-</section>
+  <section class="resumen">
+    <div class="dato tarjeta">
+      <span class="texto-3">Umbral por persona</span><strong class="num">{{ umbral() }}</strong>
+    </div>
+    <div class="dato tarjeta">
+      <span class="texto-3">Tareas activas</span><strong class="num">{{ totalActivas() }}</strong>
+    </div>
+    <div class="dato tarjeta" [class.malo]="sobrecargados().length > 0">
+      <span class="texto-3">Sobrecargados</span
+      ><strong class="num">{{ sobrecargados().length }}</strong>
+    </div>
+    <div class="dato tarjeta">
+      <span class="texto-3">Capacidad libre</span
+      ><strong class="num">{{ capacidadLibre() }}</strong>
+    </div>
+  </section>
 
-@if (auth.lecturaGlobal()) {
   <section class="tarjeta">
-    <h2>Recomendación de reasignación</h2>
-    @if (sobrecargados().length === 0) {
-      <div class="aviso aviso-info">Nadie supera el umbral. No hay reasignaciones que sugerir.</div>
-    } @else {
-      <details class="reglas">
-        <summary>¿Cómo se calcula?</summary>
-        <ol>
-          <li>Se parte de quienes superan el umbral, de mayor a menor carga.</li>
-          <li>Solo se propone mover el exceso (carga − umbral).</li>
-          <li>Primero las tareas menos urgentes: prioridad más baja y fecha límite más lejana.</li>
-          <li>El receptor es quien tiene menos carga y no supera el umbral al recibir la tarea.</li>
-          <li>Nada se aplica sin la decisión de un supervisor o administrador.</li>
-        </ol>
-      </details>
-      @if (sugerencias().length === 0) {
-        <div class="aviso aviso-alerta">
-          Hay sobrecarga, pero ningún otro responsable tiene capacidad libre bajo el umbral.
+    <div class="tarjeta-encabezado">
+      <div>
+        <h2>Balance por responsable</h2>
+        <p class="descripcion">Cada bloque es una tarea activa. La línea dorada marca el umbral.</p>
+      </div>
+    </div>
+    <ul class="personas">
+      @for (r of lista(); track r.responsableId) {
+        <li [class.excedido]="r.sobrecargado">
+          <div class="quien">
+            <app-avatar [nombre]="r.nombre" [tamano]="36" />
+            <div>
+              <strong>{{ r.nombre }}</strong>
+              <small>{{ r.rol | etiqueta }}</small>
+            </div>
+          </div>
+          <div class="bloques" [attr.aria-label]="r.tareasActivas + ' de ' + r.umbral + ' tareas'">
+            @for (b of bloques(r.tareasActivas); track $index) {
+              <span
+                class="bloque"
+                [class.lleno]="b.lleno"
+                [class.exceso]="b.exceso"
+                [class.limite]="b.umbral"
+              ></span>
+            }
+          </div>
+          <div class="cifra">
+            <strong class="num">{{ r.tareasActivas }}</strong
+            ><span class="texto-3">/{{ r.umbral }}</span>
+            @if (r.sobrecargado) {
+              <span class="estado e-peligro">+{{ r.tareasActivas - r.umbral }}</span>
+            } @else if (r.tareasActivas === r.umbral) {
+              <span class="estado e-aviso">Al límite</span>
+            } @else {
+              <span class="estado e-exito">{{ r.umbral - r.tareasActivas }} libres</span>
+            }
+          </div>
+        </li>
+      } @empty {
+        <li><app-vacio icono="users" titulo="Sin responsables activos" /></li>
+      }
+    </ul>
+  </section>
+
+  @if (auth.lecturaGlobal()) {
+    <section class="tarjeta">
+      <div class="tarjeta-encabezado">
+        <div>
+          <h2><app-icono nombre="sparkles" [tamano]="16" />Recomendación de reasignación</h2>
+          <p class="descripcion">
+            Propuestas para devolver a cada persona bajo el umbral. Nada se aplica sin tu decisión.
+          </p>
         </div>
+      </div>
+      @if (sobrecargados().length === 0) {
+        <app-vacio
+          icono="circle-check"
+          titulo="El equipo está equilibrado"
+          texto="Nadie supera el umbral; no hay reasignaciones que sugerir."
+        />
       } @else {
-        <div class="tabla-contenedor">
-          <table class="tabla">
-            <thead>
-              <tr>
-                <th>Tarea</th>
-                <th>Expediente</th>
-                <th>Prioridad</th>
-                <th>Vence</th>
-                <th>Mover de → a</th>
-                <th><span class="sr-only">Acción</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of sugerencias(); track s.tarea.id) {
-                <tr>
-                  <td>{{ s.tarea.titulo }}</td>
-                  <td>
+        <div class="tarjeta-cuerpo recomendaciones">
+          <details class="reglas">
+            <summary><app-icono nombre="info" [tamano]="15" />¿Cómo se decide?</summary>
+            <ol>
+              <li>Se parte de quienes superan el umbral, de mayor a menor carga.</li>
+              <li>Solo se propone mover el exceso (carga − umbral).</li>
+              <li>
+                Primero las tareas menos urgentes: prioridad más baja y fecha límite más lejana.
+              </li>
+              <li>
+                El receptor es quien tiene menos carga y no supera el umbral al recibir la tarea.
+              </li>
+              <li>Un supervisor o administrador decide si aplica cada propuesta.</li>
+            </ol>
+          </details>
+
+          @if (sugerencias().length === 0) {
+            <div class="aviso aviso-alerta">
+              <app-icono nombre="triangle-alert" [tamano]="16" />Hay sobrecarga, pero nadie más
+              tiene capacidad libre bajo el umbral.
+            </div>
+          } @else {
+            @for (s of sugerencias(); track s.tarea.id) {
+              <article class="sugerencia">
+                <div class="tarea">
+                  <span [class]="'prioridad p-' + s.tarea.prioridad"
+                    ><app-icono nombre="flag" [tamano]="12" />{{
+                      s.tarea.prioridad | etiqueta
+                    }}</span
+                  >
+                  <strong>{{ s.tarea.titulo }}</strong>
+                  <small class="texto-3">
                     <a class="mono" [routerLink]="['/expedientes', s.tarea.expedienteId]">{{
                       expedientes.codigo(s.tarea.expedienteId)
                     }}</a>
-                  </td>
-                  <td>
-                    <span [class]="'badge ' + tono(s.tarea.prioridad)">{{
-                      s.tarea.prioridad | etiqueta
-                    }}</span>
-                  </td>
-                  <td>{{ s.tarea.fechaLimite | fecha }}</td>
-                  <td>
-                    {{ s.desde.nombre }} ({{ s.cargaOrigen + 1 }}→{{ s.cargaOrigen }}) →
-                    <strong>{{ s.hacia.nombre }}</strong> ({{ s.cargaReceptor - 1 }}→{{
-                      s.cargaReceptor
-                    }})
-                  </td>
-                  <td>
-                    @if (auth.esGestor()) {
-                      <button
-                        type="button"
-                        class="btn btn-primario btn-chico"
-                        [disabled]="aplicando() !== null"
-                        (click)="aplicar(s)"
-                      >
-                        {{ aplicando() === s.tarea.id ? 'Reasignando…' : 'Reasignar' }}
-                      </button>
+                    · vence {{ s.tarea.fechaLimite | fecha }}
+                  </small>
+                </div>
+                <div class="movimiento">
+                  <span class="persona-mov">
+                    <app-avatar [nombre]="s.desde.nombre" [tamano]="28" />
+                    <span
+                      ><strong>{{ s.desde.nombre }}</strong
+                      ><small class="num"
+                        >{{ s.cargaOrigen + 1 }} → {{ s.cargaOrigen }}</small
+                      ></span
+                    >
+                  </span>
+                  <app-icono nombre="arrow-right" [tamano]="18" class="flecha" />
+                  <span class="persona-mov">
+                    <app-avatar [nombre]="s.hacia.nombre" [tamano]="28" />
+                    <span
+                      ><strong>{{ s.hacia.nombre }}</strong
+                      ><small class="num"
+                        >{{ s.cargaReceptor - 1 }} → {{ s.cargaReceptor }}</small
+                      ></span
+                    >
+                  </span>
+                </div>
+                @if (auth.esGestor()) {
+                  <button
+                    type="button"
+                    class="btn btn-primario btn-chico"
+                    [disabled]="aplicando() !== null"
+                    (click)="aplicar(s)"
+                  >
+                    @if (aplicando() === s.tarea.id) {
+                      <app-icono nombre="loader-circle" [tamano]="14" class="girando" />Reasignando…
+                    } @else {
+                      <app-icono nombre="arrow-right-left" [tamano]="14" />Reasignar
                     }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                  </button>
+                }
+              </article>
+            }
+          }
         </div>
       }
-    }
-  </section>
-}
+    </section>
+  }
+</div>

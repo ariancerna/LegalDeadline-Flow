@@ -1,43 +1,26 @@
-// Paleta y medidas compartidas por toda la aplicación.
-$color-primario: #1e3a5f;
-$color-primario-oscuro: #142a46;
-$color-acento: #c8a24a;
-$color-fondo: #f4f6fa;
-$color-superficie: #ffffff;
-$color-texto: #1f2937;
-$color-texto-suave: #6b7280;
-$color-borde: #e2e6ee;
-$color-exito: #15803d;
-$color-error: #b91c1c;
-$color-aviso: #b45309;
-$color-info: #1d4ed8;
-
-// Niveles de riesgo (RN04).
-$riesgo: (
-  CRITICO: #b91c1c,
-  ALTO: #ea580c,
-  MEDIO: #ca8a04,
-  BAJO: #15803d,
-);
-
-$radio: 10px;
-$radio-chico: 6px;
-$sombra:
-  0 1px 2px rgba(15, 23, 42, 0.06),
-  0 4px 12px rgba(15, 23, 42, 0.05);
+// Medidas y puntos de quiebre (SCSS). Los colores viven en variables CSS (ver _tema.scss)
+// para poder cambiar entre modo claro y oscuro en tiempo de ejecución.
+$ancho-menu: 256px;
+$ancho-menu-compacto: 72px;
+$movil: 860px;
 $fuente:
+  'Inter Variable',
   'Inter',
   'Segoe UI',
   system-ui,
   -apple-system,
-  Roboto,
-  Arial,
   sans-serif;
-$ancho-menu: 240px;
-$movil: 860px;
+$fuente-titulo: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+$fuente-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
 
 @mixin movil {
   @media (max-width: $movil) {
+    @content;
+  }
+}
+
+@mixin escritorio {
+  @media (min-width: $movil + 1) {
     @content;
   }
 }

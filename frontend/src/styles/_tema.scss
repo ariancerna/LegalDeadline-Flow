@@ -1,0 +1,109 @@
+// Paleta: tinta (marca), oro (acento), neutros fríos y colores semánticos.
+:root {
+  color-scheme: light;
+  --fondo: #f5f6f8;
+  --superficie: #ffffff;
+  --superficie-2: #f9fafb;
+  --superficie-hover: #f3f4f7;
+  --borde: #e5e7eb;
+  --borde-fuerte: #d3d7de;
+  --texto: #101828;
+  --texto-2: #475467;
+  --texto-3: #8b93a1;
+
+  --marca: #1c3a63;
+  --marca-hover: #152d4e;
+  --marca-suave: #e9eff8;
+  --marca-texto: #1c3a63;
+  --sobre-marca: #ffffff;
+  --acento: #b8892b;
+  --acento-suave: #f8f0dd;
+
+  --exito: #15803d;
+  --exito-suave: #e8f6ed;
+  --peligro: #c0262d;
+  --peligro-suave: #fdeceb;
+  --aviso: #b45309;
+  --aviso-suave: #fef3e2;
+  --info: #2457c5;
+  --info-suave: #eaf0fd;
+  --neutro-suave: #f1f3f6;
+
+  --riesgo-critico: #c0262d;
+  --riesgo-alto: #dc5f0c;
+  --riesgo-medio: #c08a00;
+  --riesgo-bajo: #15803d;
+
+  --menu-fondo: #0e1b2e;
+  --menu-borde: #1b2a41;
+  --menu-texto: #a8b3c4;
+  --menu-texto-activo: #ffffff;
+  --menu-hover: rgba(255, 255, 255, 0.06);
+  --menu-activo: rgba(255, 255, 255, 0.1);
+
+  --anillo: 0 0 0 3px rgba(28, 58, 99, 0.18);
+  --sombra-1: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --sombra-2: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --sombra-3: 0 12px 32px -8px rgba(16, 24, 40, 0.18), 0 4px 8px -4px rgba(16, 24, 40, 0.08);
+  --sombra-flotante: 0 24px 64px -12px rgba(16, 24, 40, 0.3);
+  --velo: rgba(10, 18, 32, 0.45);
+
+  --radio-s: 6px;
+  --radio: 10px;
+  --radio-l: 14px;
+}
+
+@mixin oscuro {
+  color-scheme: dark;
+  --fondo: #0b1220;
+  --superficie: #111a2a;
+  --superficie-2: #0f1726;
+  --superficie-hover: #172235;
+  --borde: #1f2b40;
+  --borde-fuerte: #2b3a54;
+  --texto: #e6eaf1;
+  --texto-2: #a6b0c0;
+  --texto-3: #6f7b90;
+
+  --marca: #3f72d8;
+  --marca-hover: #3563c2;
+  --marca-suave: rgba(80, 130, 230, 0.16);
+  --marca-texto: #8fb2ff;
+  --acento: #d6a64a;
+  --acento-suave: rgba(214, 166, 74, 0.16);
+
+  --exito: #4ade80;
+  --exito-suave: rgba(74, 222, 128, 0.13);
+  --peligro: #f87171;
+  --peligro-suave: rgba(248, 113, 113, 0.14);
+  --aviso: #fbbf24;
+  --aviso-suave: rgba(251, 191, 36, 0.13);
+  --info: #7aa7ff;
+  --info-suave: rgba(122, 167, 255, 0.14);
+  --neutro-suave: rgba(148, 163, 184, 0.13);
+
+  --riesgo-critico: #f26d6d;
+  --riesgo-alto: #fb9a4b;
+  --riesgo-medio: #f2c94c;
+  --riesgo-bajo: #4ade80;
+
+  --menu-fondo: #080e19;
+  --menu-borde: #151f31;
+
+  --anillo: 0 0 0 3px rgba(122, 167, 255, 0.3);
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --sombra-2: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --sombra-3: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  --sombra-flotante: 0 24px 64px -12px rgba(0, 0, 0, 0.7);
+  --velo: rgba(2, 6, 14, 0.65);
+}
+
+:root[data-tema='oscuro'] {
+  @include oscuro;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    @include oscuro;
+  }
+}

@@ -1,0 +1,64 @@
+<div class="cabecera">
+  <h2>{{ titulo() }}</h2>
+  @if (cargando()) {
+    <app-icono nombre="loader-circle" [tamano]="16" class="girando texto-3" />
+  }
+  <div class="acciones">
+    <button type="button" class="btn btn-secundario btn-chico" (click)="irAHoy()">Hoy</button>
+    <button
+      type="button"
+      class="btn btn-secundario btn-icono btn-chico"
+      aria-label="Mes anterior"
+      (click)="mover(-1)"
+    >
+      <app-icono nombre="chevron-left" [tamano]="16" />
+    </button>
+    <button
+      type="button"
+      class="btn btn-secundario btn-icono btn-chico"
+      aria-label="Mes siguiente"
+      (click)="mover(1)"
+    >
+      <app-icono nombre="chevron-right" [tamano]="16" />
+    </button>
+  </div>
+</div>
+
+<div class="rejilla" role="grid" [attr.aria-label]="'Plazos de ' + titulo()">
+  @for (d of dias; track d) {
+    <div class="dia-semana" role="columnheader">{{ d }}</div>
+  }
+  @for (c of celdas(); track c.fecha) {
+    <div
+      class="celda"
+      role="gridcell"
+      [class.fuera]="!c.delMes"
+      [class.hoy]="c.fecha === hoy"
+      [class.pasado]="c.fecha < hoy"
+    >
+      <span class="numero num">{{ c.dia }}</span>
+      @for (p of c.plazos.slice(0, 3); track p.id) {
+        <button
+          type="button"
+          [class]="clase(p)"
+          [title]="(p.tipo | etiqueta) + ' · ' + expedientes.codigo(p.expedienteId)"
+          (click)="abrir(p)"
+        >
+          <span class="texto">{{ p.tipo | etiqueta }}</span>
+          <span class="mono exp">{{ expedientes.codigo(p.expedienteId) }}</span>
+        </button>
+      }
+      @if (c.plazos.length > 3) {
+        <span class="mas">+{{ c.plazos.length - 3 }} más</span>
+      }
+    </div>
+  }
+</div>
+
+<div class="leyenda">
+  <span><i class="r-CRITICO"></i>Crítico</span>
+  <span><i class="r-ALTO"></i>Alto</span>
+  <span><i class="r-MEDIO"></i>Medio</span>
+  <span><i class="r-BAJO"></i>Bajo</span>
+  <span><i class="anulado"></i>Anulado</span>
+</div>

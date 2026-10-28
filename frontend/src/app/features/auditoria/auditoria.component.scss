@@ -1,0 +1,122 @@
+.bitacora {
+  padding: 8px 20px 12px;
+}
+
+.dia {
+  position: sticky;
+  top: 60px;
+  z-index: 1;
+  padding: 14px 0 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-3);
+  background: var(--superficie);
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.evento {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px 30px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 0;
+
+  &:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 98px;
+    top: 40px;
+    bottom: -10px;
+    width: 2px;
+    background: var(--borde);
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 30px minmax(0, 1fr);
+
+    .hora,
+    .tipo {
+      display: none;
+    }
+
+    &::before {
+      left: 14px !important;
+    }
+  }
+}
+
+.hora {
+  padding-top: 6px;
+  font-size: 0.78rem;
+  color: var(--texto-3);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.punto {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--neutro-suave);
+  color: var(--texto-2);
+  box-shadow: 0 0 0 4px var(--superficie);
+
+  &.t-marca {
+    background: var(--marca-suave);
+    color: var(--marca-texto);
+  }
+  &.t-exito {
+    background: var(--exito-suave);
+    color: var(--exito);
+  }
+  &.t-info {
+    background: var(--info-suave);
+    color: var(--info);
+  }
+  &.t-peligro {
+    background: var(--peligro-suave);
+    color: var(--peligro);
+  }
+  &.t-aviso {
+    background: var(--aviso-suave);
+    color: var(--aviso);
+  }
+}
+
+.contenido {
+  padding-top: 4px;
+  font-size: 0.875rem;
+}
+
+.recurso {
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--neutro-suave);
+  font-size: 0.75rem;
+}
+
+.detalle-evento {
+  margin-top: 2px;
+  color: var(--texto-2);
+  font-size: 0.8125rem;
+}
+
+.tipo {
+  margin-top: 4px;
+}

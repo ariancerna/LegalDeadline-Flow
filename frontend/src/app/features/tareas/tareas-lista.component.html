@@ -1,0 +1,167 @@
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="list-checks" [tamano]="13" />Gestión</p>
+      <h1>Tareas</h1>
+      <p class="subtitulo">
+        Actividades de
+        {{
+          auth.lecturaGlobal() ? 'todos los expedientes' : 'los expedientes que tienes asignados'
+        }}.
+        @if (vista() === 'tablero' && auth.puedeEscribir()) {
+          Arrastra una tarjeta para cambiar su estado.
+        }
+      </p>
+    </div>
+    <div class="acciones">
+      <div class="segmentado" role="tablist" aria-label="Vista">
+        <button
+          type="button"
+          role="tab"
+          [class.activo]="vista() === 'lista'"
+          (click)="cambiarVista('lista')"
+        >
+          <app-icono nombre="list" [tamano]="15" />Lista
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activo]="vista() === 'tablero'"
+          (click)="cambiarVista('tablero')"
+        >
+          <app-icono nombre="square-kanban" [tamano]="15" />Tablero
+        </button>
+      </div>
+      @if (auth.puedeEscribir()) {
+        <button type="button" class="btn btn-primario" (click)="creando.set(true)">
+          <app-icono nombre="plus" [tamano]="16" />Nueva tarea
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="tarjeta">
+    <div
+      class="barra-filtros"
+      role="search"
+      [style.border-bottom]="vista() === 'tablero' ? 'none' : null"
+    >
+      <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
+      @if (vista() === 'lista') {
+        <select
+          id="f-estado"
+          aria-label="Estado"
+          [ngModel]="filtros().estado"
+          (ngModelChange)="filtrar('estado', $event)"
+        >
+          <option value="">Todos los estados</option>
+          @for (e of estados; track e) {
+            <option [value]="e">{{ e | etiqueta }}</option>
+          }
+        </select>
+      }
+      <select
+        id="f-prioridad"
+        aria-label="Prioridad"
+        [ngModel]="filtros().prioridad"
+        (ngModelChange)="filtrar('prioridad', $event)"
+      >
+        <option value="">Todas las prioridades</option>
+        @for (p of prioridades; track p) {
+          <option [value]="p">Prioridad {{ p | etiqueta | lowercase }}</option>
+        }
+      </select>
+      @if (auth.lecturaGlobal()) {
+        <select
+          id="f-resp"
+          aria-label="Responsable"
+          [ngModel]="filtros().responsableId"
+          (ngModelChange)="filtrar('responsableId', $event)"
+        >
+          <option [ngValue]="null">Todos los responsables</option>
+          @for (r of responsables.lista(); track r.responsableId) {
+            <option [ngValue]="r.responsableId">{{ r.nombre }}</option>
+          }
+        </select>
+      }
+      <span class="etiqueta-filtro">Vence</span>
+      <input
+        id="f-desde"
+        type="date"
+        aria-label="Vence desde"
+        [ngModel]="filtros().desde"
+        (ngModelChange)="filtrar('desde', $event)"
+      />
+      <span class="texto-3">–</span>
+      <input
+        id="f-hasta"
+        type="date"
+        aria-label="Vence hasta"
+        [ngModel]="filtros().hasta"
+        (ngModelChange)="filtrar('hasta', $event)"
+      />
+      @if (hayFiltros()) {
+        <button type="button" class="btn btn-fantasma btn-chico" (click)="limpiar()">
+          <app-icono nombre="x" [tamano]="14" />Limpiar
+        </button>
+      }
+    </div>
+
+    @if (error(); as mensaje) {
+      <div class="aviso aviso-error" style="margin: 12px" role="alert">
+        <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+      </div>
+    }
+
+    @if (vista() === 'lista') {
+      @if (cargando() && datos().length === 0) {
+        <app-esqueleto [filas]="6" />
+      } @else if (datos().length === 0) {
+        <app-vacio
+          icono="list-checks"
+          [titulo]="hayFiltros() ? 'Sin coincidencias' : 'No hay tareas'"
+          [texto]="
+            hayFiltros()
+              ? 'Ninguna tarea cumple los filtros elegidos.'
+              : 'Las tareas registradas aparecerán aquí.'
+          "
+        >
+          @if (hayFiltros()) {
+            <button type="button" class="btn btn-secundario" (click)="limpiar()">
+              Limpiar filtros
+            </button>
+          }
+        </app-vacio>
+      } @else {
+        <app-tareas-tabla [tareas]="datos()" (cambio)="cargar()">
+          <app-paginador
+            [pagina]="pagina()"
+            [tamano]="tamano"
+            [total]="total()"
+            (cambiar)="pagina.set($event); cargar()"
+          />
+        </app-tareas-tabla>
+      }
+    }
+  </section>
+
+  @if (vista() === 'tablero') {
+    @if (porEstado(); as columnas) {
+      <app-tareas-kanban [tareas]="columnas" [totales]="totalesEstado()" (cambio)="cargar()" />
+    } @else {
+      <span class="esqueleto" style="height: 420px; border-radius: 14px"></span>
+    }
+  }
+</div>
+
+@if (creando()) {
+  <app-dialogo
+    titulo="Nueva tarea"
+    descripcion="Se valida que no exista una tarea activa equivalente."
+    icono="list-checks"
+    [lateral]="true"
+    (cerrar)="cerrarCreacion()"
+  >
+    <app-tarea-form (guardado)="creada()" (cancelar)="cerrarCreacion()" />
+  </app-dialogo>
+}

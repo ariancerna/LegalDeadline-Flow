@@ -7,35 +7,65 @@ import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
+import { IconoComponent } from '../../shared/icono.component';
 import { noSoloEspacios } from '../../shared/validadores';
 
 /** RF03 / RF05: registrar o editar (y reasignar) un expediente. */
 @Component({
   selector: 'app-expediente-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe, IconoComponent],
   template: `
     <form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       @if (error(); as mensaje) {
-        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+        <div class="aviso aviso-error" role="alert">
+          <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+        </div>
       }
-      <div class="campo">
+      <div
+        class="campo"
+        [class.invalido]="form.controls.codigo.invalid && form.controls.codigo.touched"
+      >
         <label for="codigo">Código</label>
-        <input id="codigo" formControlName="codigo" placeholder="EXP-2026-001" maxlength="20" />
-        <span class="ayuda">Único. Se guarda en mayúsculas.</span>
+        <input
+          id="codigo"
+          class="mono"
+          formControlName="codigo"
+          placeholder="EXP-2026-001"
+          maxlength="20"
+          autocomplete="off"
+        />
+        <span class="ayuda">Único en el estudio. Se guarda en mayúsculas.</span>
         <app-error-campo [control]="form.controls.codigo" [servidor]="camposServidor()['codigo']" />
       </div>
-      <div class="campo">
+      <div
+        class="campo"
+        [class.invalido]="form.controls.asunto.invalid && form.controls.asunto.touched"
+      >
         <label for="asunto">Asunto</label>
-        <textarea id="asunto" formControlName="asunto" maxlength="255"></textarea>
+        <textarea
+          id="asunto"
+          formControlName="asunto"
+          maxlength="255"
+          placeholder="Describe brevemente el caso"
+        ></textarea>
+        <span class="ayuda">{{ form.controls.asunto.value?.length ?? 0 }}/255</span>
         <app-error-campo [control]="form.controls.asunto" [servidor]="camposServidor()['asunto']" />
       </div>
-      <div class="campo">
+      <div
+        class="campo"
+        [class.invalido]="
+          form.controls.responsableId.invalid && form.controls.responsableId.touched
+        "
+      >
         <label for="responsable">Responsable</label>
         <select id="responsable" formControlName="responsableId">
-          <option [ngValue]="null" disabled>Selecciona…</option>
+          <option [ngValue]="null" disabled>Selecciona un responsable…</option>
           @for (r of responsables.lista(); track r.responsableId) {
             <option [ngValue]="r.responsableId">
-              {{ r.nombre }} · {{ r.rol | etiqueta }} ({{ r.tareasActivas }} tareas activas)
+              {{ r.nombre }} · {{ r.rol | etiqueta }} — {{ r.tareasActivas }}/{{
+                r.umbral
+              }}
+              tareas{{ r.sobrecargado ? ' (sobrecargado)' : '' }}
             </option>
           }
         </select>
@@ -44,11 +74,14 @@ import { noSoloEspacios } from '../../shared/validadores';
           [servidor]="camposServidor()['responsableId']"
         />
       </div>
-      <div class="acciones">
+      <div class="acciones pie-formulario">
+        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
         <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+          @if (enviando()) {
+            <app-icono nombre="loader-circle" [tamano]="16" class="girando" />
+          }
           {{ expediente() ? 'Guardar cambios' : 'Registrar expediente' }}
         </button>
-        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
       </div>
     </form>
   `,

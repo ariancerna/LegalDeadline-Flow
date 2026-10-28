@@ -10,16 +10,26 @@ import { Plazo, RiesgoPlazo } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { DialogoComponent } from '../../shared/dialogo.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
-import { claseRiesgo, tono } from '../../shared/etiquetas';
+import { tono } from '../../shared/etiquetas';
 import { FechaPipe } from '../../shared/fecha.pipe';
 import { textoDias } from '../../shared/fechas';
+import { IconoComponent } from '../../shared/icono.component';
 import { PlazoFormComponent } from './plazo-form.component';
 
 /** Tabla de plazos con riesgo calculado por el backend (RF15), edición (RF13) y anulación (RF14). */
 @Component({
   selector: 'app-plazos-tabla',
-  imports: [FormsModule, RouterLink, EtiquetaPipe, FechaPipe, DialogoComponent, PlazoFormComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    EtiquetaPipe,
+    FechaPipe,
+    DialogoComponent,
+    PlazoFormComponent,
+    IconoComponent,
+  ],
   templateUrl: './plazos-tabla.component.html',
+  styleUrl: './plazos-tabla.component.scss',
 })
 export class PlazosTablaComponent {
   private readonly servicio = inject(PlazosService);
@@ -27,12 +37,10 @@ export class PlazosTablaComponent {
   protected readonly auth = inject(AuthService);
   protected readonly expedientes = inject(ExpedientesCache);
   protected readonly tono = tono;
-  protected readonly claseRiesgo = claseRiesgo;
   protected readonly textoDias = textoDias;
 
   readonly plazos = input.required<Plazo[]>();
   readonly mostrarExpediente = input(true);
-  readonly cargando = input(false);
   readonly editable = input(true);
   readonly cambio = output<void>();
 
@@ -54,8 +62,12 @@ export class PlazosTablaComponent {
     });
   }
 
+  protected largoMotivo(): number {
+    return this.motivo().trim().replace(/\s+/g, ' ').length;
+  }
+
   protected motivoValido(): boolean {
-    const largo = this.motivo().trim().replace(/\s+/g, ' ').length;
+    const largo = this.largoMotivo();
     return largo >= 10 && largo <= 250;
   }
 

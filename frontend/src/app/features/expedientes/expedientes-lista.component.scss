@@ -1,0 +1,49 @@
+.expediente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.icono-exp {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.asunto {
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flecha {
+  width: 36px;
+  color: var(--texto-3);
+}
+
+tr:hover .flecha {
+  color: var(--texto);
+}
+
+.tiempo {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.atenuada {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.margen {
+  margin: 12px;
+}

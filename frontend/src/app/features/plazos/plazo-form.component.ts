@@ -6,23 +6,31 @@ import { interpretarError } from '../../core/errores';
 import { Expediente, Plazo } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
+import { IconoComponent } from '../../shared/icono.component';
 import { hoyLima } from '../../shared/fechas';
 import { noSoloEspacios } from '../../shared/validadores';
 
 /** RF12 / RF13: registrar o editar un plazo activo. */
 @Component({
   selector: 'app-plazo-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, IconoComponent],
   template: `
     <form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       @if (error(); as mensaje) {
-        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+        <div class="aviso aviso-error" role="alert">
+          <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+        </div>
       }
       @if (!plazo() && expedienteId() === null) {
-        <div class="campo">
-          <label for="p-exp">Expediente (abierto)</label>
+        <div
+          class="campo"
+          [class.invalido]="
+            form.controls.expedienteId.invalid && form.controls.expedienteId.touched
+          "
+        >
+          <label for="p-exp">Expediente</label>
           <select id="p-exp" formControlName="expedienteId">
-            <option [ngValue]="null" disabled>Selecciona…</option>
+            <option [ngValue]="null" disabled>Selecciona un expediente abierto…</option>
             @for (e of expedientesAbiertos(); track e.id) {
               <option [ngValue]="e.id">{{ e.codigo }} — {{ e.asunto }}</option>
             }
@@ -31,10 +39,14 @@ import { noSoloEspacios } from '../../shared/validadores';
         </div>
       }
       <div class="fila-campos">
-        <div class="campo">
+        <div
+          class="campo"
+          [class.invalido]="form.controls.tipo.invalid && form.controls.tipo.touched"
+        >
           <label for="p-tipo">Tipo de plazo</label>
           <input
             id="p-tipo"
+            class="mono"
             formControlName="tipo"
             maxlength="50"
             placeholder="CONTESTACION"
@@ -57,15 +69,22 @@ import { noSoloEspacios } from '../../shared/validadores';
           />
         </div>
       </div>
-      <p class="texto-suave texto-chico">
-        El riesgo se calcula automáticamente (RN04): crítico si venció o faltan hasta 2 días con
-        tareas activas; alto hasta 5; medio hasta 10; bajo en los demás casos.
-      </p>
-      <div class="acciones">
+      <div class="aviso aviso-info">
+        <app-icono nombre="gauge" [tamano]="16" />
+        <span>
+          El riesgo se calcula solo (RN04): <strong>crítico</strong> si venció o faltan hasta 2 días
+          con tareas activas; <strong>alto</strong> hasta 5; <strong>medio</strong> hasta 10;
+          <strong>bajo</strong> en los demás casos.
+        </span>
+      </div>
+      <div class="acciones pie-formulario">
+        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
         <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+          @if (enviando()) {
+            <app-icono nombre="loader-circle" [tamano]="16" class="girando" />
+          }
           {{ plazo() ? 'Guardar cambios' : 'Registrar plazo' }}
         </button>
-        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
       </div>
     </form>
   `,

@@ -9,6 +9,7 @@ import { Expediente, PRIORIDADES, Prioridad, Tarea } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
+import { IconoComponent } from '../../shared/icono.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { hoyLima } from '../../shared/fechas';
 import { noSoloEspacios } from '../../shared/validadores';
@@ -20,7 +21,25 @@ import { noSoloEspacios } from '../../shared/validadores';
  */
 @Component({
   selector: 'app-tarea-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe, IconoComponent],
+  styles: `
+    .prioridades {
+      display: flex;
+    }
+    .prioridades button {
+      flex: 1;
+      justify-content: center;
+    }
+    .p-ALTA {
+      color: var(--peligro);
+    }
+    .p-MEDIA {
+      color: var(--aviso);
+    }
+    .p-BAJA {
+      color: var(--texto-3);
+    }
+  `,
   templateUrl: './tarea-form.component.html',
 })
 export class TareaFormComponent implements OnInit {

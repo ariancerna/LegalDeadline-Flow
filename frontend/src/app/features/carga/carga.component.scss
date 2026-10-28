@@ -1,70 +1,211 @@
 @use 'tokens' as *;
 
-.barras {
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px;
+  font-size: 0.8125rem;
+
+  strong {
+    font-family: $fuente-titulo;
+    font-size: 1.9rem;
+    font-weight: 600;
+  }
+
+  &.malo strong {
+    color: var(--peligro);
+  }
+}
+
+.personas {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 14px;
 
   li {
     display: grid;
-    grid-template-columns: minmax(140px, 220px) 1fr 190px;
-    gap: 14px;
+    grid-template-columns: minmax(170px, 240px) 1fr 170px;
+    gap: 20px;
     align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--borde);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.excedido {
+      background: linear-gradient(90deg, var(--peligro-suave), transparent 60%);
+    }
 
     @include movil {
       grid-template-columns: 1fr;
-      gap: 4px;
+      gap: 10px;
     }
   }
+}
 
-  .nombre {
+.quien {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  div {
     display: flex;
     flex-direction: column;
   }
-}
 
-.pista {
-  position: relative;
-  height: 14px;
-  background: #eef1f6;
-  border-radius: 999px;
-}
-
-.relleno {
-  height: 100%;
-  border-radius: 999px;
-  background: $color-primario;
-  transition: width 0.3s;
-
-  &.excedido {
-    background: $color-error;
+  small {
+    color: var(--texto-3);
   }
 }
 
-.marca-umbral {
-  position: absolute;
-  top: -4px;
-  bottom: -4px;
-  width: 3px;
-  background: $color-acento;
-  border-radius: 2px;
+.bloques {
+  display: flex;
+  gap: 4px;
 }
 
-.valor {
-  font-weight: 700;
+.bloque {
+  position: relative;
+  flex: 1;
+  max-width: 40px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--neutro-suave);
+  transition: background-color 0.3s;
+
+  &.lleno {
+    background: var(--marca);
+  }
+
+  &.exceso {
+    background: var(--peligro);
+  }
+
+  &.limite::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: -5px;
+    bottom: -5px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--acento);
+    transform: translateX(1px);
+  }
+}
+
+.cifra {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  align-items: baseline;
+  gap: 2px;
+  justify-content: flex-end;
+
+  strong {
+    font-size: 1.2rem;
+  }
+
+  .estado {
+    margin-left: 10px;
+    align-self: center;
+  }
+
+  @include movil {
+    justify-content: flex-start;
+  }
+}
+
+.recomendaciones {
+  display: grid;
+  gap: 12px;
 }
 
 .reglas {
-  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
 
   summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
-    color: $color-primario;
     font-weight: 600;
+    color: var(--marca-texto);
+  }
+
+  ol {
+    margin: 10px 0 0;
+    padding-left: 20px;
+    color: var(--texto-2);
+    font-size: 0.85rem;
+    display: grid;
+    gap: 4px;
+  }
+}
+
+.sugerencia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: var(--sombra-2);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.movimiento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .flecha {
+    color: var(--acento);
+  }
+}
+
+.persona-mov {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    font-size: 0.8125rem;
+  }
+
+  small {
+    color: var(--texto-3);
   }
 }

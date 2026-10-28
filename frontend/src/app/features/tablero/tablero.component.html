@@ -1,142 +1,270 @@
-<div class="pagina-encabezado">
-  <div>
-    <h1>Tablero</h1>
-    <p>
-      Hola, {{ auth.usuario()?.nombre }}.
-      @if (!auth.lecturaGlobal()) {
-        Estos datos corresponden a tus expedientes asignados.
-      }
-      @if (indicadores(); as i) {
-        Calculado al {{ i.fechaCalculo | fecha }} (hora de Lima).
-      }
-    </p>
-  </div>
-</div>
-
-@if (error(); as mensaje) {
-  <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-}
-
-@if (indicadores(); as i) {
-  <div class="rejilla">
-    <a class="kpi enlace-kpi" routerLink="/expedientes">
-      <div class="kpi-valor">{{ i.expedientesAbiertos }}</div>
-      <div class="kpi-etiqueta">Expedientes abiertos</div>
-    </a>
-    <a class="kpi enlace-kpi" routerLink="/tareas">
-      <div class="kpi-valor">{{ i.tareasActivas }}</div>
-      <div class="kpi-etiqueta">Tareas activas</div>
-    </a>
-    <div class="kpi" [class.kpi-alerta]="i.tareasVencidas > 0">
-      <div class="kpi-valor">{{ i.tareasVencidas }}</div>
-      <div class="kpi-etiqueta">Tareas vencidas</div>
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="calendar" [tamano]="13" />{{ fechaHoy }}</p>
+      <h1>{{ saludo() }}</h1>
+      <p class="subtitulo">
+        {{ resumen() }}
+        @if (!auth.lecturaGlobal()) {
+          <span class="texto-3">Ves solo tus expedientes asignados.</span>
+        }
+      </p>
     </div>
-    <div class="kpi">
-      <div class="kpi-valor">{{ i.porcentajeTareasCerradas }}%</div>
-      <div class="kpi-etiqueta">Tareas cerradas</div>
-    </div>
-    <a class="kpi enlace-kpi" routerLink="/plazos">
-      <div class="kpi-valor">{{ i.plazosActivos }}</div>
-      <div class="kpi-etiqueta">Plazos activos</div>
-    </a>
-    <div class="kpi" [class.kpi-alerta]="i.plazosProximos > 0">
-      <div class="kpi-valor">{{ i.plazosProximos }}</div>
-      <div class="kpi-etiqueta">Plazos que vencen en 7 días</div>
-    </div>
-    <div class="kpi" [class.kpi-alerta]="i.plazosVencidos > 0">
-      <div class="kpi-valor">{{ i.plazosVencidos }}</div>
-      <div class="kpi-etiqueta">Plazos vencidos</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-valor">{{ i.expedientesCerrados + i.expedientesArchivados }}</div>
-      <div class="kpi-etiqueta">Expedientes finalizados</div>
-    </div>
-  </div>
-
-  <div class="dos-columnas">
-    <section class="tarjeta">
-      <h2>Riesgo de plazos activos</h2>
-      @if (totalRiesgo() === 0) {
-        <p class="texto-suave">No hay plazos activos.</p>
-      } @else {
-        <div
-          class="barra-riesgo"
-          role="img"
-          aria-label="Distribución del riesgo de los plazos activos"
+    <div class="acciones">
+      <a routerLink="/plazos" class="btn btn-secundario"
+        ><app-icono nombre="calendar-clock" [tamano]="16" />Ver plazos</a
+      >
+      @if (auth.esGestor()) {
+        <a routerLink="/expedientes" [queryParams]="{ nuevo: 1 }" class="btn btn-primario"
+          ><app-icono nombre="plus" [tamano]="16" />Nuevo expediente</a
         >
-          @for (n of niveles; track n) {
-            @if (cantidad(n) > 0) {
-              <div
-                [class]="'segmento seg-' + n"
-                [style.width.%]="porcentaje(n)"
-                [title]="(n | etiqueta) + ': ' + cantidad(n)"
-              ></div>
-            }
-          }
-        </div>
-        <ul class="leyenda">
-          @for (n of niveles; track n) {
-            <li>
-              <span [class]="'badge ' + claseRiesgo(n)">{{ n | etiqueta }}</span> {{ cantidad(n) }}
-            </li>
-          }
-        </ul>
       }
-    </section>
+    </div>
+  </header>
 
-    <section class="tarjeta">
-      <h2>Carga de trabajo</h2>
-      @if (sobrecargados().length === 0) {
-        <p class="texto-suave">Ningún responsable supera el umbral.</p>
-      } @else {
-        <ul class="lista-simple">
-          @for (r of sobrecargados(); track r.responsableId) {
-            <li>
-              <strong>{{ r.nombre }}</strong
-              >: {{ r.tareasActivas }} tareas (umbral {{ r.umbral }})
-            </li>
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
+
+  <section class="kpis">
+    @if (indicadores(); as i) {
+      <a class="kpi tarjeta" routerLink="/expedientes">
+        <span class="icono i-marca"><app-icono nombre="folder-open" [tamano]="18" /></span>
+        <span class="etiqueta">Expedientes abiertos</span>
+        <strong class="valor num">{{ i.expedientesAbiertos }}</strong>
+        <span class="pie"
+          >{{ i.expedientesCerrados + i.expedientesArchivados }}
+          {{
+            i.expedientesCerrados + i.expedientesArchivados === 1 ? 'finalizado' : 'finalizados'
+          }}</span
+        >
+      </a>
+      <a class="kpi tarjeta" routerLink="/tareas">
+        <span class="icono i-info"><app-icono nombre="list-checks" [tamano]="18" /></span>
+        <span class="etiqueta">Tareas activas</span>
+        <strong class="valor num">{{ i.tareasActivas }}</strong>
+        <span class="pie" [class.malo]="i.tareasVencidas > 0">
+          @if (i.tareasVencidas > 0) {
+            <app-icono nombre="triangle-alert" [tamano]="13" />
           }
-        </ul>
-      }
-      <a routerLink="/carga" class="btn btn-secundario btn-chico">Ver balance</a>
-    </section>
-  </div>
-}
-
-<section class="tarjeta">
-  <h2>Alertas de plazos</h2>
-  <p class="texto-suave texto-chico">
-    Plazos activos con riesgo crítico o alto (vencidos o que vencen en los próximos 10 días).
-  </p>
-  @if (alertas(); as lista) {
-    @if (lista.length === 0) {
-      <div class="aviso aviso-info">
-        Sin alertas: ningún plazo próximo tiene riesgo crítico o alto.
+          {{ i.tareasVencidas }} {{ i.tareasVencidas === 1 ? 'vencida' : 'vencidas' }}
+        </span>
+      </a>
+      <a class="kpi tarjeta" routerLink="/plazos">
+        <span class="icono i-aviso"><app-icono nombre="calendar-clock" [tamano]="18" /></span>
+        <span class="etiqueta">Plazos activos</span>
+        <strong class="valor num">{{ i.plazosActivos }}</strong>
+        <span class="pie" [class.malo]="i.plazosVencidos > 0">
+          {{ i.plazosProximos }} {{ i.plazosProximos === 1 ? 'vence' : 'vencen' }} en 7 días ·
+          {{ i.plazosVencidos }}
+          {{ i.plazosVencidos === 1 ? 'vencido' : 'vencidos' }}
+        </span>
+      </a>
+      <div class="kpi tarjeta">
+        <span class="icono i-exito"><app-icono nombre="target" [tamano]="18" /></span>
+        <span class="etiqueta">Tareas cerradas</span>
+        <strong class="valor num">{{ i.porcentajeTareasCerradas }}<small>%</small></strong>
+        <div class="progreso"><div [style.width.%]="i.porcentajeTareasCerradas"></div></div>
       </div>
     } @else {
-      <ul class="alertas">
-        @for (a of lista; track a.plazo.id) {
-          <li>
-            <span [class]="'badge ' + claseRiesgo(a.riesgo.nivel)">{{
-              a.riesgo.nivel | etiqueta
-            }}</span>
-            <div>
-              <strong class="mono">{{ a.plazo.tipo }}</strong> ·
-              <a class="mono" [routerLink]="['/expedientes', a.plazo.expedienteId]">{{
-                expedientes.codigo(a.plazo.expedienteId)
-              }}</a>
-              <div class="texto-suave texto-chico">
-                Vence {{ a.plazo.fechaLimite | fecha }} ·
-                {{ textoDias(a.riesgo.diasRestantes) }}
-                · {{ a.riesgo.tareasPendientes }}
-                {{ a.riesgo.tareasPendientes === 1 ? 'tarea activa' : 'tareas activas' }}
-              </div>
-            </div>
-          </li>
-        }
-      </ul>
+      @for (k of [1, 2, 3, 4]; track k) {
+        <div class="kpi tarjeta"><span class="esqueleto" style="height: 92px"></span></div>
+      }
     }
-  } @else {
-    <div class="cargando">Calculando alertas…</div>
-  }
-</section>
+  </section>
+
+  <div class="rejilla-tablero">
+    <section class="tarjeta riesgo">
+      <div class="tarjeta-encabezado">
+        <div>
+          <h2>Riesgo de plazos</h2>
+          <p class="descripcion">Clasificación automática RN04</p>
+        </div>
+      </div>
+      <div class="tarjeta-cuerpo">
+        @if (indicadores(); as i) {
+          <app-dona-riesgo [datos]="i.riesgoPlazosActivos" />
+        } @else {
+          <span class="esqueleto" style="height: 168px"></span>
+        }
+      </div>
+    </section>
+
+    <section class="tarjeta alertas">
+      <div class="tarjeta-encabezado">
+        <div>
+          <h2><app-icono nombre="bell" [tamano]="16" />Alertas de plazos</h2>
+          <p class="descripcion">Crítico o alto, vencidos o dentro de 10 días</p>
+        </div>
+        <a routerLink="/plazos" class="btn btn-fantasma btn-chico"
+          >Ver todos <app-icono nombre="arrow-right" [tamano]="14"
+        /></a>
+      </div>
+      @if (alertas.lista(); as lista) {
+        @if (lista.length === 0) {
+          <app-vacio
+            icono="circle-check"
+            titulo="Sin plazos urgentes"
+            texto="Ningún plazo cercano tiene riesgo crítico o alto."
+          />
+        } @else {
+          <ul class="lista-alertas">
+            @for (a of lista.slice(0, 6); track a.plazo.id) {
+              <li>
+                <a [routerLink]="['/expedientes', a.plazo.expedienteId]">
+                  <span class="fecha-chip" [class]="'fecha-chip f-' + a.riesgo.nivel">
+                    <strong class="num">{{ a.plazo.fechaLimite.slice(8, 10) }}</strong>
+                    <small>{{ a.plazo.fechaLimite | fecha: 'mes' }}</small>
+                  </span>
+                  <span class="cuerpo">
+                    <strong>{{ a.plazo.tipo | etiqueta }}</strong>
+                    <small
+                      ><span class="mono">{{ expedientes.codigo(a.plazo.expedienteId) }}</span> ·
+                      {{ a.riesgo.tareasPendientes }}
+                      {{
+                        a.riesgo.tareasPendientes === 1 ? 'tarea activa' : 'tareas activas'
+                      }}</small
+                    >
+                  </span>
+                  <span class="lado">
+                    <span [class]="'estado riesgo-' + a.riesgo.nivel">{{
+                      a.riesgo.nivel | etiqueta
+                    }}</span>
+                    <small>{{ textoDias(a.riesgo.diasRestantes) }}</small>
+                  </span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <div class="tarjeta-cuerpo"><span class="esqueleto" style="height: 160px"></span></div>
+      }
+    </section>
+
+    <section class="tarjeta agenda">
+      <div class="tarjeta-encabezado">
+        <div>
+          <h2><app-icono nombre="calendar" [tamano]="16" />Agenda</h2>
+          <p class="descripcion">Plazos y tareas activas de los próximos 14 días</p>
+        </div>
+      </div>
+      @if (agenda(); as dias) {
+        @if (dias.length === 0) {
+          <app-vacio
+            icono="calendar-check"
+            titulo="Agenda despejada"
+            texto="No hay vencimientos en las próximas dos semanas."
+          />
+        } @else {
+          <div class="dias">
+            @for (d of dias; track d.fecha) {
+              <div class="dia" [class.vencido]="d.fecha === 'vencidos'">
+                <p class="dia-titulo">
+                  {{ d.etiqueta }} <span class="texto-3">· {{ d.items.length }}</span>
+                </p>
+                @for (it of d.items; track it.clave) {
+                  <a class="evento" [routerLink]="['/expedientes', it.expedienteId]">
+                    <span class="tipo" [class.es-plazo]="it.tipo === 'plazo'">
+                      <app-icono
+                        [nombre]="it.tipo === 'plazo' ? 'flag' : 'circle-dot'"
+                        [tamano]="14"
+                      />
+                    </span>
+                    <span class="titulo">{{
+                      it.tipo === 'plazo' ? (it.titulo | etiqueta) : it.titulo
+                    }}</span>
+                    <span class="mono texto-3 texto-chico">{{
+                      expedientes.codigo(it.expedienteId)
+                    }}</span>
+                    @if (nivel(it); as n) {
+                      <span [class]="'estado sin-punto riesgo-' + n">{{ n | etiqueta }}</span>
+                    } @else if (it.prioridad === 'ALTA') {
+                      <span class="prioridad p-ALTA"
+                        ><app-icono nombre="flag" [tamano]="12" />Alta</span
+                      >
+                    }
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="tarjeta-cuerpo"><span class="esqueleto" style="height: 220px"></span></div>
+      }
+    </section>
+
+    <div class="columna">
+      <section class="tarjeta">
+        <div class="tarjeta-encabezado">
+          <div>
+            <h2><app-icono nombre="scale" [tamano]="16" />Carga del equipo</h2>
+            <p class="descripcion">Tareas activas frente al umbral</p>
+          </div>
+          <a routerLink="/carga" class="btn btn-fantasma btn-chico"
+            >Balance <app-icono nombre="arrow-right" [tamano]="14"
+          /></a>
+        </div>
+        <ul class="equipo">
+          @for (r of equipo(); track r.responsableId) {
+            <li>
+              <app-avatar [nombre]="r.nombre" [tamano]="28" />
+              <div class="barra-equipo">
+                <div class="fila">
+                  <span>{{ r.nombre }}</span
+                  ><strong class="num" [class.malo]="r.sobrecargado"
+                    >{{ r.tareasActivas }}/{{ r.umbral }}</strong
+                  >
+                </div>
+                <div class="pista">
+                  <div
+                    class="relleno"
+                    [class.excedido]="r.sobrecargado"
+                    [style.width.%]="ancho(r.tareasActivas)"
+                  ></div>
+                  <div class="umbral" [style.left.%]="ancho(r.umbral)"></div>
+                </div>
+              </div>
+            </li>
+          } @empty {
+            <li class="texto-3">Sin responsables activos.</li>
+          }
+        </ul>
+      </section>
+
+      @if (auth.puedeVerAuditoria()) {
+        <section class="tarjeta">
+          <div class="tarjeta-encabezado">
+            <div>
+              <h2><app-icono nombre="activity" [tamano]="16" />Actividad reciente</h2>
+            </div>
+            <a routerLink="/auditoria" class="btn btn-fantasma btn-chico"
+              >Bitácora <app-icono nombre="arrow-right" [tamano]="14"
+            /></a>
+          </div>
+          <ul class="actividad">
+            @for (e of actividad() ?? []; track e.id) {
+              <li>
+                <span [class]="'punto-evento t-' + eventosInfo[e.tipo].tono"
+                  ><app-icono [nombre]="eventosInfo[e.tipo].icono" [tamano]="13"
+                /></span>
+                <div>
+                  <p>
+                    <strong>{{ nombreDesdeEmail(e.usuarioEmail) }}</strong>
+                    {{ eventosInfo[e.tipo].verbo }} <span class="mono">#{{ e.recursoId }}</span>
+                  </p>
+                  <small class="texto-3">{{ haceCuanto(e.fecha) }}</small>
+                </div>
+              </li>
+            } @empty {
+              <li class="texto-3">Sin actividad registrada.</li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </div>
+</div>

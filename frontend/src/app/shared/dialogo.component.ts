@@ -1,28 +1,45 @@
 import { Component, ElementRef, afterNextRender, inject, input, output } from '@angular/core';
+import { IconoComponent } from './icono.component';
+import { NombreIcono } from './iconos.generados';
 
-/** Ventana modal simple. Se cierra con Escape, con el botón × o al hacer clic fuera. */
+/**
+ * Ventana modal. Con `lateral` se muestra como panel deslizante a la derecha (formularios).
+ * Se cierra con Escape, con el botón ✕ o al hacer clic en el fondo.
+ */
 @Component({
   selector: 'app-dialogo',
+  imports: [IconoComponent],
   host: { '(document:keydown.escape)': 'cerrar.emit()' },
   template: `
-    <div class="fondo" (click)="cerrar.emit()"></div>
+    <div class="velo" (click)="cerrar.emit()"></div>
     <section
-      class="dialogo"
+      class="ventana"
+      [class.lateral]="lateral()"
+      [class.ancho]="ancho()"
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="titulo()"
-      [class.ancho]="ancho()"
       tabindex="-1"
     >
       <header>
-        <h2>{{ titulo() }}</h2>
+        @if (icono(); as i) {
+          <span class="icono-titulo" [class.peligro]="tono() === 'peligro'"
+            ><app-icono [nombre]="i" [tamano]="18"
+          /></span>
+        }
+        <div class="titulos">
+          <h2>{{ titulo() }}</h2>
+          @if (descripcion()) {
+            <p>{{ descripcion() }}</p>
+          }
+        </div>
         <button
           type="button"
-          class="btn-enlace"
+          class="btn btn-fantasma btn-icono btn-chico"
           aria-label="Cerrar ventana"
           (click)="cerrar.emit()"
         >
-          ✕
+          <app-icono nombre="x" [tamano]="18" />
         </button>
       </header>
       <div class="cuerpo"><ng-content /></div>
@@ -32,6 +49,10 @@ import { Component, ElementRef, afterNextRender, inject, input, output } from '@
 })
 export class DialogoComponent {
   readonly titulo = input.required<string>();
+  readonly descripcion = input<string>('');
+  readonly icono = input<NombreIcono | null>(null);
+  readonly tono = input<'normal' | 'peligro'>('normal');
+  readonly lateral = input(false);
   readonly ancho = input(false);
   readonly cerrar = output<void>();
 
@@ -39,9 +60,9 @@ export class DialogoComponent {
     const host = inject(ElementRef<HTMLElement>);
     afterNextRender(() => {
       const primero = host.nativeElement.querySelector(
-        '.cuerpo input:not([disabled]), .cuerpo select:not([disabled]), .cuerpo textarea',
+        '.cuerpo input:not([disabled]):not([type=checkbox]), .cuerpo select:not([disabled]), .cuerpo textarea',
       ) as HTMLElement | null;
-      (primero ?? (host.nativeElement.querySelector('.dialogo') as HTMLElement)).focus();
+      (primero ?? (host.nativeElement.querySelector('.ventana') as HTMLElement)).focus();
     });
   }
 }

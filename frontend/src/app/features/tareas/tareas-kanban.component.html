@@ -1,0 +1,76 @@
+<div class="tablero" cdkDropListGroup>
+  @for (col of columnas; track col.estado) {
+    <section class="columna" [class]="'columna c-' + col.estado">
+      <header>
+        <app-icono [nombre]="col.icono" [tamano]="15" />
+        <h3>{{ col.estado | etiqueta }}</h3>
+        <span class="cuenta num">{{ totales()?.[col.estado] ?? local()[col.estado].length }}</span>
+      </header>
+      <div
+        class="lista"
+        cdkDropList
+        [cdkDropListData]="col.estado"
+        [cdkDropListEnterPredicate]="aceptaEn(col.estado)"
+        (cdkDropListDropped)="soltar($event)"
+        [attr.aria-label]="'Columna ' + (col.estado | etiqueta)"
+      >
+        @for (t of local()[col.estado]; track t.id) {
+          <article
+            class="tarjeta-tarea"
+            cdkDrag
+            [cdkDragData]="t"
+            [cdkDragDisabled]="!arrastrable(t)"
+            [class.fija]="!arrastrable(t)"
+          >
+            <div class="cdk-drag-placeholder hueco" *cdkDragPlaceholder></div>
+            <div class="arriba">
+              <span [class]="'prioridad p-' + t.prioridad"
+                ><app-icono nombre="flag" [tamano]="12" />{{ t.prioridad | etiqueta }}</span
+              >
+              <a
+                class="mono exp"
+                [routerLink]="['/expedientes', t.expedienteId]"
+                (mousedown)="$event.stopPropagation()"
+                >{{ expedientes.codigo(t.expedienteId) }}</a
+              >
+            </div>
+            <p class="titulo">{{ t.titulo }}</p>
+            <div class="abajo">
+              <app-avatar [nombre]="responsables.nombre(t.responsableId)" [tamano]="22" />
+              <span class="tipo mono">{{ t.tipo }}</span>
+              @if (vence(t); as v) {
+                @if (v.texto) {
+                  <span [class]="'vence ' + v.clase"
+                    ><app-icono nombre="clock" [tamano]="12" />{{ v.texto }}</span
+                  >
+                } @else {
+                  <span class="vence"
+                    ><app-icono nombre="calendar" [tamano]="12" />{{ t.fechaLimite | fecha }}</span
+                  >
+                }
+              }
+            </div>
+          </article>
+        } @empty {
+          <div class="vacia">Arrastra tareas aquí</div>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+@if (pendiente(); as p) {
+  <app-dialogo
+    titulo="Cambiar estado"
+    [descripcion]="p.tarea.titulo"
+    icono="arrow-right-left"
+    (cerrar)="deshacer()"
+  >
+    <app-cambio-estado
+      [tarea]="p.tarea"
+      [sugerido]="p.destino"
+      (listo)="guardado()"
+      (volver)="deshacer()"
+    />
+  </app-dialogo>
+}

@@ -1,0 +1,85 @@
+.plazo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+}
+
+.calendario {
+  width: 40px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  border-radius: 9px;
+  border: 1px solid var(--borde);
+  background: var(--superficie-2);
+  border-top: 3px solid var(--borde-fuerte);
+
+  strong {
+    font-size: 0.95rem;
+  }
+
+  small {
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--texto-3);
+  }
+
+  &.r-CRITICO {
+    border-top-color: var(--riesgo-critico);
+  }
+  &.r-ALTO {
+    border-top-color: var(--riesgo-alto);
+  }
+  &.r-MEDIO {
+    border-top-color: var(--riesgo-medio);
+  }
+  &.r-BAJO {
+    border-top-color: var(--riesgo-bajo);
+  }
+}
+
+.relativo {
+  font-size: 0.75rem;
+  color: var(--texto-3);
+
+  &.vencido {
+    color: var(--peligro);
+    font-weight: 600;
+  }
+}
+
+.motivo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  max-width: 260px;
+  font-size: 0.75rem;
+  color: var(--texto-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr.anulado .titulo-celda {
+  color: var(--texto-3);
+  text-decoration: line-through;
+}
+
+.contador-motivo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--texto-3);
+
+  .ok {
+    color: var(--exito);
+    font-weight: 600;
+  }
+}

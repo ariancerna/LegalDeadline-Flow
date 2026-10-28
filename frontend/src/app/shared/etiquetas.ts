@@ -31,32 +31,27 @@ export function etiqueta(valor: string | null | undefined): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-/** Clase CSS del badge según el estado o la prioridad. */
+/** Clase CSS de la pill de estado (ver .estado en _components.scss). */
 export function tono(valor: string | null | undefined): string {
   switch (valor) {
     case 'ABIERTO':
     case 'ACTIVO':
     case 'EN_PROGRESO':
-      return 'badge-info';
+      return 'e-info';
     case 'CERRADO':
     case 'CERRADA':
-      return 'badge-exito';
+      return 'e-exito';
+    case 'PENDIENTE':
+      return 'e-aviso';
     case 'ARCHIVADO':
     case 'CANCELADA':
     case 'ANULADO':
-      return 'badge-neutro';
-    case 'PENDIENTE':
-    case 'MEDIA':
-      return 'badge-aviso';
-    case 'ALTA':
-      return 'badge-error';
-    case 'BAJA':
-      return 'badge-neutro';
+      return '';
     default:
       return '';
   }
 }
 
 export function claseRiesgo(nivel: NivelRiesgo | null | undefined): string {
-  return nivel ? `riesgo-${nivel}` : 'badge-neutro';
+  return nivel ? `riesgo-${nivel}` : '';
 }

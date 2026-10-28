@@ -1,0 +1,54 @@
+@if (paleta.abierta()) {
+  <div class="velo" (click)="cerrar()"></div>
+  <div class="paleta" role="dialog" aria-modal="true" aria-label="Buscador de comandos">
+    <div class="busqueda">
+      <app-icono
+        [nombre]="buscando() ? 'loader-circle' : 'search'"
+        [tamano]="18"
+        [class.girando]="buscando()"
+      />
+      <input
+        #entrada
+        type="text"
+        placeholder="Busca un expediente o escribe un comando…"
+        aria-label="Buscar"
+        [value]="consulta()"
+        (input)="escribir($any($event.target).value)"
+      />
+      <kbd>Esc</kbd>
+    </div>
+    <div class="resultados">
+      @for (g of grupos(); track g[0]) {
+        <div class="grupo">{{ g[0] }}</div>
+        @for (item of g[1]; track item.c.id) {
+          <button
+            type="button"
+            class="opcion"
+            [class.activa]="item.i === indice()"
+            (mouseenter)="indice.set(item.i)"
+            (click)="item.c.ejecutar()"
+          >
+            <span class="icono"><app-icono [nombre]="item.c.icono" [tamano]="16" /></span>
+            <span class="texto">
+              <span [class.mono]="g[0] === 'Expedientes'">{{ item.c.texto }}</span>
+              @if (item.c.detalle) {
+                <small>{{ item.c.detalle }}</small>
+              }
+            </span>
+            @if (item.i === indice()) {
+              <app-icono nombre="corner-down-left" [tamano]="14" class="enter" />
+            }
+          </button>
+        }
+      } @empty {
+        <div class="sin-resultados">Sin resultados para “{{ consulta() }}”.</div>
+      }
+    </div>
+    <footer>
+      <span><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
+      <span><kbd>↵</kbd> abrir</span>
+      <span class="crece"></span>
+      <span>Busca expedientes por código o asunto</span>
+    </footer>
+  </div>
+}

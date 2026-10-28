@@ -1,0 +1,152 @@
+.velo {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--velo);
+  backdrop-filter: blur(3px);
+  animation: desvanecer 0.12s ease both;
+}
+
+.paleta {
+  position: fixed;
+  z-index: 91;
+  top: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, calc(100vw - 24px));
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  box-shadow: var(--sombra-flotante);
+  overflow: hidden;
+  animation: aparecer-arriba 0.16s ease both;
+}
+
+.busqueda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--borde);
+  color: var(--texto-3);
+
+  input {
+    flex: 1;
+    height: 56px;
+    border: none;
+    background: transparent;
+    color: var(--texto);
+    font: inherit;
+    font-size: 1rem;
+    outline: none;
+
+    &::placeholder {
+      color: var(--texto-3);
+    }
+  }
+}
+
+.resultados {
+  max-height: min(420px, 55vh);
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.grupo {
+  padding: 10px 10px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-3);
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  .icono {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--neutro-suave);
+    color: var(--texto-2);
+    flex-shrink: 0;
+  }
+
+  .texto {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    small {
+      color: var(--texto-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .enter {
+    color: var(--texto-3);
+  }
+
+  &.activa {
+    background: var(--marca-suave);
+
+    .icono {
+      background: var(--marca);
+      color: var(--sobre-marca);
+    }
+  }
+}
+
+.sin-resultados {
+  padding: 32px;
+  text-align: center;
+  color: var(--texto-3);
+}
+
+footer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid var(--borde);
+  background: var(--superficie-2);
+  color: var(--texto-3);
+  font-size: 0.75rem;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .crece {
+    flex: 1;
+  }
+
+  @media (max-width: 560px) {
+    span:last-child {
+      display: none;
+    }
+  }
+}
+
+.busqueda input:focus-visible {
+  box-shadow: none;
+}

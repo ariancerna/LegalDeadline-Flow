@@ -1,0 +1,33 @@
+.relativo {
+  font-size: 0.75rem;
+  color: var(--texto-3);
+
+  &.pronto {
+    color: var(--aviso);
+    font-weight: 600;
+  }
+
+  &.vencida {
+    color: var(--peligro);
+    font-weight: 600;
+  }
+}
+
+tr.finalizada .titulo-celda {
+  color: var(--texto-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--borde-fuerte);
+}
+
+td:first-child {
+  min-width: 240px;
+}
+
+.relativo,
+.sin-salto {
+  white-space: nowrap;
+}
+
+.acciones-fila {
+  flex-wrap: nowrap;
+}

@@ -8,15 +8,17 @@ import { ExpedientesCache } from '../../core/expedientes.cache';
 import { CargaResponsable, Tarea } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ResponsablesStore } from '../../core/responsables.store';
+import { AvatarComponent } from '../../shared/avatar.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
-import { tono } from '../../shared/etiquetas';
 import { FechaPipe } from '../../shared/fecha.pipe';
+import { IconoComponent } from '../../shared/icono.component';
+import { VacioComponent } from '../../shared/vacio.component';
 import { Sugerencia, recomendarReasignaciones } from './recomendacion';
 
 /** RF16: carga activa por responsable, sobrecargas y recomendación de reasignación. */
 @Component({
   selector: 'app-carga',
-  imports: [RouterLink, EtiquetaPipe, FechaPipe],
+  imports: [RouterLink, EtiquetaPipe, FechaPipe, IconoComponent, AvatarComponent, VacioComponent],
   templateUrl: './carga.component.html',
   styleUrl: './carga.component.scss',
 })
@@ -26,7 +28,6 @@ export class CargaComponent implements OnInit {
   protected readonly auth = inject(AuthService);
   protected readonly responsables = inject(ResponsablesStore);
   protected readonly expedientes = inject(ExpedientesCache);
-  protected readonly tono = tono;
 
   protected readonly error = signal<string | null>(null);
   protected readonly tareasSobrecargados = signal<ReadonlyMap<number, Tarea[]>>(new Map());
@@ -48,8 +49,21 @@ export class CargaComponent implements OnInit {
     this.recargar();
   }
 
-  protected ancho(valor: number): number {
-    return Math.min(100, (valor / this.escala()) * 100);
+  protected readonly totalActivas = computed(() =>
+    this.lista().reduce((s, r) => s + r.tareasActivas, 0),
+  );
+  protected readonly capacidadLibre = computed(() =>
+    this.lista().reduce((s, r) => s + Math.max(0, r.umbral - r.tareasActivas), 0),
+  );
+
+  /** Un bloque por tarea hasta la escala común; los que exceden el umbral se marcan. */
+  protected bloques(tareas: number): { lleno: boolean; exceso: boolean; umbral: boolean }[] {
+    const umbral = this.umbral();
+    return Array.from({ length: this.escala() }, (_, i) => ({
+      lleno: i < tareas,
+      exceso: i < tareas && i >= umbral,
+      umbral: i === umbral - 1,
+    }));
   }
 
   protected recargar(): void {

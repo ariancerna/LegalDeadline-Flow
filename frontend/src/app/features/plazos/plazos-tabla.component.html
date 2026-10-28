@@ -2,11 +2,8 @@
   <table class="tabla">
     <thead>
       <tr>
-        <th>Tipo</th>
-        @if (mostrarExpediente()) {
-          <th>Expediente</th>
-        }
-        <th>Fecha límite</th>
+        <th>Plazo</th>
+        <th class="ocultar-movil">Vence</th>
         <th>Riesgo</th>
         <th>Estado</th>
         <th><span class="sr-only">Acciones</span></th>
@@ -14,91 +11,140 @@
     </thead>
     <tbody>
       @for (p of plazos(); track p.id) {
-        <tr>
-          <td class="mono">{{ p.tipo }}</td>
-          @if (mostrarExpediente()) {
-            <td>
-              <a class="mono" [routerLink]="['/expedientes', p.expedienteId]">{{
-                expedientes.codigo(p.expedienteId)
-              }}</a>
-            </td>
-          }
-          <td>{{ p.fechaLimite | fecha }}</td>
+        <tr [class.anulado]="p.estado === 'ANULADO'">
           <td>
-            @if (riesgos().get(p.id); as r) {
+            <div class="plazo">
               <span
-                [class]="'badge ' + claseRiesgo(r.nivel)"
-                [title]="r.tareasPendientes + ' tareas activas en el expediente'"
+                class="calendario"
+                [class]="'calendario r-' + (riesgos().get(p.id)?.nivel ?? 'X')"
               >
-                {{ r.nivel | etiqueta }}
+                <strong class="num">{{ p.fechaLimite.slice(8, 10) }}</strong>
+                <small>{{ p.fechaLimite | fecha: 'mes' }}</small>
               </span>
-              @if (p.estado === 'ACTIVO') {
-                <span class="texto-suave texto-chico">
+              <div>
+                <div class="titulo-celda">{{ p.tipo | etiqueta }}</div>
+                <div class="sub-celda">
+                  @if (mostrarExpediente()) {
+                    <a class="mono" [routerLink]="['/expedientes', p.expedienteId]">{{
+                      expedientes.codigo(p.expedienteId)
+                    }}</a>
+                  } @else {
+                    <span class="mono">{{ p.tipo }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="ocultar-movil">
+            <div class="num">{{ p.fechaLimite | fecha }}</div>
+            @if (p.estado === 'ACTIVO') {
+              @if (riesgos().get(p.id); as r) {
+                <div class="relativo" [class.vencido]="r.diasRestantes < 0">
                   {{ textoDias(r.diasRestantes) }}
-                </span>
+                </div>
               }
-            } @else {
-              <span class="texto-suave">…</span>
             }
           </td>
           <td>
-            <span [class]="'badge ' + tono(p.estado)">{{ p.estado | etiqueta }}</span>
+            @if (riesgos().get(p.id); as r) {
+              <span
+                [class]="'estado riesgo-' + r.nivel"
+                [title]="r.tareasPendientes + ' tareas activas en el expediente'"
+                >{{ r.nivel | etiqueta }}</span
+              >
+            } @else {
+              <span
+                class="esqueleto"
+                style="width: 64px; height: 20px; border-radius: 999px"
+              ></span>
+            }
+          </td>
+          <td>
+            <span [class]="'estado ' + tono(p.estado)">{{ p.estado | etiqueta }}</span>
             @if (p.motivoAnulacion) {
-              <div class="texto-suave texto-chico">{{ p.motivoAnulacion }}</div>
+              <div class="motivo" [title]="p.motivoAnulacion">
+                <app-icono nombre="info" [tamano]="12" />{{ p.motivoAnulacion }}
+              </div>
             }
           </td>
           <td>
             @if (puedeModificar(p)) {
-              <div class="acciones">
-                <button type="button" class="btn-enlace btn-chico" (click)="editando.set(p)">
-                  Editar
+              <div class="acciones-fila">
+                <button
+                  type="button"
+                  class="btn btn-fantasma btn-icono btn-chico"
+                  title="Editar"
+                  aria-label="Editar plazo"
+                  (click)="editando.set(p)"
+                >
+                  <app-icono nombre="pencil" [tamano]="15" />
                 </button>
-                <button type="button" class="btn-enlace btn-chico peligro" (click)="abrirAnular(p)">
-                  Anular
+                <button
+                  type="button"
+                  class="btn btn-fantasma peligro btn-icono btn-chico"
+                  title="Anular"
+                  aria-label="Anular plazo"
+                  (click)="abrirAnular(p)"
+                >
+                  <app-icono nombre="calendar-x" [tamano]="15" />
                 </button>
               </div>
             }
           </td>
         </tr>
-      } @empty {
-        <tr>
-          <td [attr.colspan]="mostrarExpediente() ? 6 : 5" class="vacia">
-            {{ cargando() ? 'Cargando…' : 'No hay plazos para mostrar.' }}
-          </td>
-        </tr>
       }
     </tbody>
   </table>
-  <ng-content />
 </div>
+<ng-content />
 
 @if (editando(); as p) {
-  <app-dialogo titulo="Editar plazo" (cerrar)="editando.set(null)">
+  <app-dialogo
+    titulo="Editar plazo"
+    [descripcion]="p.tipo"
+    icono="pencil"
+    [lateral]="true"
+    (cerrar)="editando.set(null)"
+  >
     <app-plazo-form [plazo]="p" (guardado)="editado()" (cancelar)="editando.set(null)" />
   </app-dialogo>
 }
 
 @if (anulando(); as p) {
-  <app-dialogo titulo="Anular plazo" (cerrar)="anulando.set(null)">
+  <app-dialogo
+    titulo="Anular plazo"
+    [descripcion]="(p.tipo | etiqueta) + ' · vence ' + (p.fechaLimite | fecha)"
+    icono="calendar-x"
+    tono="peligro"
+    (cerrar)="anulando.set(null)"
+  >
     <div class="formulario">
-      <p>
+      <p class="texto-2">
         Los plazos no se eliminan: se anulan con un motivo y quedan auditados (RN05).
-        <br /><span class="texto-suave">{{ p.tipo }} · vence {{ p.fechaLimite | fecha }}</span>
       </p>
       @if (errorDialogo(); as mensaje) {
-        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+        <div class="aviso aviso-error" role="alert">
+          <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+        </div>
       }
       <div class="campo" [class.invalido]="motivo().length > 0 && !motivoValido()">
         <label for="motivo">Motivo de anulación</label>
         <textarea
           id="motivo"
           maxlength="250"
+          placeholder="Explica por qué se anula este plazo"
           [ngModel]="motivo()"
           (ngModelChange)="motivo.set($event)"
         ></textarea>
-        <span class="ayuda">{{ motivo().trim().length }}/250 · mínimo 10 caracteres</span>
+        <div class="contador-motivo">
+          <span class="ayuda">Mínimo 10 caracteres.</span>
+          <span class="num" [class.ok]="motivoValido()">{{ largoMotivo() }}/250</span>
+        </div>
       </div>
-      <div class="acciones">
+      <div class="acciones pie-formulario">
+        <button type="button" class="btn btn-secundario" (click)="anulando.set(null)">
+          Volver
+        </button>
         <button
           type="button"
           class="btn btn-peligro"
@@ -106,9 +152,6 @@
           (click)="confirmarAnular()"
         >
           Anular plazo
-        </button>
-        <button type="button" class="btn btn-secundario" (click)="anulando.set(null)">
-          Volver
         </button>
       </div>
     </div>

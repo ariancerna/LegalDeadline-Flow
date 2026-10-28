@@ -1,19 +1,27 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AlertasStore } from '../../core/alertas.store';
 import { FiltrosPlazo, PlazosService } from '../../core/api/plazos.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
 import { PLAZO_ESTADOS, Plazo } from '../../core/models';
 import { DialogoComponent } from '../../shared/dialogo.component';
+import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { hoyLima, sumarDias } from '../../shared/fechas';
+import { IconoComponent } from '../../shared/icono.component';
 import { PaginadorComponent } from '../../shared/paginador.component';
+import { VacioComponent } from '../../shared/vacio.component';
 import { PlazoFormComponent } from './plazo-form.component';
+import { PlazosCalendarioComponent } from './plazos-calendario.component';
 import { PlazosTablaComponent } from './plazos-tabla.component';
 
-type FiltrosVista = Required<Pick<FiltrosPlazo, 'estado' | 'desde' | 'hasta'>>;
+type Filtros = Required<Pick<FiltrosPlazo, 'estado' | 'desde' | 'hasta'>>;
+type Vista = 'lista' | 'calendario';
+const CLAVE_VISTA = 'ldf.vista-plazos';
 
-/** RF12 / RF15: consulta de plazos con su nivel de riesgo. */
+/** RF12 / RF15: consulta de plazos con su nivel de riesgo, en lista o calendario. */
 @Component({
   selector: 'app-plazos-lista',
   imports: [
@@ -23,114 +31,88 @@ type FiltrosVista = Required<Pick<FiltrosPlazo, 'estado' | 'desde' | 'hasta'>>;
     DialogoComponent,
     PlazoFormComponent,
     PlazosTablaComponent,
+    PlazosCalendarioComponent,
+    IconoComponent,
+    EsqueletoComponent,
+    VacioComponent,
   ],
-  template: `
-    <div class="pagina-encabezado">
-      <div>
-        <h1>Plazos</h1>
-        <p>Vencimientos con su riesgo calculado automáticamente.</p>
-      </div>
-      @if (auth.puedeEscribir()) {
-        <button type="button" class="btn btn-primario" (click)="creando.set(true)">
-          + Nuevo plazo
-        </button>
-      }
-    </div>
-
-    <div class="filtros" role="search">
-      <div class="campo">
-        <label for="f-estado">Estado</label>
-        <select
-          id="f-estado"
-          [ngModel]="filtros().estado"
-          (ngModelChange)="filtrar('estado', $event)"
-        >
-          <option value="">Todos</option>
-          @for (e of estados; track e) {
-            <option [value]="e">{{ e | etiqueta }}</option>
-          }
-        </select>
-      </div>
-      <div class="campo">
-        <label for="f-desde">Vence desde</label>
-        <input
-          id="f-desde"
-          type="date"
-          [ngModel]="filtros().desde"
-          (ngModelChange)="filtrar('desde', $event)"
-        />
-      </div>
-      <div class="campo">
-        <label for="f-hasta">Vence hasta</label>
-        <input
-          id="f-hasta"
-          type="date"
-          [ngModel]="filtros().hasta"
-          (ngModelChange)="filtrar('hasta', $event)"
-        />
-      </div>
-      <div class="acciones">
-        <button type="button" class="btn btn-secundario" (click)="proximos()">
-          Próximos 10 días
-        </button>
-        <button type="button" class="btn btn-secundario" (click)="limpiar()">Limpiar</button>
-      </div>
-    </div>
-
-    @if (error(); as mensaje) {
-      <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-    }
-
-    <app-plazos-tabla [plazos]="datos()" [cargando]="cargando()" (cambio)="cargar()">
-      <app-paginador
-        [pagina]="pagina()"
-        [tamano]="tamano"
-        [total]="total()"
-        (cambiar)="pagina.set($event); cargar()"
-      />
-    </app-plazos-tabla>
-
-    @if (creando()) {
-      <app-dialogo titulo="Nuevo plazo" (cerrar)="creando.set(false)">
-        <app-plazo-form (guardado)="creando.set(false); cargar()" (cancelar)="creando.set(false)" />
-      </app-dialogo>
-    }
-  `,
+  templateUrl: './plazos-lista.component.html',
 })
 export class PlazosListaComponent implements OnInit {
   private readonly servicio = inject(PlazosService);
+  private readonly router = inject(Router);
+  private readonly alertas = inject(AlertasStore);
   protected readonly auth = inject(AuthService);
   protected readonly estados = PLAZO_ESTADOS;
 
-  protected readonly filtros = signal<FiltrosVista>({ estado: '', desde: '', hasta: '' });
+  protected readonly vista = signal<Vista>(leerVista());
+  protected readonly filtros = signal<Filtros>({ estado: '', desde: '', hasta: '' });
+  protected readonly rapido = signal<'todos' | 'proximos' | 'vencidos'>('todos');
   protected readonly pagina = signal(0);
-  protected readonly tamano = 10;
+  protected readonly tamano = 12;
   protected readonly datos = signal<Plazo[]>([]);
   protected readonly total = signal(0);
-  protected readonly cargando = signal(false);
+  protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly creando = signal(false);
+  protected readonly versionCalendario = signal(0);
+
+  protected readonly hayFiltros = computed(() =>
+    Object.values(this.filtros()).some((v) => v !== ''),
+  );
+
+  constructor() {
+    if (inject(ActivatedRoute).snapshot.queryParamMap.get('nuevo') && this.auth.puedeEscribir())
+      this.creando.set(true);
+  }
 
   ngOnInit(): void {
     this.cargar();
   }
 
-  protected filtrar(clave: keyof FiltrosVista, valor: string | null): void {
+  protected cambiarVista(v: Vista): void {
+    this.vista.set(v);
+    try {
+      localStorage.setItem(CLAVE_VISTA, v);
+    } catch {
+      /* sin almacenamiento */
+    }
+    if (v === 'lista') this.cargar();
+  }
+
+  protected filtrar(clave: keyof Filtros, valor: string | null): void {
     this.filtros.update((f) => ({ ...f, [clave]: valor ?? '' }));
+    this.rapido.set('todos');
     this.pagina.set(0);
     this.cargar();
   }
 
-  protected proximos(): void {
-    this.filtros.set({ estado: 'ACTIVO', desde: '', hasta: sumarDias(hoyLima(), 10) });
+  protected atajo(tipo: 'todos' | 'proximos' | 'vencidos'): void {
+    const hoy = hoyLima();
+    this.rapido.set(tipo);
+    if (tipo === 'proximos')
+      this.filtros.set({ estado: 'ACTIVO', desde: hoy, hasta: sumarDias(hoy, 10) });
+    else if (tipo === 'vencidos')
+      this.filtros.set({ estado: 'ACTIVO', desde: '', hasta: sumarDias(hoy, -1) });
+    else this.filtros.set({ estado: '', desde: '', hasta: '' });
     this.pagina.set(0);
     this.cargar();
   }
 
-  protected limpiar(): void {
-    this.filtros.set({ estado: '', desde: '', hasta: '' });
-    this.pagina.set(0);
+  protected cerrarCreacion(): void {
+    this.creando.set(false);
+    void this.router.navigate([], { queryParams: {}, replaceUrl: true });
+  }
+
+  protected actualizado(): void {
     this.cargar();
+    this.alertas.recargar();
+    this.versionCalendario.update((v) => v + 1);
+  }
+
+  protected creado(): void {
+    this.cerrarCreacion();
+    this.actualizado();
   }
 
   protected cargar(): void {
@@ -147,5 +129,13 @@ export class PlazosListaComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+}
+
+function leerVista(): Vista {
+  try {
+    return localStorage.getItem(CLAVE_VISTA) === 'calendario' ? 'calendario' : 'lista';
+  } catch {
+    return 'lista';
   }
 }

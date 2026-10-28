@@ -1,0 +1,146 @@
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="calendar-clock" [tamano]="13" />Gestión</p>
+      <h1>Plazos</h1>
+      <p class="subtitulo">
+        Vencimientos con su riesgo calculado automáticamente según días restantes y tareas
+        pendientes.
+      </p>
+    </div>
+    <div class="acciones">
+      <div class="segmentado" role="tablist" aria-label="Vista">
+        <button
+          type="button"
+          role="tab"
+          [class.activo]="vista() === 'lista'"
+          (click)="cambiarVista('lista')"
+        >
+          <app-icono nombre="list" [tamano]="15" />Lista
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activo]="vista() === 'calendario'"
+          (click)="cambiarVista('calendario')"
+        >
+          <app-icono nombre="calendar" [tamano]="15" />Calendario
+        </button>
+      </div>
+      @if (auth.puedeEscribir()) {
+        <button type="button" class="btn btn-primario" (click)="creando.set(true)">
+          <app-icono nombre="plus" [tamano]="16" />Nuevo plazo
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="tarjeta">
+    @if (vista() === 'calendario') {
+      <app-plazos-calendario [version]="versionCalendario()" />
+    } @else {
+      <div class="pestanas" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="rapido() === 'todos'"
+          (click)="atajo('todos')"
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="rapido() === 'proximos'"
+          (click)="atajo('proximos')"
+        >
+          <app-icono nombre="hourglass" [tamano]="14" />Próximos 10 días
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="rapido() === 'vencidos'"
+          (click)="atajo('vencidos')"
+        >
+          <app-icono nombre="triangle-alert" [tamano]="14" />Vencidos
+        </button>
+      </div>
+      <div class="barra-filtros" role="search">
+        <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
+        <select
+          id="f-estado"
+          aria-label="Estado"
+          [ngModel]="filtros().estado"
+          (ngModelChange)="filtrar('estado', $event)"
+        >
+          <option value="">Todos los estados</option>
+          @for (e of estados; track e) {
+            <option [value]="e">{{ e | etiqueta }}</option>
+          }
+        </select>
+        <span class="etiqueta-filtro">Vence</span>
+        <input
+          id="f-desde"
+          type="date"
+          aria-label="Vence desde"
+          [ngModel]="filtros().desde"
+          (ngModelChange)="filtrar('desde', $event)"
+        />
+        <span class="texto-3">–</span>
+        <input
+          id="f-hasta"
+          type="date"
+          aria-label="Vence hasta"
+          [ngModel]="filtros().hasta"
+          (ngModelChange)="filtrar('hasta', $event)"
+        />
+        @if (hayFiltros()) {
+          <button type="button" class="btn btn-fantasma btn-chico" (click)="atajo('todos')">
+            <app-icono nombre="x" [tamano]="14" />Limpiar
+          </button>
+        }
+      </div>
+
+      @if (error(); as mensaje) {
+        <div class="aviso aviso-error" style="margin: 12px" role="alert">
+          <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+        </div>
+      }
+
+      @if (cargando() && datos().length === 0) {
+        <app-esqueleto [filas]="6" />
+      } @else if (datos().length === 0) {
+        <app-vacio
+          icono="calendar-check"
+          [titulo]="hayFiltros() ? 'Sin plazos en este filtro' : 'No hay plazos registrados'"
+          [texto]="
+            rapido() === 'vencidos'
+              ? 'Excelente: no hay plazos activos vencidos.'
+              : 'Los plazos aparecerán aquí con su nivel de riesgo.'
+          "
+        />
+      } @else {
+        <app-plazos-tabla [plazos]="datos()" (cambio)="actualizado()">
+          <app-paginador
+            [pagina]="pagina()"
+            [tamano]="tamano"
+            [total]="total()"
+            (cambiar)="pagina.set($event); cargar()"
+          />
+        </app-plazos-tabla>
+      }
+    }
+  </section>
+</div>
+
+@if (creando()) {
+  <app-dialogo
+    titulo="Nuevo plazo"
+    descripcion="Su riesgo se calcula automáticamente."
+    icono="calendar-clock"
+    [lateral]="true"
+    (cerrar)="cerrarCreacion()"
+  >
+    <app-plazo-form (guardado)="creado()" (cancelar)="cerrarCreacion()" />
+  </app-dialogo>
+}

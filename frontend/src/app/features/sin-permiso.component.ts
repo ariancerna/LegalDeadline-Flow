@@ -1,14 +1,19 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { VacioComponent } from '../shared/vacio.component';
 
 @Component({
   selector: 'app-sin-permiso',
-  imports: [RouterLink],
+  imports: [RouterLink, VacioComponent],
   template: `
     <div class="tarjeta">
-      <h1>Sin permiso</h1>
-      <p class="texto-suave">Tu rol no tiene acceso a esta sección.</p>
-      <a routerLink="/tablero" class="btn btn-primario">Volver al tablero</a>
+      <app-vacio
+        icono="lock"
+        titulo="Esta sección no está disponible para tu rol"
+        texto="Si necesitas acceso, pídeselo al administrador del estudio."
+      >
+        <a routerLink="/tablero" class="btn btn-primario">Volver al tablero</a>
+      </app-vacio>
     </div>
   `,
 })

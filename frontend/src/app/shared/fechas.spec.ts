@@ -30,3 +30,23 @@ describe('fechas en America/Lima', () => {
     expect(textoDias(-3)).toBe('venció hace 3 días');
   });
 });
+
+describe('fechas relativas', () => {
+  const ahora = new Date('2026-10-28T15:00:00Z');
+
+  it('describe cuánto pasó desde un instante', async () => {
+    const { haceCuanto } = await import('./fechas');
+    expect(haceCuanto('2026-10-28T14:59:30Z', ahora)).toBe('hace un momento');
+    expect(haceCuanto('2026-10-28T14:40:00Z', ahora)).toBe('hace 20 min');
+    expect(haceCuanto('2026-10-28T12:00:00Z', ahora)).toBe('hace 3 h');
+    expect(haceCuanto('2026-10-27T13:00:00Z', ahora)).toBe('ayer');
+    expect(haceCuanto('2026-10-25T15:00:00Z', ahora)).toBe('hace 3 días');
+  });
+
+  it('nombra meses y fechas en español', async () => {
+    const { fechaLarga, mesCorto, nombreMes } = await import('./fechas');
+    expect(mesCorto('2026-09-01')).toBe('set');
+    expect(nombreMes(9)).toBe('octubre');
+    expect(fechaLarga('2026-10-28')).toBe('miércoles, 28 de octubre');
+  });
+});

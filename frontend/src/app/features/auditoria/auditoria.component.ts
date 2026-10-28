@@ -1,14 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConsultasService } from '../../core/api/consultas.service';
 import { UsuariosService } from '../../core/api/usuarios.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
 import { EVENTO_TIPOS, Evento, EventoTipo, Usuario } from '../../core/models';
+import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
-import { FechaPipe } from '../../shared/fecha.pipe';
-import { localLimaAIso } from '../../shared/fechas';
+import { EVENTOS, nombreDesdeEmail } from '../../shared/eventos';
+import { fechaLarga, haceCuanto, hoyLima, localLimaAIso, sumarDias } from '../../shared/fechas';
+import { IconoComponent } from '../../shared/icono.component';
 import { PaginadorComponent } from '../../shared/paginador.component';
+import { VacioComponent } from '../../shared/vacio.component';
 
 interface FiltrosVista {
   tipo: EventoTipo | '';
@@ -17,118 +20,40 @@ interface FiltrosVista {
   hasta: string;
 }
 
-/** RF18: bitácora de operaciones críticas (solo lectura). */
+const LIMA = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Lima',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+const HORA = new Intl.DateTimeFormat('es-PE', {
+  timeZone: 'America/Lima',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+/** RF18: bitácora de operaciones críticas (solo lectura), agrupada por día. */
 @Component({
   selector: 'app-auditoria',
-  imports: [FormsModule, EtiquetaPipe, FechaPipe, PaginadorComponent],
-  template: `
-    <div class="pagina-encabezado">
-      <div>
-        <h1>Auditoría</h1>
-        <p>
-          Eventos inmutables de las operaciones críticas: altas, cambios de estado, reasignaciones y
-          anulaciones.
-        </p>
-      </div>
-    </div>
-
-    <div class="filtros" role="search">
-      <div class="campo">
-        <label for="f-tipo">Tipo de evento</label>
-        <select id="f-tipo" [ngModel]="filtros().tipo" (ngModelChange)="filtrar('tipo', $event)">
-          <option value="">Todos</option>
-          @for (t of tipos; track t) {
-            <option [value]="t">{{ t | etiqueta }}</option>
-          }
-        </select>
-      </div>
-      @if (usuarios().length > 0) {
-        <div class="campo">
-          <label for="f-usuario">Usuario</label>
-          <select
-            id="f-usuario"
-            [ngModel]="filtros().usuarioId"
-            (ngModelChange)="filtrar('usuarioId', $event)"
-          >
-            <option [ngValue]="null">Todos</option>
-            @for (u of usuarios(); track u.id) {
-              <option [ngValue]="u.id">{{ u.nombre }}</option>
-            }
-          </select>
-        </div>
-      }
-      <div class="campo">
-        <label for="f-desde">Desde</label>
-        <input
-          id="f-desde"
-          type="datetime-local"
-          [ngModel]="filtros().desde"
-          (ngModelChange)="filtrar('desde', $event)"
-        />
-      </div>
-      <div class="campo">
-        <label for="f-hasta">Hasta</label>
-        <input
-          id="f-hasta"
-          type="datetime-local"
-          [ngModel]="filtros().hasta"
-          (ngModelChange)="filtrar('hasta', $event)"
-        />
-      </div>
-      <div>
-        <button type="button" class="btn btn-secundario" (click)="limpiar()">Limpiar</button>
-      </div>
-    </div>
-
-    @if (error(); as mensaje) {
-      <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-    }
-
-    <div class="tabla-contenedor">
-      <table class="tabla">
-        <thead>
-          <tr>
-            <th>Fecha (Lima)</th>
-            <th>Evento</th>
-            <th>Recurso</th>
-            <th>Detalle</th>
-            <th>Autor</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (e of datos(); track e.id) {
-            <tr>
-              <td class="texto-chico">{{ e.fecha | fecha: 'hora' }}</td>
-              <td>
-                <span class="badge">{{ e.tipo | etiqueta }}</span>
-              </td>
-              <td class="mono texto-chico">{{ e.recurso }} #{{ e.recursoId }}</td>
-              <td>{{ e.detalle }}</td>
-              <td class="texto-chico">{{ e.usuarioEmail ?? 'Sistema' }}</td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="vacia">
-                {{ cargando() ? 'Cargando…' : 'No hay eventos para los filtros elegidos.' }}
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <app-paginador
-        [pagina]="pagina()"
-        [tamano]="tamano"
-        [total]="total()"
-        (cambiar)="pagina.set($event); cargar()"
-      />
-    </div>
-  `,
+  imports: [
+    FormsModule,
+    EtiquetaPipe,
+    PaginadorComponent,
+    IconoComponent,
+    EsqueletoComponent,
+    VacioComponent,
+  ],
+  templateUrl: './auditoria.component.html',
+  styleUrl: './auditoria.component.scss',
 })
 export class AuditoriaComponent implements OnInit {
   private readonly consultas = inject(ConsultasService);
   private readonly usuariosServicio = inject(UsuariosService);
   private readonly auth = inject(AuthService);
   protected readonly tipos = EVENTO_TIPOS;
+  protected readonly info = EVENTOS;
+  protected readonly nombreDesdeEmail = nombreDesdeEmail;
+  protected readonly haceCuanto = haceCuanto;
 
   protected readonly filtros = signal<FiltrosVista>({
     tipo: '',
@@ -138,11 +63,33 @@ export class AuditoriaComponent implements OnInit {
   });
   protected readonly usuarios = signal<Usuario[]>([]);
   protected readonly pagina = signal(0);
-  protected readonly tamano = 15;
+  protected readonly tamano = 20;
   protected readonly datos = signal<Evento[]>([]);
   protected readonly total = signal(0);
-  protected readonly cargando = signal(false);
+  protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly hayFiltros = computed(() => {
+    const f = this.filtros();
+    return f.tipo !== '' || f.usuarioId !== null || f.desde !== '' || f.hasta !== '';
+  });
+
+  /** Eventos agrupados por día (hora de Lima). */
+  protected readonly dias = computed(() => {
+    const hoy = hoyLima();
+    const ayer = sumarDias(hoy, -1);
+    const grupos = new Map<string, Evento[]>();
+    for (const e of this.datos()) {
+      const dia = LIMA.format(new Date(e.fecha));
+      if (!grupos.has(dia)) grupos.set(dia, []);
+      grupos.get(dia)!.push(e);
+    }
+    return [...grupos.entries()].map(([dia, eventos]) => ({
+      dia,
+      titulo: dia === hoy ? 'Hoy' : dia === ayer ? 'Ayer' : fechaLarga(dia),
+      eventos,
+    }));
+  });
 
   ngOnInit(): void {
     // Solo el administrador puede listar usuarios; los demás filtran por tipo y fecha.
@@ -152,6 +99,10 @@ export class AuditoriaComponent implements OnInit {
         .subscribe({ next: (u) => this.usuarios.set(u), error: () => undefined });
     }
     this.cargar();
+  }
+
+  protected hora(instante: string): string {
+    return HORA.format(new Date(instante));
   }
 
   protected filtrar<K extends keyof FiltrosVista>(clave: K, valor: FiltrosVista[K]): void {

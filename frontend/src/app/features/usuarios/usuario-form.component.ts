@@ -5,17 +5,20 @@ import { interpretarError } from '../../core/errores';
 import { ROLES, Rol, Usuario } from '../../core/models';
 import { NotificacionesService } from '../../core/notificaciones.service';
 import { ErrorCampoComponent } from '../../shared/error-campo.component';
+import { IconoComponent } from '../../shared/icono.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { noSoloEspacios } from '../../shared/validadores';
 
 /** RF02: registrar o editar una cuenta (solo administrador). */
 @Component({
   selector: 'app-usuario-form',
-  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe],
+  imports: [ReactiveFormsModule, ErrorCampoComponent, EtiquetaPipe, IconoComponent],
   template: `
     <form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       @if (error(); as mensaje) {
-        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
+        <div class="aviso aviso-error" role="alert">
+          <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+        </div>
       }
       <div class="campo">
         <label for="u-nombre">Nombre</label>
@@ -67,11 +70,11 @@ import { noSoloEspacios } from '../../shared/validadores';
           [servidor]="camposServidor()['password']"
         />
       </div>
-      <div class="acciones">
+      <div class="acciones pie-formulario">
+        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
         <button type="submit" class="btn btn-primario" [disabled]="enviando()">
           {{ usuario() ? 'Guardar cambios' : 'Crear usuario' }}
         </button>
-        <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
       </div>
     </form>
   `,

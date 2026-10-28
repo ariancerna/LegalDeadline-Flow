@@ -1,12 +1,16 @@
 import { Component, input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+import { IconoComponent } from './icono.component';
 
 /** Muestra el primer error de validación de un control (cliente) o el que devolvió el servidor. */
 @Component({
   selector: 'app-error-campo',
+  imports: [IconoComponent],
   template: `
     @if (mensaje(); as texto) {
-      <span class="error-campo" role="alert">{{ texto }}</span>
+      <span class="error-campo" role="alert"
+        ><app-icono nombre="circle-alert" [tamano]="13" />{{ texto }}</span
+      >
     }
   `,
 })

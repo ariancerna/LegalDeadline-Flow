@@ -1,0 +1,146 @@
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="users" [tamano]="13" />Administración</p>
+      <h1>Usuarios</h1>
+      <p class="subtitulo">
+        Cuentas, roles y estado de acceso. Las cuentas se desactivan, no se eliminan.
+      </p>
+    </div>
+    <button type="button" class="btn btn-primario" (click)="editando.set('nuevo')">
+      <app-icono nombre="user-plus" [tamano]="16" />Nuevo usuario
+    </button>
+  </header>
+
+  <section class="roles">
+    @for (r of porRol(); track r.rol) {
+      <div class="rol tarjeta">
+        <span class="icono"><app-icono [nombre]="iconoRol[r.rol]" [tamano]="17" /></span>
+        <div>
+          <strong class="num">{{ r.cuenta }}</strong>
+          <small>{{ r.rol | etiqueta }}{{ r.cuenta === 1 ? '' : 'es' }}</small>
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
+
+  <section class="tarjeta">
+    @if (usuarios(); as lista) {
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th class="ocultar-movil">Rol</th>
+              <th>Estado</th>
+              <th><span class="sr-only">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of lista; track u.id) {
+              <tr [class.inactivo]="!u.activo">
+                <td>
+                  <span class="persona">
+                    <app-avatar [nombre]="u.nombre" [tamano]="34" />
+                    <span>
+                      <span class="titulo-celda"
+                        >{{ u.nombre }}
+                        @if (u.id === auth.usuario()?.id) {
+                          <span class="tu">Tú</span>
+                        }
+                      </span>
+                      <span class="sub-celda d-block">{{ u.email }}</span>
+                    </span>
+                  </span>
+                </td>
+                <td class="ocultar-movil">
+                  <span class="rol-chip"
+                    ><app-icono [nombre]="iconoRol[u.rol]" [tamano]="13" />{{
+                      u.rol | etiqueta
+                    }}</span
+                  >
+                </td>
+                <td>
+                  <span [class]="'estado ' + (u.activo ? 'e-exito' : '')">{{
+                    u.activo ? 'Activo' : 'Inactivo'
+                  }}</span>
+                </td>
+                <td>
+                  <div class="acciones-fila">
+                    <button
+                      type="button"
+                      class="btn btn-fantasma btn-icono btn-chico"
+                      title="Editar"
+                      aria-label="Editar usuario"
+                      (click)="editando.set(u)"
+                    >
+                      <app-icono nombre="pencil" [tamano]="15" />
+                    </button>
+                    @if (u.activo && u.id !== auth.usuario()?.id) {
+                      <button
+                        type="button"
+                        class="btn btn-fantasma peligro btn-icono btn-chico"
+                        title="Desactivar"
+                        aria-label="Desactivar usuario"
+                        (click)="desactivando.set(u)"
+                      >
+                        <app-icono nombre="ban" [tamano]="15" />
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <app-esqueleto [filas]="5" />
+    }
+  </section>
+</div>
+
+@if (editando(); as u) {
+  <app-dialogo
+    [titulo]="u === 'nuevo' ? 'Nuevo usuario' : 'Editar usuario'"
+    [descripcion]="u === 'nuevo' ? 'La contraseña se guarda cifrada con BCrypt.' : u.email"
+    [icono]="u === 'nuevo' ? 'user-plus' : 'user-check'"
+    [lateral]="true"
+    (cerrar)="editando.set(null)"
+  >
+    <app-usuario-form
+      [usuario]="u === 'nuevo' ? null : u"
+      (guardado)="guardado()"
+      (cancelar)="editando.set(null)"
+    />
+  </app-dialogo>
+}
+
+@if (desactivando(); as u) {
+  <app-dialogo
+    titulo="Desactivar usuario"
+    [descripcion]="u.nombre"
+    icono="ban"
+    tono="peligro"
+    (cerrar)="desactivando.set(null)"
+  >
+    <div class="formulario">
+      <p class="texto-2">
+        No podrá iniciar sesión y sus tokens dejan de ser válidos de inmediato. Su historial se
+        conserva.
+      </p>
+      <div class="acciones pie-formulario">
+        <button type="button" class="btn btn-secundario" (click)="desactivando.set(null)">
+          Volver
+        </button>
+        <button type="button" class="btn btn-peligro" (click)="desactivar(u)">Desactivar</button>
+      </div>
+    </div>
+  </app-dialogo>
+}

@@ -1,58 +1,45 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-  untracked,
-} from '@angular/core';
-import { LowerCasePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TareasService } from '../../core/api/tareas.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { interpretarError } from '../../core/errores';
 import { ExpedientesCache } from '../../core/expedientes.cache';
-import { Tarea, TareaEstado } from '../../core/models';
-import { NotificacionesService } from '../../core/notificaciones.service';
+import { Tarea } from '../../core/models';
 import { ResponsablesStore } from '../../core/responsables.store';
+import { AvatarComponent } from '../../shared/avatar.component';
 import { DialogoComponent } from '../../shared/dialogo.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { tono } from '../../shared/etiquetas';
 import { FechaPipe } from '../../shared/fecha.pipe';
-import { hoyLima } from '../../shared/fechas';
+import { diasHasta, hoyLima, textoDias } from '../../shared/fechas';
+import { IconoComponent } from '../../shared/icono.component';
+import { CambioEstadoComponent } from './cambio-estado.component';
 import { TareaFormComponent } from './tarea-form.component';
-import { TRANSICIONES, esActiva, requiereConfirmacion } from './transiciones';
+import { esActiva } from './transiciones';
 
 /** Tabla de tareas con sus acciones: editar, cambiar estado (RF10) y cancelar (RF11). */
 @Component({
   selector: 'app-tareas-tabla',
   imports: [
-    FormsModule,
-    LowerCasePipe,
     RouterLink,
     EtiquetaPipe,
     FechaPipe,
     DialogoComponent,
     TareaFormComponent,
+    IconoComponent,
+    AvatarComponent,
+    CambioEstadoComponent,
   ],
   templateUrl: './tareas-tabla.component.html',
+  styleUrl: './tareas-tabla.component.scss',
 })
 export class TareasTablaComponent {
-  private readonly servicio = inject(TareasService);
-  private readonly avisos = inject(NotificacionesService);
   protected readonly auth = inject(AuthService);
   protected readonly responsables = inject(ResponsablesStore);
   protected readonly expedientes = inject(ExpedientesCache);
   protected readonly tono = tono;
-  protected readonly esActiva = esActiva;
   protected readonly hoy = hoyLima();
 
   readonly tareas = input.required<Tarea[]>();
   readonly mostrarExpediente = input(true);
-  readonly cargando = input(false);
   /** Permite modificar (false cuando el expediente ya no está abierto). */
   readonly editable = input(true);
   readonly cambio = output<void>();
@@ -60,20 +47,6 @@ export class TareasTablaComponent {
   protected readonly editando = signal<Tarea | null>(null);
   protected readonly cambiandoEstado = signal<Tarea | null>(null);
   protected readonly cancelando = signal<Tarea | null>(null);
-  protected readonly nuevoEstado = signal<TareaEstado | null>(null);
-  protected readonly confirmacion = signal(false);
-  protected readonly enviando = signal(false);
-  protected readonly errorDialogo = signal<string | null>(null);
-
-  protected readonly opcionesEstado = computed(() => {
-    const t = this.cambiandoEstado();
-    return t ? TRANSICIONES[t.estado] : [];
-  });
-  protected readonly necesitaConfirmacion = computed(() => {
-    const t = this.cambiandoEstado();
-    const n = this.nuevoEstado();
-    return !!t && !!n && requiereConfirmacion(t.prioridad, n);
-  });
 
   constructor() {
     effect(() => {
@@ -87,67 +60,20 @@ export class TareasTablaComponent {
     return this.editable() && esActiva(t.estado) && this.auth.puedeEscribir();
   }
 
-  protected vencida(t: Tarea): boolean {
-    return esActiva(t.estado) && t.fechaLimite < this.hoy;
+  protected vencimiento(t: Tarea): { texto: string; clase: string } {
+    if (!esActiva(t.estado)) return { texto: '', clase: '' };
+    const dias = diasHasta(t.fechaLimite, this.hoy);
+    return { texto: textoDias(dias), clase: dias < 0 ? 'vencida' : dias <= 2 ? 'pronto' : '' };
   }
 
-  protected abrirEstado(t: Tarea): void {
-    this.cambiandoEstado.set(t);
-    this.nuevoEstado.set(TRANSICIONES[t.estado][0] ?? null);
-    this.confirmacion.set(false);
-    this.errorDialogo.set(null);
+  protected esActivaFila(t: Tarea): boolean {
+    return esActiva(t.estado);
   }
 
-  protected abrirCancelar(t: Tarea): void {
-    this.cancelando.set(t);
-    this.errorDialogo.set(null);
-  }
-
-  protected guardarEstado(): void {
-    const t = this.cambiandoEstado();
-    const estado = this.nuevoEstado();
-    if (!t || !estado) return;
-    this.enviando.set(true);
-    this.errorDialogo.set(null);
-    this.servicio.cambiarEstado(t.id, estado, t.version, this.confirmacion()).subscribe({
-      next: () => {
-        this.avisos.exito(`Tarea movida a ${estado.replace('_', ' ').toLowerCase()}.`);
-        this.terminar();
-      },
-      error: (e) => this.fallo(e),
-    });
-  }
-
-  protected confirmarCancelar(): void {
-    const t = this.cancelando();
-    if (!t) return;
-    this.enviando.set(true);
-    this.servicio.cancelar(t.id, t.version).subscribe({
-      next: () => {
-        this.avisos.exito('Tarea cancelada. Se conserva en el historial.');
-        this.terminar();
-      },
-      error: (e) => this.fallo(e),
-    });
-  }
-
-  protected editada(): void {
+  protected terminado(): void {
     this.editando.set(null);
-    this.cambio.emit();
-  }
-
-  private terminar(): void {
-    this.enviando.set(false);
     this.cambiandoEstado.set(null);
     this.cancelando.set(null);
-    this.responsables.recargar().subscribe({ error: () => undefined });
     this.cambio.emit();
-  }
-
-  private fallo(e: unknown): void {
-    const err = interpretarError(e);
-    this.errorDialogo.set(err.mensaje);
-    this.enviando.set(false);
-    if (err.codigo === 'VERSION_DESACTUALIZADA') this.cambio.emit();
   }
 }

@@ -9,8 +9,9 @@ describe('etiquetas', () => {
   });
 
   it('asigna clases de color', () => {
-    expect(tono('ALTA')).toBe('badge-error');
+    expect(tono('EN_PROGRESO')).toBe('e-info');
+    expect(tono('CERRADA')).toBe('e-exito');
     expect(claseRiesgo('CRITICO')).toBe('riesgo-CRITICO');
-    expect(claseRiesgo(null)).toBe('badge-neutro');
+    expect(claseRiesgo(null)).toBe('');
   });
 });

@@ -1,0 +1,113 @@
+<div class="pagina">
+  <header class="pagina-encabezado">
+    <div>
+      <p class="antetitulo"><app-icono nombre="shield-check" [tamano]="13" />Control</p>
+      <h1>Auditoría</h1>
+      <p class="subtitulo">
+        Eventos inmutables de las operaciones críticas: altas, cambios de estado, reasignaciones y
+        anulaciones, con su autor.
+      </p>
+    </div>
+    <span class="estado e-marca sin-punto"
+      ><app-icono nombre="lock" [tamano]="12" />Solo lectura</span
+    >
+  </header>
+
+  <section class="tarjeta">
+    <div class="barra-filtros" role="search">
+      <app-icono nombre="sliders-horizontal" [tamano]="15" class="texto-3" />
+      <select
+        id="f-tipo"
+        aria-label="Tipo de evento"
+        [ngModel]="filtros().tipo"
+        (ngModelChange)="filtrar('tipo', $event)"
+      >
+        <option value="">Todos los eventos</option>
+        @for (t of tipos; track t) {
+          <option [value]="t">{{ t | etiqueta }}</option>
+        }
+      </select>
+      @if (usuarios().length > 0) {
+        <select
+          id="f-usuario"
+          aria-label="Usuario"
+          [ngModel]="filtros().usuarioId"
+          (ngModelChange)="filtrar('usuarioId', $event)"
+        >
+          <option [ngValue]="null">Todos los usuarios</option>
+          @for (u of usuarios(); track u.id) {
+            <option [ngValue]="u.id">{{ u.nombre }}</option>
+          }
+        </select>
+      }
+      <span class="etiqueta-filtro">Desde</span>
+      <input
+        id="f-desde"
+        type="datetime-local"
+        aria-label="Desde"
+        [ngModel]="filtros().desde"
+        (ngModelChange)="filtrar('desde', $event)"
+      />
+      <span class="etiqueta-filtro">Hasta</span>
+      <input
+        id="f-hasta"
+        type="datetime-local"
+        aria-label="Hasta"
+        [ngModel]="filtros().hasta"
+        (ngModelChange)="filtrar('hasta', $event)"
+      />
+      @if (hayFiltros()) {
+        <button type="button" class="btn btn-fantasma btn-chico" (click)="limpiar()">
+          <app-icono nombre="x" [tamano]="14" />Limpiar
+        </button>
+      }
+    </div>
+
+    @if (error(); as mensaje) {
+      <div class="aviso aviso-error" style="margin: 12px" role="alert">
+        <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+      </div>
+    }
+
+    @if (cargando() && datos().length === 0) {
+      <app-esqueleto [filas]="7" />
+    } @else if (datos().length === 0) {
+      <app-vacio
+        icono="history"
+        titulo="Sin eventos"
+        texto="No hay operaciones registradas para los filtros elegidos."
+      />
+    } @else {
+      <div class="bitacora">
+        @for (d of dias(); track d.dia) {
+          <h3 class="dia">{{ d.titulo }}</h3>
+          <ol>
+            @for (e of d.eventos; track e.id) {
+              <li class="evento">
+                <span class="hora num">{{ hora(e.fecha) }}</span>
+                <span [class]="'punto t-' + info[e.tipo].tono"
+                  ><app-icono [nombre]="info[e.tipo].icono" [tamano]="14"
+                /></span>
+                <div class="contenido">
+                  <p>
+                    <strong>{{ nombreDesdeEmail(e.usuarioEmail) }}</strong>
+                    {{ info[e.tipo].verbo }}
+                    <span class="recurso mono">{{ e.recurso }} #{{ e.recursoId }}</span>
+                  </p>
+                  <p class="detalle-evento">{{ e.detalle }}</p>
+                </div>
+                <span class="tipo estado sin-punto">{{ e.tipo | etiqueta }}</span>
+              </li>
+            }
+          </ol>
+        }
+      </div>
+      <app-paginador
+        [pagina]="pagina()"
+        [tamano]="tamano"
+        [total]="total()"
+        (cambiar)="pagina.set($event); cargar()"
+      />
+    }
+  </section>
+</div>

@@ -3,8 +3,30 @@
 Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y muestra cada pantalla según el rol del usuario. Cubre RF20–RF23 y RNF19–RNF20 del informe.
 
 - **Angular 21** (componentes standalone, signals, formularios reactivos) y **SASS**.
-- Sin librerías de UI: los estilos están en `src/styles/` (`_tokens.scss` define la paleta y los colores de riesgo).
+- Sistema de diseño propio en `src/styles/`: variables CSS con **modo claro y oscuro** (`_tema.scss`), tipografías Inter y Source Serif 4, e iconos de [Lucide](https://lucide.dev).
+- `@angular/cdk` solo para arrastrar y soltar en el tablero Kanban.
 - Pruebas unitarias con **Vitest** (el runner por defecto de Angular 21).
+
+## Funciones de la interfaz
+
+| Pantalla | Qué ofrece |
+|---|---|
+| Login | Pantalla dividida con presentación del sistema y accesos rápidos a las cuentas demo. |
+| Tablero | Saludo y resumen del día, 4 indicadores, dona de riesgo, alertas de plazos, agenda de 14 días, carga del equipo y actividad reciente. |
+| Expedientes | Pestañas por estado con contadores, búsqueda con tiempo de respuesta (RF04), detalle con avance, próximos vencimientos e historial. |
+| Tareas | Vista **Lista** o **Tablero Kanban**: arrastrar una tarjeta cambia el estado y respeta las transiciones y la confirmación ALTA. |
+| Plazos | Vista **Lista** (todos, próximos 10 días, vencidos) o **Calendario** mensual coloreado por riesgo. |
+| Carga de trabajo | Bloques de capacidad por persona y recomendaciones de reasignación aplicables con un clic. |
+| Auditoría | Bitácora en línea de tiempo agrupada por día. |
+| Usuarios | Resumen por rol, alta, edición y desactivación. |
+
+En toda la aplicación:
+
+- **Ctrl/⌘ + K** abre el buscador: ir a una sección, crear registros o encontrar un expediente por código o asunto.
+- La **campana** muestra los plazos críticos o altos de los próximos 10 días.
+- El menú lateral se puede contraer y muestra contadores (plazos críticos, personas sobrecargadas).
+- Formularios en paneles laterales, confirmaciones en ventanas, skeletons de carga y estados vacíos con acciones.
+- Tema claro, oscuro o el del sistema (menú del usuario).
 
 ## Requisitos
 
@@ -41,18 +63,20 @@ src/app/
   core/            modelos (DTO), servicios REST, sesión JWT, interceptor, guards, errores
     api/           un servicio por recurso: expedientes, tareas, plazos, usuarios, consultas
     auth/          AuthService, authInterceptor, guards, permisos por rol
-  shared/          diálogo, paginador, pipes (etiqueta, fecha), fechas en hora de Lima
-  layout/          menú lateral por rol, barra superior, notificaciones
+  shared/          icono, avatar, diálogo/panel, skeleton, estado vacío, paginador, pipes, fechas de Lima
+  layout/          menú lateral por rol, barra superior, buscador Ctrl+K, alertas, notificaciones
   features/
     auth/          login
     tablero/       indicadores, distribución del riesgo, alertas de plazos
     expedientes/   listado con búsqueda, detalle, formulario
-    tareas/        listado, tabla con acciones, formulario, transiciones
-    plazos/        listado, tabla con riesgo, formulario, anulación
+    tareas/        lista, tablero Kanban, cambio de estado, formulario, transiciones
+    plazos/        lista, calendario mensual, tabla con riesgo, formulario, anulación
     carga/         balanceador visual y recomendación de reasignación
-    auditoria/     bitácora de eventos
+    auditoria/     bitácora en línea de tiempo
     usuarios/      administración de cuentas
 ```
+
+Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-static`. Para usar uno nuevo, agrega su nombre a la lista del script y vuelve a ejecutarlo.
 
 ## Seguridad en el cliente
 
@@ -71,12 +95,12 @@ src/app/
 | RF04 Búsqueda | `GET /expedientes?q&estado&responsableId` | `expedientes-lista.component` (muestra el tiempo de respuesta en ms) | E2E: la búsqueda filtra |
 | RF07, RF09 Tareas | `/tareas` | `tarea-form.component` | E2E: registrar tarea |
 | RF08 Duplicados | `POST /tareas` → 409 `TAREA_DUPLICADA` | `tarea-form.component` | `core/errores.spec.ts`, E2E: duplicado rechazado |
-| RF10 Transiciones / RN03 | `PATCH /tareas/{id}/estado` | `tareas-tabla.component` | `features/tareas/transiciones.spec.ts`, E2E: cierre ALTA |
+| RF10 Transiciones / RN03 | `PATCH /tareas/{id}/estado` | `cambio-estado.component`, `tareas-kanban.component` | `features/tareas/transiciones.spec.ts`, E2E: cierre ALTA y arrastre en el Kanban |
 | RF12–RF14 Plazos | `/plazos`, `/plazos/{id}/anulacion` | `features/plazos/*` | E2E: motivo < 10 caracteres bloqueado, anulación |
-| RF15 Riesgo | `GET /plazos/{id}/riesgo` | `plazos-tabla.component`, `tablero.component` (alertas) | E2E: plazo a 2 días = CRÍTICO |
+| RF15 Riesgo | `GET /plazos/{id}/riesgo` | `plazos-tabla`, `plazos-calendario`, `core/alertas.store` (campana y tablero) | E2E: plazo a 2 días = CRÍTICO |
 | RF16 Sobrecarga | `GET /responsables/carga` | `features/carga/*`, aviso en `tarea-form` | `features/carga/recomendacion.spec.ts` |
-| RF17 Indicadores | `GET /indicadores` | `tablero.component` | E2E: tablero con 8 indicadores |
-| RF18 Auditoría | `GET /auditoria/eventos` | `auditoria.component` | E2E: eventos visibles solo para roles autorizados |
+| RF17 Indicadores | `GET /indicadores` | `tablero.component`, `dona-riesgo.component` | `shared/componentes.spec.ts`, E2E: tablero |
+| RF18 Auditoría | `GET /auditoria/eventos` | `auditoria.component`, pestaña Actividad del expediente | E2E: eventos visibles solo para roles autorizados |
 | RF20 Navegación por rol | — | `layout/shell.component`, `core/auth/guards.ts` | `core/auth/auth.spec.ts` (guards), E2E: el auditor no ve acciones |
 | RF23 Integración | todos | `core/auth/auth.interceptor.ts` | `core/auth/auth.spec.ts` (Bearer, 401) |
 

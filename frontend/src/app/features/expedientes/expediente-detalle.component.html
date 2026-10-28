@@ -1,176 +1,381 @@
-<a routerLink="/expedientes" class="btn-enlace">← Volver a expedientes</a>
+<div class="pagina">
+  <a routerLink="/expedientes" class="volver"
+    ><app-icono nombre="arrow-left" [tamano]="15" />Expedientes</a
+  >
 
-@if (error(); as mensaje) {
-  <div class="aviso aviso-error" role="alert" style="margin-top: 12px">{{ mensaje }}</div>
-}
-
-@if (expediente(); as e) {
-  <div class="pagina-encabezado" style="margin-top: 12px">
-    <div>
-      <h1>
-        <span class="mono">{{ e.codigo }}</span>
-        <span [class]="'badge ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
-      </h1>
-      <p>{{ e.asunto }}</p>
+  @if (error(); as mensaje) {
+    <div class="tarjeta">
+      <app-vacio icono="folder" titulo="No se pudo abrir el expediente" [texto]="mensaje">
+        <a routerLink="/expedientes" class="btn btn-secundario">Volver a la lista</a>
+      </app-vacio>
     </div>
-    @if (auth.esGestor() && e.estado !== 'ARCHIVADO') {
-      <div class="acciones">
-        @if (abierto()) {
-          <button type="button" class="btn btn-secundario" (click)="abrir('editar')">
-            Editar / reasignar
+  }
+
+  @if (expediente(); as e) {
+    <header class="cabecera tarjeta">
+      <div class="identidad">
+        <span class="icono-exp"><app-icono nombre="folder-open" [tamano]="22" /></span>
+        <div class="textos">
+          <div class="fila-codigo">
+            <span class="mono codigo">{{ e.codigo }}</span>
+            <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+          </div>
+          <h1>{{ e.asunto }}</h1>
+          <div class="meta">
+            <span class="persona"
+              ><app-avatar [nombre]="responsables.nombre(e.responsableId)" [tamano]="22" />{{
+                responsables.nombre(e.responsableId)
+              }}</span
+            >
+            <span
+              ><app-icono nombre="calendar" [tamano]="14" />Registrado
+              {{ e.creadoEn | fecha: 'hora' }}</span
+            >
+            <span
+              ><app-icono nombre="clock" [tamano]="14" />Actualizado
+              {{ haceCuanto(e.actualizadoEn) }}</span
+            >
+            <span class="mono texto-3" title="Versión para control de concurrencia (RN11)"
+              >v{{ e.version }}</span
+            >
+          </div>
+        </div>
+      </div>
+      @if (auth.esGestor() && e.estado !== 'ARCHIVADO') {
+        <div class="acciones">
+          @if (abierto()) {
+            <button type="button" class="btn btn-secundario" (click)="abrir('editar')">
+              <app-icono nombre="pencil" [tamano]="15" />Editar / reasignar
+            </button>
+            <button type="button" class="btn btn-secundario" (click)="abrir('cerrar')">
+              <app-icono nombre="circle-check" [tamano]="15" />Cerrar
+            </button>
+          }
+          <button type="button" class="btn btn-fantasma" (click)="abrir('archivar')">
+            <app-icono nombre="archive" [tamano]="15" />Archivar
           </button>
-          <button type="button" class="btn btn-secundario" (click)="abrir('cerrar')">Cerrar</button>
-        }
-        <button type="button" class="btn btn-secundario" (click)="abrir('archivar')">
-          Archivar
-        </button>
-      </div>
-    }
-  </div>
-
-  <section class="tarjeta">
-    <dl class="detalle">
-      <div>
-        <dt>Responsable</dt>
-        <dd>{{ responsables.nombre(e.responsableId) }}</dd>
-      </div>
-      <div>
-        <dt>Tareas activas</dt>
-        <dd>{{ tareasActivas() }}</dd>
-      </div>
-      <div>
-        <dt>Plazos activos</dt>
-        <dd>{{ plazosActivos() }}</dd>
-      </div>
-      <div>
-        <dt>Registrado</dt>
-        <dd>{{ e.creadoEn | fecha: 'hora' }}</dd>
-      </div>
-      <div>
-        <dt>Actualizado</dt>
-        <dd>{{ e.actualizadoEn | fecha: 'hora' }}</dd>
-      </div>
-      <div>
-        <dt>Versión</dt>
-        <dd>{{ e.version }}</dd>
-      </div>
-    </dl>
-  </section>
-
-  <div class="pestanas" role="tablist" style="margin-top: 20px">
-    <button
-      type="button"
-      role="tab"
-      [class.activa]="pestana() === 'tareas'"
-      (click)="pestana.set('tareas')"
-    >
-      Tareas ({{ tareas().length }})
-    </button>
-    <button
-      type="button"
-      role="tab"
-      [class.activa]="pestana() === 'plazos'"
-      (click)="pestana.set('plazos')"
-    >
-      Plazos ({{ plazos().length }})
-    </button>
-    <span style="flex: 1"></span>
-    @if (abierto() && auth.puedeEscribir()) {
-      @if (pestana() === 'tareas') {
-        <button type="button" class="btn btn-primario btn-chico" (click)="abrir('tarea')">
-          + Tarea
-        </button>
-      } @else {
-        <button type="button" class="btn btn-primario btn-chico" (click)="abrir('plazo')">
-          + Plazo
-        </button>
-      }
-    }
-  </div>
-
-  @if (pestana() === 'tareas') {
-    <app-tareas-tabla
-      [tareas]="tareas()"
-      [mostrarExpediente]="false"
-      [editable]="abierto()"
-      (cambio)="cargar()"
-    />
-  } @else {
-    <app-plazos-tabla
-      [plazos]="plazos()"
-      [mostrarExpediente]="false"
-      [editable]="abierto()"
-      (cambio)="cargar()"
-    />
-  }
-
-  @switch (accion()) {
-    @case ('editar') {
-      <app-dialogo titulo="Editar expediente" (cerrar)="accion.set(null)">
-        <app-expediente-form
-          [expediente]="e"
-          (guardado)="terminado()"
-          (cancelar)="accion.set(null)"
-        />
-      </app-dialogo>
-    }
-    @case ('tarea') {
-      <app-dialogo titulo="Nueva tarea" (cerrar)="accion.set(null)">
-        <app-tarea-form
-          [expedienteId]="e.id"
-          (guardado)="terminado()"
-          (cancelar)="accion.set(null)"
-        />
-      </app-dialogo>
-    }
-    @case ('plazo') {
-      <app-dialogo titulo="Nuevo plazo" (cerrar)="accion.set(null)">
-        <app-plazo-form
-          [expedienteId]="e.id"
-          (guardado)="terminado()"
-          (cancelar)="accion.set(null)"
-        />
-      </app-dialogo>
-    }
-    @case ('cerrar') {
-      <app-dialogo titulo="Cerrar expediente" (cerrar)="accion.set(null)">
-        <ng-container *ngTemplateOutlet="confirmarFinal; context: { tipo: 'cerrar' }" />
-      </app-dialogo>
-    }
-    @case ('archivar') {
-      <app-dialogo titulo="Archivar expediente" (cerrar)="accion.set(null)">
-        <ng-container *ngTemplateOutlet="confirmarFinal; context: { tipo: 'archivar' }" />
-      </app-dialogo>
-    }
-  }
-
-  <ng-template #confirmarFinal let-tipo="tipo">
-    <div class="formulario">
-      <p>
-        ¿{{ tipo === 'cerrar' ? 'Cerrar' : 'Archivar' }} el expediente
-        <strong>{{ e.codigo }}</strong
-        >? El registro se conserva; solo cambia su estado.
-      </p>
-      @if (tienePendientes()) {
-        <div class="aviso aviso-alerta">
-          Tiene {{ tareasActivas() }} tareas y {{ plazosActivos() }} plazos activos. El sistema no
-          permite finalizarlo hasta cerrarlos, cancelarlos o anularlos (RN10).
         </div>
       }
-      @if (errorAccion(); as mensaje) {
-        <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-      }
-      <div class="acciones">
-        <button
-          type="button"
-          class="btn btn-peligro"
-          [disabled]="enviando()"
-          (click)="finalizar(tipo)"
-        >
-          {{ tipo === 'cerrar' ? 'Cerrar expediente' : 'Archivar expediente' }}
-        </button>
-        <button type="button" class="btn btn-secundario" (click)="accion.set(null)">Volver</button>
-      </div>
+    </header>
+
+    <div class="cuerpo">
+      <section class="tarjeta principal">
+        <div class="pestanas" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            [class.activa]="pestana() === 'tareas'"
+            (click)="cambiarPestana('tareas')"
+          >
+            <app-icono nombre="list-checks" [tamano]="15" />Tareas
+            <span class="contador">{{ tareas().length }}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [class.activa]="pestana() === 'plazos'"
+            (click)="cambiarPestana('plazos')"
+          >
+            <app-icono nombre="calendar-clock" [tamano]="15" />Plazos
+            <span class="contador">{{ plazos().length }}</span>
+          </button>
+          @if (auth.puedeVerAuditoria()) {
+            <button
+              type="button"
+              role="tab"
+              [class.activa]="pestana() === 'actividad'"
+              (click)="cambiarPestana('actividad')"
+            >
+              <app-icono nombre="history" [tamano]="15" />Actividad
+            </button>
+          }
+          <span class="crece"></span>
+          @if (abierto() && auth.puedeEscribir() && pestana() !== 'actividad') {
+            <button
+              type="button"
+              class="btn btn-primario btn-chico agregar"
+              (click)="abrir(pestana() === 'tareas' ? 'tarea' : 'plazo')"
+            >
+              <app-icono nombre="plus" [tamano]="15" />{{
+                pestana() === 'tareas' ? 'Tarea' : 'Plazo'
+              }}
+            </button>
+          }
+        </div>
+
+        @switch (pestana()) {
+          @case ('tareas') {
+            @if (tareas().length === 0) {
+              <app-vacio
+                icono="list-checks"
+                titulo="Sin tareas todavía"
+                texto="Registra las actividades necesarias para avanzar el caso."
+              >
+                @if (abierto() && auth.puedeEscribir()) {
+                  <button type="button" class="btn btn-primario" (click)="abrir('tarea')">
+                    <app-icono nombre="plus" [tamano]="16" />Nueva tarea
+                  </button>
+                }
+              </app-vacio>
+            } @else {
+              <app-tareas-tabla
+                [tareas]="tareas()"
+                [mostrarExpediente]="false"
+                [editable]="abierto()"
+                (cambio)="terminado()"
+              />
+            }
+          }
+          @case ('plazos') {
+            @if (plazos().length === 0) {
+              <app-vacio
+                icono="calendar-clock"
+                titulo="Sin plazos registrados"
+                texto="Registra los vencimientos para que el sistema calcule su riesgo."
+              >
+                @if (abierto() && auth.puedeEscribir()) {
+                  <button type="button" class="btn btn-primario" (click)="abrir('plazo')">
+                    <app-icono nombre="plus" [tamano]="16" />Nuevo plazo
+                  </button>
+                }
+              </app-vacio>
+            } @else {
+              <app-plazos-tabla
+                [plazos]="plazos()"
+                [mostrarExpediente]="false"
+                [editable]="abierto()"
+                (cambio)="terminado()"
+              />
+            }
+          }
+          @case ('actividad') {
+            @if (eventos(); as lista) {
+              @if (lista.length === 0) {
+                <app-vacio
+                  icono="history"
+                  titulo="Sin actividad reciente"
+                  texto="Los cambios de este expediente aparecerán aquí."
+                />
+              } @else {
+                <ol class="linea-tiempo">
+                  @for (ev of lista; track ev.id) {
+                    <li>
+                      <span [class]="'punto t-' + eventosInfo[ev.tipo].tono"
+                        ><app-icono [nombre]="eventosInfo[ev.tipo].icono" [tamano]="13"
+                      /></span>
+                      <div>
+                        <p>
+                          <strong>{{ nombreDesdeEmail(ev.usuarioEmail) }}</strong>
+                          {{ eventosInfo[ev.tipo].verbo }}
+                        </p>
+                        <p class="texto-2 texto-chico">{{ ev.detalle }}</p>
+                        <small class="texto-3"
+                          >{{ ev.fecha | fecha: 'hora' }} · {{ haceCuanto(ev.fecha) }}</small
+                        >
+                      </div>
+                    </li>
+                  }
+                </ol>
+              }
+            } @else {
+              <div style="padding: 20px"><span class="esqueleto" style="height: 160px"></span></div>
+            }
+          }
+        }
+      </section>
+
+      <aside class="lateral">
+        <section class="tarjeta">
+          <div class="tarjeta-cuerpo">
+            <h3>Avance de tareas</h3>
+            <div class="avance">
+              <strong class="num">{{ progreso() }}%</strong>
+              <span class="texto-3 texto-chico"
+                >{{ tareasCerradas() }} de {{ tareasActivas() + tareasCerradas() }} cerradas</span
+              >
+            </div>
+            <div class="progreso"><div [style.width.%]="progreso()"></div></div>
+            <dl class="detalle resumen">
+              <div>
+                <dt>Activas</dt>
+                <dd class="num">{{ tareasActivas() }}</dd>
+              </div>
+              <div>
+                <dt>Plazos activos</dt>
+                <dd class="num">{{ plazosActivos().length }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="tarjeta">
+          <div class="tarjeta-cuerpo">
+            <h3>Próximos vencimientos</h3>
+            @if (proximos().length === 0) {
+              <p class="texto-3 texto-chico" style="margin-top: 10px">No hay plazos activos.</p>
+            } @else {
+              <ul class="proximos">
+                @for (p of proximos(); track p.id) {
+                  <li [class.vencido]="dias(p) < 0" [class.pronto]="dias(p) >= 0 && dias(p) <= 2">
+                    <span class="marca-dia"></span>
+                    <div>
+                      <strong>{{ p.tipo | etiqueta }}</strong>
+                      <small>{{ p.fechaLimite | fecha }} · {{ textoDias(dias(p)) }}</small>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </section>
+
+        @if (abierto() && tienePendientes()) {
+          <div class="aviso aviso-info">
+            <app-icono nombre="info" [tamano]="16" />
+            <span
+              >Para cerrar el expediente, primero cierra o cancela sus tareas y anula los plazos
+              activos (RN10).</span
+            >
+          </div>
+        }
+      </aside>
     </div>
-  </ng-template>
-}
+
+    @switch (accion()) {
+      @case ('editar') {
+        <app-dialogo
+          titulo="Editar expediente"
+          [descripcion]="e.codigo"
+          icono="pencil"
+          [lateral]="true"
+          (cerrar)="accion.set(null)"
+        >
+          <app-expediente-form
+            [expediente]="e"
+            (guardado)="terminado()"
+            (cancelar)="accion.set(null)"
+          />
+        </app-dialogo>
+      }
+      @case ('tarea') {
+        <app-dialogo
+          titulo="Nueva tarea"
+          [descripcion]="e.codigo + ' · ' + e.asunto"
+          icono="list-checks"
+          [lateral]="true"
+          (cerrar)="accion.set(null)"
+        >
+          <app-tarea-form
+            [expedienteId]="e.id"
+            (guardado)="terminado()"
+            (cancelar)="accion.set(null)"
+          />
+        </app-dialogo>
+      }
+      @case ('plazo') {
+        <app-dialogo
+          titulo="Nuevo plazo"
+          [descripcion]="e.codigo + ' · ' + e.asunto"
+          icono="calendar-clock"
+          [lateral]="true"
+          (cerrar)="accion.set(null)"
+        >
+          <app-plazo-form
+            [expedienteId]="e.id"
+            (guardado)="terminado()"
+            (cancelar)="accion.set(null)"
+          />
+        </app-dialogo>
+      }
+      @case ('cerrar') {
+        <app-dialogo
+          titulo="Cerrar expediente"
+          [descripcion]="e.codigo"
+          icono="circle-check"
+          (cerrar)="accion.set(null)"
+        >
+          <div class="formulario">
+            <p class="texto-2">
+              El expediente pasa a <strong>cerrado</strong>. El registro y su historial se
+              conservan.
+            </p>
+            @if (tienePendientes()) {
+              <div class="aviso aviso-alerta">
+                <app-icono nombre="triangle-alert" [tamano]="16" />
+                <span
+                  >Tiene {{ tareasActivas() }} tareas y {{ plazosActivos().length }} plazos activos.
+                  El sistema no permite finalizarlo hasta resolverlos (RN10).</span
+                >
+              </div>
+            }
+            @if (errorAccion(); as mensaje) {
+              <div class="aviso aviso-error" role="alert">
+                <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+              </div>
+            }
+            <div class="acciones pie-formulario">
+              <button type="button" class="btn btn-secundario" (click)="accion.set(null)">
+                Volver
+              </button>
+              <button
+                type="button"
+                class="btn btn-primario"
+                [disabled]="enviando()"
+                (click)="finalizar('cerrar')"
+              >
+                Cerrar expediente
+              </button>
+            </div>
+          </div>
+        </app-dialogo>
+      }
+      @case ('archivar') {
+        <app-dialogo
+          titulo="Archivar expediente"
+          [descripcion]="e.codigo"
+          icono="archive"
+          tono="peligro"
+          (cerrar)="accion.set(null)"
+        >
+          <div class="formulario">
+            <p class="texto-2">
+              El expediente pasa a <strong>archivado</strong> (baja lógica): deja de poder
+              modificarse, pero se conserva.
+            </p>
+            @if (tienePendientes()) {
+              <div class="aviso aviso-alerta">
+                <app-icono nombre="triangle-alert" [tamano]="16" />
+                <span
+                  >Tiene {{ tareasActivas() }} tareas y {{ plazosActivos().length }} plazos activos.
+                  El sistema no permite finalizarlo hasta resolverlos (RN10).</span
+                >
+              </div>
+            }
+            @if (errorAccion(); as mensaje) {
+              <div class="aviso aviso-error" role="alert">
+                <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+              </div>
+            }
+            <div class="acciones pie-formulario">
+              <button type="button" class="btn btn-secundario" (click)="accion.set(null)">
+                Volver
+              </button>
+              <button
+                type="button"
+                class="btn btn-peligro"
+                [disabled]="enviando()"
+                (click)="finalizar('archivar')"
+              >
+                Archivar expediente
+              </button>
+            </div>
+          </div>
+        </app-dialogo>
+      }
+    }
+  } @else if (!error()) {
+    <div class="tarjeta" style="padding: 24px">
+      <span class="esqueleto" style="height: 120px"></span>
+    </div>
+  }
+</div>

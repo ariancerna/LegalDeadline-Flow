@@ -1,151 +1,89 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { LowerCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { FiltrosTarea, TareasService } from '../../core/api/tareas.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { interpretarError } from '../../core/errores';
-import { PRIORIDADES, TAREA_ESTADOS, Tarea } from '../../core/models';
+import { PRIORIDADES, TAREA_ESTADOS, Tarea, TareaEstado } from '../../core/models';
 import { ResponsablesStore } from '../../core/responsables.store';
 import { DialogoComponent } from '../../shared/dialogo.component';
+import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
+import { IconoComponent } from '../../shared/icono.component';
 import { PaginadorComponent } from '../../shared/paginador.component';
+import { VacioComponent } from '../../shared/vacio.component';
 import { TareaFormComponent } from './tarea-form.component';
+import { TareasKanbanComponent } from './tareas-kanban.component';
 import { TareasTablaComponent } from './tareas-tabla.component';
 
-/** RF11 / RF21: consulta y filtrado de tareas. */
+type Vista = 'lista' | 'tablero';
+type Filtros = Required<Omit<FiltrosTarea, 'page' | 'size' | 'expedienteId'>>;
+const CLAVE_VISTA = 'ldf.vista-tareas';
+
+/** RF11 / RF21: consulta de tareas en lista o en tablero Kanban. */
 @Component({
   selector: 'app-tareas-lista',
   imports: [
     FormsModule,
+    LowerCasePipe,
     EtiquetaPipe,
     PaginadorComponent,
     DialogoComponent,
     TareaFormComponent,
     TareasTablaComponent,
+    TareasKanbanComponent,
+    IconoComponent,
+    EsqueletoComponent,
+    VacioComponent,
   ],
-  template: `
-    <div class="pagina-encabezado">
-      <div>
-        <h1>Tareas</h1>
-        <p>
-          Actividades de los expedientes{{ auth.lecturaGlobal() ? '' : ' que tienes asignados' }}.
-        </p>
-      </div>
-      @if (auth.puedeEscribir()) {
-        <button type="button" class="btn btn-primario" (click)="creando.set(true)">
-          + Nueva tarea
-        </button>
-      }
-    </div>
-
-    <div class="filtros" role="search">
-      <div class="campo">
-        <label for="f-estado">Estado</label>
-        <select
-          id="f-estado"
-          [ngModel]="filtros().estado"
-          (ngModelChange)="filtrar('estado', $event)"
-        >
-          <option value="">Todos</option>
-          @for (e of estados; track e) {
-            <option [value]="e">{{ e | etiqueta }}</option>
-          }
-        </select>
-      </div>
-      <div class="campo">
-        <label for="f-prioridad">Prioridad</label>
-        <select
-          id="f-prioridad"
-          [ngModel]="filtros().prioridad"
-          (ngModelChange)="filtrar('prioridad', $event)"
-        >
-          <option value="">Todas</option>
-          @for (p of prioridades; track p) {
-            <option [value]="p">{{ p | etiqueta }}</option>
-          }
-        </select>
-      </div>
-      @if (auth.lecturaGlobal()) {
-        <div class="campo">
-          <label for="f-resp">Responsable</label>
-          <select
-            id="f-resp"
-            [ngModel]="filtros().responsableId"
-            (ngModelChange)="filtrar('responsableId', $event)"
-          >
-            <option [ngValue]="null">Todos</option>
-            @for (r of responsables.lista(); track r.responsableId) {
-              <option [ngValue]="r.responsableId">{{ r.nombre }}</option>
-            }
-          </select>
-        </div>
-      }
-      <div class="campo">
-        <label for="f-desde">Vence desde</label>
-        <input
-          id="f-desde"
-          type="date"
-          [ngModel]="filtros().desde"
-          (ngModelChange)="filtrar('desde', $event)"
-        />
-      </div>
-      <div class="campo">
-        <label for="f-hasta">Vence hasta</label>
-        <input
-          id="f-hasta"
-          type="date"
-          [ngModel]="filtros().hasta"
-          (ngModelChange)="filtrar('hasta', $event)"
-        />
-      </div>
-      <div>
-        <button type="button" class="btn btn-secundario" (click)="limpiar()">
-          Limpiar filtros
-        </button>
-      </div>
-    </div>
-
-    @if (error(); as mensaje) {
-      <div class="aviso aviso-error" role="alert">{{ mensaje }}</div>
-    }
-
-    <app-tareas-tabla [tareas]="datos()" [cargando]="cargando()" (cambio)="cargar()">
-      <app-paginador
-        [pagina]="pagina()"
-        [tamano]="tamano"
-        [total]="total()"
-        (cambiar)="pagina.set($event); cargar()"
-      />
-    </app-tareas-tabla>
-
-    @if (creando()) {
-      <app-dialogo titulo="Nueva tarea" (cerrar)="creando.set(false)">
-        <app-tarea-form (guardado)="creando.set(false); cargar()" (cancelar)="creando.set(false)" />
-      </app-dialogo>
-    }
-  `,
+  templateUrl: './tareas-lista.component.html',
 })
 export class TareasListaComponent implements OnInit {
   private readonly servicio = inject(TareasService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthService);
   protected readonly responsables = inject(ResponsablesStore);
   protected readonly estados = TAREA_ESTADOS;
   protected readonly prioridades = PRIORIDADES;
 
-  protected readonly filtros =
-    signal<Required<Omit<FiltrosTarea, 'page' | 'size' | 'expedienteId'>>>(vacios());
+  protected readonly vista = signal<Vista>(leerVista());
+  protected readonly filtros = signal<Filtros>(vacios());
   protected readonly pagina = signal(0);
-  protected readonly tamano = 10;
+  protected readonly tamano = 12;
   protected readonly datos = signal<Tarea[]>([]);
   protected readonly total = signal(0);
-  protected readonly cargando = signal(false);
+  protected readonly porEstado = signal<Record<TareaEstado, Tarea[]> | null>(null);
+  protected readonly totalesEstado = signal<Record<TareaEstado, number> | null>(null);
+  protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly creando = signal(false);
+
+  protected readonly hayFiltros = computed(() =>
+    Object.values(this.filtros()).some((v) => v !== '' && v !== null),
+  );
+
+  constructor() {
+    if (inject(ActivatedRoute).snapshot.queryParamMap.get('nuevo') && this.auth.puedeEscribir())
+      this.creando.set(true);
+  }
 
   ngOnInit(): void {
     this.cargar();
   }
 
-  protected filtrar(clave: keyof ReturnType<typeof vacios>, valor: unknown): void {
+  protected cambiarVista(v: Vista): void {
+    this.vista.set(v);
+    try {
+      localStorage.setItem(CLAVE_VISTA, v);
+    } catch {
+      /* sin almacenamiento */
+    }
+    this.cargar();
+  }
+
+  protected filtrar(clave: keyof Filtros, valor: unknown): void {
     this.filtros.update((f) => ({ ...f, [clave]: valor ?? '' }));
     this.pagina.set(0);
     this.cargar();
@@ -157,23 +95,64 @@ export class TareasListaComponent implements OnInit {
     this.cargar();
   }
 
+  protected cerrarCreacion(): void {
+    this.creando.set(false);
+    void this.router.navigate([], { queryParams: {}, replaceUrl: true });
+  }
+
+  protected creada(): void {
+    this.cerrarCreacion();
+    this.cargar();
+  }
+
   protected cargar(): void {
     this.cargando.set(true);
     this.error.set(null);
-    this.servicio.listar({ ...this.filtros(), page: this.pagina(), size: this.tamano }).subscribe({
+    const f = this.filtros();
+    if (this.vista() === 'tablero') {
+      // Una consulta por columna; el filtro de estado no aplica en el tablero.
+      forkJoin(
+        TAREA_ESTADOS.map((estado) => this.servicio.listar({ ...f, estado, size: 50 })),
+      ).subscribe({
+        next: (paginas) => {
+          const columnas = {} as Record<TareaEstado, Tarea[]>;
+          const totales = {} as Record<TareaEstado, number>;
+          TAREA_ESTADOS.forEach((e, i) => {
+            columnas[e] = paginas[i].content;
+            totales[e] = paginas[i].totalElements;
+          });
+          this.porEstado.set(columnas);
+          this.totalesEstado.set(totales);
+          this.cargando.set(false);
+        },
+        error: (e) => this.fallo(e),
+      });
+      return;
+    }
+    this.servicio.listar({ ...f, page: this.pagina(), size: this.tamano }).subscribe({
       next: (p) => {
         this.datos.set(p.content);
         this.total.set(p.totalElements);
         this.cargando.set(false);
       },
-      error: (e) => {
-        this.error.set(interpretarError(e).mensaje);
-        this.cargando.set(false);
-      },
+      error: (e) => this.fallo(e),
     });
+  }
+
+  private fallo(e: unknown): void {
+    this.error.set(interpretarError(e).mensaje);
+    this.cargando.set(false);
   }
 }
 
-function vacios(): Required<Omit<FiltrosTarea, 'page' | 'size' | 'expedienteId'>> {
+function vacios(): Filtros {
   return { estado: '', prioridad: '', responsableId: null, desde: '', hasta: '' };
+}
+
+function leerVista(): Vista {
+  try {
+    return localStorage.getItem(CLAVE_VISTA) === 'tablero' ? 'tablero' : 'lista';
+  } catch {
+    return 'lista';
+  }
 }
