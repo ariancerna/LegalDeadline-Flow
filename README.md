@@ -55,6 +55,10 @@ Compose activa el perfil `demo` y `DEMO_ENABLED=true`. La carga es idempotente: 
 | Supervisor | `supervisor@legaldeadline.local` | `SupervisorDemo123!` |
 | Responsable | `responsable@legaldeadline.local` | `ResponsableDemo123!` |
 | Auditor | `auditor@legaldeadline.local` | `AuditorDemo123!` |
+| Responsable | `paola.vargas@legaldeadline.local` | `ResponsableDemo123!` |
+| Responsable | `diego.ramirez@legaldeadline.local` | `ResponsableDemo123!` |
+
+La cartera de demostración tiene siete expedientes con números, partes y juzgados ficticios (por ejemplo, `00412-2026-0-1801`). El asunto sigue la convención `Materia · Partes · Órgano jurisdiccional`, que el frontend muestra por separado. Un responsable supera el umbral de carga para mostrar la detección de sobrecarga.
 
 Solicita un token:
 

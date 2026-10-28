@@ -340,9 +340,10 @@ class ApiIntegrationTest {
         seeder.run(new DefaultApplicationArguments());
         assertThat(usuarios.count()).isEqualTo(usuariosAntes);
         assertThat(eventos.count()).isEqualTo(eventosAntes);
-        assertThat(expedientes.count()).isEqualTo(3);
-        assertThat(tareas.count()).isEqualTo(8);
-        assertThat(plazos.count()).isEqualTo(6);
+        assertThat(expedientes.count()).isEqualTo(7);
+        assertThat(tareas.count()).isEqualTo(17);
+        assertThat(plazos.count()).isEqualTo(11);
+        assertThat(expedientes.existsByCodigo("00412-2026-0-1801")).isTrue();
         String demo=login("admin@legaldeadline.local","AdminDemo123!");
         JsonNode metric=call(get("/api/v1/indicadores"),demo,null,200);
         assertThat(metric.get("expedientesCerrados").asLong()).isEqualTo(1);

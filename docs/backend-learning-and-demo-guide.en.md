@@ -498,17 +498,19 @@ Before and after restarting the backend with demo mode enabled, compare counts l
 SELECT COUNT(*) AS demo_users
 FROM usuarios
 WHERE email IN ('admin@legaldeadline.local','supervisor@legaldeadline.local',
-                'responsable@legaldeadline.local','auditor@legaldeadline.local');
+                'responsable@legaldeadline.local','auditor@legaldeadline.local',
+                'paola.vargas@legaldeadline.local','diego.ramirez@legaldeadline.local');
 
 SELECT e.codigo, e.estado,
        (SELECT COUNT(*) FROM tareas t WHERE t.expediente_id=e.id) AS tasks,
        (SELECT COUNT(*) FROM plazos p WHERE p.expediente_id=e.id) AS deadlines
 FROM expedientes e
-WHERE e.codigo IN ('DEMO-001','DEMO-002','DEMO-003')
+WHERE e.codigo IN ('00412-2026-0-1801','00198-2026-0-1801','00057-2026-0-1801','00321-2026-0-1801',
+                   '00266-2026-0-1817','00733-2025-0-1801','00981-2024-0-1801')
 ORDER BY e.codigo;
 ```
 
-The second start should not duplicate these rows. In a fresh, otherwise untouched demo seed there are four demo accounts, three cases, eight tasks, and six deadlines. An existing database may have legitimately changed; compare before/after rather than forcing those totals on it. The seed is not a reset function.
+The second start should not duplicate these rows. In a fresh, otherwise untouched demo seed there are six demo accounts, seven cases (five open, one closed, one archived), seventeen tasks, and eleven deadlines. The case numbers, parties and courts are fictitious. An existing database may have legitimately changed; compare before/after rather than forcing those totals on it. The seed is not a reset function.
 
 The isolated integration test gives reproducible evidence:
 
