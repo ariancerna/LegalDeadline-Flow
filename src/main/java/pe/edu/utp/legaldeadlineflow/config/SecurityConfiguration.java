@@ -104,7 +104,7 @@ public class SecurityConfiguration {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
-            @Value("${legaldeadline.cors.allowed-origins:http://localhost:3000,http://localhost:5173}") String origins) {
+            @Value("${legaldeadline.cors.allowed-origins:http://localhost:4200,http://localhost:5173}") String origins) {
         CorsConfiguration configuration = new CorsConfiguration();
         List<String> allowedOrigins = Arrays.stream(origins.split(",")).map(String::trim)
                 .filter(origin -> !origin.isBlank()).toList();

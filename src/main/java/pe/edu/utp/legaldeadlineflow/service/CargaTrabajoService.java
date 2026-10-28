@@ -42,7 +42,7 @@ public class CargaTrabajoService {
                 .filter(Usuario::isActivo)
                 .filter(u -> u.getRol() == Rol.RESPONSABLE || u.getRol() == Rol.SUPERVISOR)
                 .filter(u -> actual.getRol() != Rol.RESPONSABLE || actual.getId().equals(u.getId()))
-                .map(u -> new CargaTrabajoResponse(u.getId(), cargas.getOrDefault(u.getId(), 0L), umbral,
+                .map(u -> new CargaTrabajoResponse(u.getId(), u.getNombre(), u.getRol(), cargas.getOrDefault(u.getId(), 0L), umbral,
                         cargas.getOrDefault(u.getId(), 0L) > umbral))
                 .toList();
     }

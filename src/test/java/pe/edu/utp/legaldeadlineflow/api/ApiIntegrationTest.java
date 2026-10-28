@@ -283,6 +283,8 @@ class ApiIntegrationTest {
         JsonNode carga=call(get("/api/v1/responsables/carga"),token(Rol.RESPONSABLE),null,200);
         assertThat(carga.size()).isEqualTo(1);
         assertThat(carga.get(0).get("sobrecargado").asBoolean()).isTrue();
+        assertThat(carga.get(0).get("nombre").asText()).isNotBlank();
+        assertThat(carga.get(0).get("rol").asText()).isEqualTo("RESPONSABLE");
         assertThat(call(get("/api/v1/responsables/carga"),otroToken,null,200).get(0).get("tareasActivas").asLong()).isZero();
         assertThat(call(get("/api/v1/responsables/carga"),token(Rol.SUPERVISOR),null,200).size()).isEqualTo(3);
     }
