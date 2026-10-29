@@ -210,29 +210,36 @@
   align-items: center;
 }
 
-// Las acciones de una fila aparecen al pasar el cursor o con el foco.
+// Acciones de una fila: siempre visibles en gris de texto secundario (contraste suficiente en
+// claro y oscuro); al pasar el cursor toman fondo y borde para que se note cuál se va a pulsar.
 .acciones-fila {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   justify-content: flex-end;
-  opacity: 0.35;
-  transition: opacity 0.15s;
 
   .btn-icono {
     --alto: 32px;
+    color: var(--texto-2);
     border: 1px solid transparent;
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled),
+    &:focus-visible {
       background: var(--superficie);
-      border-color: var(--borde);
+      border-color: var(--borde-fuerte);
+      color: var(--texto);
+    }
+
+    &.peligro {
+      color: var(--riesgo-critico-texto);
+
+      &:hover:not(:disabled),
+      &:focus-visible {
+        background: var(--riesgo-critico-fondo);
+        border-color: color-mix(in oklch, var(--riesgo-critico) 45%, transparent);
+        color: var(--riesgo-critico-texto);
+      }
     }
   }
-}
-
-tr:hover .acciones-fila,
-tr:focus-within .acciones-fila,
-.acciones-fila:focus-within {
-  opacity: 1;
 }
 
 .girando {
