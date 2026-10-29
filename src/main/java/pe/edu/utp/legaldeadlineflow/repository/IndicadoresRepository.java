@@ -45,6 +45,18 @@ public class IndicadoresRepository {
                 """, Plazo.class).setParameter("global", global).setParameter("usuarioId", usuarioId).getResultList();
     }
 
+    /** Fechas de ingreso y de conclusión de los expedientes con movimiento desde {@code desde}. */
+    public List<Object[]> movimientoExpedientes(boolean global, Long usuarioId, java.time.Instant desde) {
+        return entityManager.createQuery("""
+                select e.creadoEn, e.estado, e.actualizadoEn from Expediente e
+                where (:global = true or e.responsable.id = :usuarioId)
+                and (e.creadoEn >= :desde or (e.estado <> :abierto and e.actualizadoEn >= :desde))
+                """, Object[].class).setParameter("global", global).setParameter("usuarioId", usuarioId)
+                .setParameter("desde", desde)
+                .setParameter("abierto", pe.edu.utp.legaldeadlineflow.domain.ExpedienteEstado.ABIERTO)
+                .getResultList();
+    }
+
     public List<Object[]> tareasActivasPorExpediente(boolean global, Long usuarioId) {
         return entityManager.createQuery("""
                 select t.expediente.id, count(t) from Tarea t

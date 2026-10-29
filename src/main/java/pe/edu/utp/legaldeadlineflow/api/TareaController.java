@@ -35,8 +35,9 @@ public class TareaController {
             @RequestParam(required = false) TareaEstado estado,
             @RequestParam(required = false) Prioridad prioridad,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
-        return tareaService.listar(page, size, expedienteId, responsableId, estado, prioridad, desde, hasta);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(defaultValue = "false") boolean activas) {
+        return tareaService.listar(page, size, expedienteId, responsableId, estado, prioridad, desde, hasta, activas);
     }
     @GetMapping("/tareas/{id}")
     public TareaResponse obtener(@PathVariable @Positive Long id) { return tareaService.obtener(id); }

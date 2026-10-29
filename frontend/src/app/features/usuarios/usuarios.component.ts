@@ -1,3 +1,4 @@
+import { ContadorDirective } from '../../shared/contador.directive';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { UsuariosService } from '../../core/api/usuarios.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -16,6 +17,7 @@ import { UsuarioFormComponent } from './usuario-form.component';
 @Component({
   selector: 'app-usuarios',
   imports: [
+    ContadorDirective,
     EtiquetaPipe,
     DialogoComponent,
     UsuarioFormComponent,

@@ -46,8 +46,9 @@ export class PlazosListaComponent implements OnInit {
   protected readonly estados = PLAZO_ESTADOS;
 
   protected readonly vista = signal<Vista>(leerVista());
-  protected readonly filtros = signal<Filtros>({ estado: '', desde: '', hasta: '' });
-  protected readonly rapido = signal<'todos' | 'proximos' | 'vencidos'>('todos');
+  // Por defecto, los plazos activos por vencer: lo que hay que atender, del más cercano al más lejano.
+  protected readonly filtros = signal<Filtros>(filtrosDe('porVencer'));
+  protected readonly rapido = signal<Rapido>('porVencer');
   protected readonly pagina = signal(0);
   protected readonly tamano = 12;
   protected readonly datos = signal<Plazo[]>([]);
@@ -57,8 +58,8 @@ export class PlazosListaComponent implements OnInit {
   protected readonly creando = signal(false);
   protected readonly versionCalendario = signal(0);
 
-  protected readonly hayFiltros = computed(() =>
-    Object.values(this.filtros()).some((v) => v !== ''),
+  protected readonly hayFiltros = computed(
+    () => this.rapido() === 'todos' && Object.values(this.filtros()).some((v) => v !== ''),
   );
 
   constructor() {
@@ -87,14 +88,9 @@ export class PlazosListaComponent implements OnInit {
     this.cargar();
   }
 
-  protected atajo(tipo: 'todos' | 'proximos' | 'vencidos'): void {
-    const hoy = hoyLima();
+  protected atajo(tipo: Rapido): void {
     this.rapido.set(tipo);
-    if (tipo === 'proximos')
-      this.filtros.set({ estado: 'ACTIVO', desde: hoy, hasta: sumarDias(hoy, 10) });
-    else if (tipo === 'vencidos')
-      this.filtros.set({ estado: 'ACTIVO', desde: '', hasta: sumarDias(hoy, -1) });
-    else this.filtros.set({ estado: '', desde: '', hasta: '' });
+    this.filtros.set(filtrosDe(tipo));
     this.pagina.set(0);
     this.cargar();
   }
@@ -129,6 +125,22 @@ export class PlazosListaComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+}
+
+type Rapido = 'porVencer' | 'proximos' | 'vencidos' | 'todos';
+
+function filtrosDe(tipo: Rapido): Filtros {
+  const hoy = hoyLima();
+  switch (tipo) {
+    case 'porVencer':
+      return { estado: 'ACTIVO', desde: hoy, hasta: '' };
+    case 'proximos':
+      return { estado: 'ACTIVO', desde: hoy, hasta: sumarDias(hoy, 10) };
+    case 'vencidos':
+      return { estado: 'ACTIVO', desde: '', hasta: sumarDias(hoy, -1) };
+    default:
+      return { estado: '', desde: '', hasta: '' };
   }
 }
 

@@ -859,3 +859,79 @@ kbd,
     display: revert !important;
   }
 }
+
+// ================= Movimiento =================
+// Transición entre páginas: el contenido se desvanece y sube 6 px; la barra superior queda fija.
+::view-transition-old(root) {
+  animation: 0.16s ease both salir-pagina;
+}
+
+::view-transition-new(root) {
+  animation: 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both entrar-pagina;
+}
+
+@keyframes salir-pagina {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes entrar-pagina {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+// La marca de la sección activa (barra superior) se desliza de un enlace a otro.
+::view-transition-group(nav-indicador) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+// Las filas de una tabla aparecen en cascada al cargar o cambiar de página.
+table.tabla tbody tr {
+  animation: entrar-fila 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@for $i from 1 through 16 {
+  table.tabla tbody tr:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 18}ms;
+  }
+}
+
+@keyframes entrar-fila {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+// Las barras de progreso crecen desde la izquierda.
+.progreso > div {
+  transform-origin: left;
+  animation: crecer-x 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes crecer-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+// Los botones responden al clic.
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  table.tabla tbody tr,
+  .progreso > div {
+    animation: none;
+  }
+}

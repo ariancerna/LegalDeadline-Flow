@@ -15,6 +15,8 @@ export interface FiltrosTarea {
   prioridad?: Prioridad | '';
   desde?: string;
   hasta?: string;
+  /** Solo pendientes y en progreso, ordenadas por fecha límite. */
+  activas?: boolean;
 }
 
 export interface TareaDatos {

@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.util.*;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,17 @@ public class TareaService {
     @Transactional(readOnly = true)
     public Page<TareaResponse> listar(int page, int size, Long expedienteId, Long responsableId,
                                      TareaEstado estado, Prioridad prioridad, LocalDate desde, LocalDate hasta) {
+        return listar(page, size, expedienteId, responsableId, estado, prioridad, desde, hasta, false);
+    }
+
+    /**
+     * Con {@code activas}, solo tareas pendientes o en progreso, ordenadas por fecha límite: la lista
+     * de trabajo del día. Sin él, todas, de la más reciente a la más antigua.
+     */
+    @Transactional(readOnly = true)
+    public Page<TareaResponse> listar(int page, int size, Long expedienteId, Long responsableId,
+                                     TareaEstado estado, Prioridad prioridad, LocalDate desde, LocalDate hasta,
+                                     boolean activas) {
         validarFechas(desde, hasta);
         Usuario usuario = acceso.usuarioActual();
         Specification<Tarea> spec = (root, query, cb) -> {
@@ -70,12 +83,16 @@ public class TareaService {
             if (expedienteId != null) filtros.add(cb.equal(root.get("expediente").get("id"), expedienteId));
             if (responsableId != null) filtros.add(cb.equal(root.get("responsable").get("id"), responsableId));
             if (estado != null) filtros.add(cb.equal(root.get("estado"), estado));
+            if (activas) filtros.add(root.get("estado").in(ESTADOS_ACTIVOS));
             if (prioridad != null) filtros.add(cb.equal(root.get("prioridad"), prioridad));
             if (desde != null) filtros.add(cb.greaterThanOrEqualTo(root.get("fechaLimite"), desde));
             if (hasta != null) filtros.add(cb.lessThanOrEqualTo(root.get("fechaLimite"), hasta));
             return cb.and(filtros.toArray(Predicate[]::new));
         };
-        return tareaRepository.findAll(spec, ExpedienteService.pagina(page, size)).map(this::toResponse);
+        Pageable orden = activas
+                ? ExpedienteService.pagina(page, size, Sort.by(Sort.Order.asc("fechaLimite"), Sort.Order.asc("id")))
+                : ExpedienteService.pagina(page, size);
+        return tareaRepository.findAll(spec, orden).map(this::toResponse);
     }
 
     @Transactional

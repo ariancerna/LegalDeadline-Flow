@@ -132,3 +132,17 @@ footer {
 .busqueda input:focus-visible {
   box-shadow: none;
 }
+
+// Copias locales: Angular renombra las animaciones dentro de cada componente.
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes aparecer-arriba {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}

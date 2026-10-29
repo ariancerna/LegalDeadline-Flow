@@ -19,7 +19,13 @@ import { TareasKanbanComponent } from './tareas-kanban.component';
 import { TareasTablaComponent } from './tareas-tabla.component';
 
 type Vista = 'lista' | 'tablero';
-type Filtros = Required<Omit<FiltrosTarea, 'page' | 'size' | 'expedienteId'>>;
+type Filtros = Omit<
+  Required<Omit<FiltrosTarea, 'page' | 'size' | 'expedienteId' | 'activas'>>,
+  'estado'
+> & {
+  /** ACTIVAS es la vista por defecto: el trabajo pendiente, del más urgente al menos urgente. */
+  estado: TareaEstado | '' | 'ACTIVAS';
+};
 const CLAVE_VISTA = 'ldf.vista-tareas';
 
 /** RF11 / RF21: consulta de tareas en lista o en tablero Kanban. */
@@ -61,7 +67,9 @@ export class TareasListaComponent implements OnInit {
   protected readonly creando = signal(false);
 
   protected readonly hayFiltros = computed(() =>
-    Object.values(this.filtros()).some((v) => v !== '' && v !== null),
+    Object.entries(this.filtros()).some(([k, v]) =>
+      k === 'estado' ? v !== 'ACTIVAS' : v !== '' && v !== null,
+    ),
   );
 
   constructor() {
@@ -108,11 +116,13 @@ export class TareasListaComponent implements OnInit {
   protected cargar(): void {
     this.cargando.set(true);
     this.error.set(null);
-    const f = this.filtros();
+    const { estado, ...resto } = this.filtros();
+    const f: FiltrosTarea =
+      estado === 'ACTIVAS' ? { ...resto, activas: true } : { ...resto, estado };
     if (this.vista() === 'tablero') {
       // Una consulta por columna; el filtro de estado no aplica en el tablero.
       forkJoin(
-        TAREA_ESTADOS.map((estado) => this.servicio.listar({ ...f, estado, size: 50 })),
+        TAREA_ESTADOS.map((estado) => this.servicio.listar({ ...resto, estado, size: 50 })),
       ).subscribe({
         next: (paginas) => {
           const columnas = {} as Record<TareaEstado, Tarea[]>;
@@ -146,7 +156,7 @@ export class TareasListaComponent implements OnInit {
 }
 
 function vacios(): Filtros {
-  return { estado: '', prioridad: '', responsableId: null, desde: '', hasta: '' };
+  return { estado: 'ACTIVAS', prioridad: '', responsableId: null, desde: '', hasta: '' };
 }
 
 function leerVista(): Vista {

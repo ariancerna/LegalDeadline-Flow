@@ -106,3 +106,10 @@
     opacity: 1;
   }
 }
+
+// Copia local: Angular renombra las animaciones dentro de cada componente.
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+}

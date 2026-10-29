@@ -13,7 +13,10 @@ import { diasHasta, hoyLima, textoDias } from '../../shared/fechas';
 import { IconoComponent } from '../../shared/icono.component';
 import { CambioEstadoComponent } from './cambio-estado.component';
 import { TareaFormComponent } from './tarea-form.component';
-import { esActiva } from './transiciones';
+import { esActiva, requiereConfirmacion } from './transiciones';
+import { TareasService } from '../../core/api/tareas.service';
+import { NotificacionesService } from '../../core/notificaciones.service';
+import { interpretarError } from '../../core/errores';
 
 /** Tabla de tareas con sus acciones: editar, cambiar estado (RF10) y cancelar (RF11). */
 @Component({
@@ -47,6 +50,11 @@ export class TareasTablaComponent {
   protected readonly editando = signal<Tarea | null>(null);
   protected readonly cambiandoEstado = signal<Tarea | null>(null);
   protected readonly cancelando = signal<Tarea | null>(null);
+  /** Tarea que se está cerrando con la casilla, y las ya cerradas en esta vista (antes de recargar). */
+  protected readonly cerrando = signal<number | null>(null);
+  protected readonly cerradas = signal<ReadonlySet<number>>(new Set());
+  private readonly servicio = inject(TareasService);
+  private readonly avisos = inject(NotificacionesService);
 
   constructor() {
     effect(() => {
@@ -68,6 +76,31 @@ export class TareasTablaComponent {
 
   protected esActivaFila(t: Tarea): boolean {
     return esActiva(t.estado);
+  }
+
+  /**
+   * Cierra la tarea con un clic. Si es de prioridad ALTA, abre el cambio de estado, porque RN03 exige
+   * la confirmación de un supervisor. La fila queda tachada un momento antes de recargar la lista.
+   */
+  protected cerrarRapido(t: Tarea): void {
+    if (requiereConfirmacion(t.prioridad, 'CERRADA')) {
+      this.cambiandoEstado.set(t);
+      return;
+    }
+    this.cerrando.set(t.id);
+    this.servicio.cambiarEstado(t.id, 'CERRADA', t.version).subscribe({
+      next: () => {
+        this.cerrando.set(null);
+        this.cerradas.update((s) => new Set(s).add(t.id));
+        this.avisos.exito(`Tarea cerrada: ${t.titulo}`);
+        setTimeout(() => this.cambio.emit(), 900);
+      },
+      error: (e) => {
+        this.cerrando.set(null);
+        this.avisos.error(interpretarError(e).mensaje);
+        this.cambio.emit();
+      },
+    });
   }
 
   protected terminado(): void {

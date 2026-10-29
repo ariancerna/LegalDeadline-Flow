@@ -2,6 +2,7 @@
   <table class="tabla">
     <thead>
       <tr>
+        <th class="col-casilla"><span class="sr-only">Cerrar</span></th>
         <th>Tarea</th>
         @if (mostrarExpediente()) {
           <th class="ocultar-movil">Responsable</th>
@@ -14,7 +15,30 @@
     </thead>
     <tbody>
       @for (t of tareas(); track t.id) {
-        <tr [class.finalizada]="!esActivaFila(t)">
+        <tr
+          [class.finalizada]="!esActivaFila(t) || cerradas().has(t.id)"
+          [class.recien]="cerradas().has(t.id)"
+        >
+          <td class="col-casilla">
+            @if (puedeModificar(t) || cerradas().has(t.id)) {
+              <button
+                type="button"
+                class="casilla"
+                [class.hecha]="cerradas().has(t.id)"
+                [class.ocupada]="cerrando() === t.id"
+                [disabled]="cerrando() !== null || cerradas().has(t.id)"
+                [attr.aria-label]="'Cerrar tarea: ' + t.titulo"
+                [title]="
+                  t.prioridad === 'ALTA'
+                    ? 'Cerrar (requiere confirmación del supervisor)'
+                    : 'Marcar como cerrada'
+                "
+                (click)="cerrarRapido(t)"
+              >
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" /></svg>
+              </button>
+            }
+          </td>
           <td>
             <div class="titulo-celda">{{ t.titulo }}</div>
             <div class="sub-celda">
@@ -54,7 +78,7 @@
             <span [class]="'estado ' + tono(t.estado)">{{ t.estado | etiqueta }}</span>
           </td>
           <td>
-            @if (puedeModificar(t)) {
+            @if (puedeModificar(t) && !cerradas().has(t.id)) {
               <div class="acciones-fila">
                 <button
                   type="button"

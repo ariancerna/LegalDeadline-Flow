@@ -79,6 +79,10 @@ export interface Expediente {
   creadoEn: string;
   actualizadoEn: string;
   version: number;
+  /** Tareas pendientes o en progreso. */
+  tareasActivas: number;
+  /** Plazo activo más cercano, con su riesgo (RN04); null si no tiene. */
+  proximoPlazo: ProximoPlazo | null;
 }
 
 export interface Tarea {
@@ -95,6 +99,21 @@ export interface Tarea {
   creadoEn: string;
   actualizadoEn: string;
   version: number;
+}
+
+export interface ProximoPlazo {
+  id: number;
+  tipo: string;
+  fechaLimite: string;
+  diasRestantes: number;
+  nivel: NivelRiesgo;
+}
+
+export interface MovimientoMes {
+  /** Mes en la forma 2026-10. */
+  mes: string;
+  ingresados: number;
+  concluidos: number;
 }
 
 export interface Plazo {
@@ -159,6 +178,8 @@ export interface Indicadores {
   plazosVencidos: number;
   plazosProximos: number;
   riesgoPlazosActivos: Partial<Record<NivelRiesgo, number>>;
+  /** Ingresos y conclusiones de los últimos 12 meses. */
+  movimientoMensual: MovimientoMes[];
 }
 
 export interface Evento {

@@ -17,10 +17,10 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 | Pantalla | Qué ofrece |
 |---|---|
 | Login | Formulario, tabla de cuentas demo y la carátula de un expediente con su sello de vencimiento. |
-| Tablero | Registro de vencimientos: franja de cifras, calendario de 14 días con los plazos marcados por riesgo, registro de plazos, riesgo de la cartera, carga del equipo y diario de actividad. |
-| Expedientes | Pestañas por estado con contadores, búsqueda con tiempo de respuesta (RF04) y carátula de cada expediente (número, partes, materia, órgano jurisdiccional), con avance, próximos vencimientos e historial. |
-| Tareas | Vista **Lista** o **Tablero Kanban**: arrastrar una tarjeta cambia el estado y respeta las transiciones y la confirmación ALTA. |
-| Plazos | Vista **Lista** (todos, próximos 10 días, vencidos) o **Calendario** mensual coloreado por riesgo. |
+| Tablero | Banda del día (fecha, lo más urgente y cifras que cuentan al cargar), calendario de 14 días por riesgo, gráficos de movimiento mensual de la cartera y de plazos por semana, agenda de plazos, riesgo, carga del equipo y actividad reciente. |
+| Expedientes | Abre en los abiertos. Cada fila muestra el próximo plazo con su cuenta regresiva y riesgo, y las tareas activas. Búsqueda con tiempo de respuesta (RF04); si no hay resultados en la pestaña, ofrece buscar en todos los estados. La carátula muestra la cuenta regresiva del plazo más cercano. |
+| Tareas | Abre en **Por hacer**: pendientes y en progreso, de la más urgente a la menos urgente. Una casilla cierra la tarea con un clic (las de prioridad ALTA piden la confirmación del supervisor). Vista **Tablero Kanban** con arrastrar y soltar. |
+| Plazos | Abre en **Por vencer**, ordenados por fecha. Pestañas de próximos 10 días, vencidos y todos; vista **Calendario** mensual por riesgo. |
 | Carga de trabajo | Bloques de capacidad por persona y recomendaciones de reasignación aplicables con un clic. |
 | Auditoría | Bitácora en línea de tiempo agrupada por día. |
 | Usuarios | Resumen por rol, alta, edición y desactivación. |
@@ -85,6 +85,17 @@ src/app/
 El asunto de un expediente puede seguir la convención `Materia · Partes · Órgano jurisdiccional` (así lo carga la demostración); en ese caso la interfaz muestra cada parte por separado (`shared/asunto.ts`). Si no la sigue, el asunto completo se usa como título.
 
 Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-static`. Para usar uno nuevo, agrega su nombre a la lista del script y vuelve a ejecutarlo.
+
+## Movimiento
+
+- Transición suave entre páginas con la View Transitions API; la marca de la sección activa se desliza en la barra superior.
+- Las cifras del tablero, de la carga y de usuarios cuentan hasta su valor (`shared/contador.directive.ts`).
+- Las filas de las tablas aparecen en cascada; las columnas de los gráficos y las barras de progreso crecen desde su base.
+- Todo se desactiva con la preferencia del sistema «reducir movimiento».
+
+## Gráficos
+
+`shared/grafico-columnas.component.ts` dibuja columnas en SVG, sin librerías. Tiene leyenda, tooltip con mouse o teclado y una vista de tabla con los mismos valores. Los colores de las series (`--serie-1`, `--serie-2`) se validaron contra daltonismo en modo claro y oscuro.
 
 ## Volumen de datos
 

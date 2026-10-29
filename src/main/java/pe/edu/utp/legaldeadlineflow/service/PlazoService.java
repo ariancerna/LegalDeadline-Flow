@@ -119,7 +119,7 @@ public class PlazoService {
                 clasificar(plazo.getEstado(), diasRestantes, tareasPendientes), diasRestantes, tareasPendientes);
     }
 
-    NivelRiesgo clasificar(PlazoEstado estado, long diasRestantes, long tareasPendientes) {
+    static NivelRiesgo clasificar(PlazoEstado estado, long diasRestantes, long tareasPendientes) {
         if (estado == PlazoEstado.ANULADO) return NivelRiesgo.BAJO;
         if (diasRestantes < 0 || (diasRestantes <= 2 && tareasPendientes > 0)) return NivelRiesgo.CRITICO;
         if (diasRestantes <= 5) return NivelRiesgo.ALTO;

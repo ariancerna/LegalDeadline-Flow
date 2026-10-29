@@ -38,10 +38,10 @@
         <button
           type="button"
           role="tab"
-          [class.activa]="rapido() === 'todos'"
-          (click)="atajo('todos')"
+          [class.activa]="rapido() === 'porVencer'"
+          (click)="atajo('porVencer')"
         >
-          Todos
+          Por vencer
         </button>
         <button
           type="button"
@@ -58,6 +58,14 @@
           (click)="atajo('vencidos')"
         >
           Vencidos
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [class.activa]="rapido() === 'todos'"
+          (click)="atajo('todos')"
+        >
+          Todos
         </button>
       </div>
       <div class="barra-filtros" role="search">
@@ -106,7 +114,11 @@
       } @else if (datos().length === 0) {
         <app-vacio
           icono="calendar-check"
-          [titulo]="hayFiltros() ? 'Sin plazos en este filtro' : 'No hay plazos registrados'"
+          [titulo]="
+            hayFiltros() || rapido() !== 'todos'
+              ? 'Sin plazos en este filtro'
+              : 'No hay plazos registrados'
+          "
           [texto]="
             rapido() === 'vencidos'
               ? 'Excelente: no hay plazos activos vencidos.'

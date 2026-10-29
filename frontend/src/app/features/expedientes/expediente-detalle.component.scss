@@ -63,6 +63,83 @@
   }
 }
 
+// Cuenta regresiva del plazo más cercano, coloreada por su riesgo.
+.cuenta-regresiva {
+  align-self: flex-start;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 10px;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: var(--texto-3);
+  }
+
+  .dias {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    padding: 6px 10px;
+    background: var(--neutro-suave);
+    line-height: 1;
+
+    strong {
+      @include cifra;
+      font-size: 1.9rem;
+    }
+
+    small {
+      margin-top: 3px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+
+  .que {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 14px;
+
+    small {
+      font-size: 0.75rem;
+      color: var(--texto-3);
+    }
+
+    strong {
+      font-weight: 650;
+    }
+  }
+
+  &.r-CRITICO .dias {
+    background: var(--riesgo-critico);
+    color: #fff;
+  }
+
+  &.r-ALTO .dias {
+    background: color-mix(in srgb, var(--riesgo-alto) 16%, var(--superficie));
+    color: var(--riesgo-alto);
+  }
+
+  &.r-MEDIO .dias {
+    background: color-mix(in srgb, var(--riesgo-medio) 14%, var(--superficie));
+    color: var(--riesgo-medio);
+  }
+}
+
 .materia {
   font-size: 1rem;
   font-weight: 500;

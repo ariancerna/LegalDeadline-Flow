@@ -85,8 +85,17 @@
         <app-vacio
           icono="search"
           titulo="Sin coincidencias"
-          texto="Ningún expediente coincide con la búsqueda. Prueba con otro término."
+          [texto]="
+            estado() === ''
+              ? 'Ningún expediente coincide con la búsqueda. Prueba con otro término.'
+              : 'Ningún expediente de esta pestaña coincide. Puede estar en otro estado.'
+          "
         >
+          @if (estado() !== '') {
+            <button type="button" class="btn btn-primario" (click)="elegirEstado('')">
+              Buscar en todos los estados
+            </button>
+          }
           <button type="button" class="btn btn-secundario" (click)="limpiar()">
             Limpiar filtros
           </button>
@@ -111,8 +120,9 @@
             <tr>
               <th>Expediente</th>
               <th class="ocultar-movil">Responsable</th>
-              <th>Estado</th>
-              <th class="ocultar-movil">Actualizado</th>
+              <th>Próximo plazo</th>
+              <th class="ocultar-movil num-col">Tareas</th>
+              <th class="ocultar-movil">Estado</th>
               <th><span class="sr-only">Abrir</span></th>
             </tr>
           </thead>
@@ -142,10 +152,29 @@
                   </span>
                 </td>
                 <td>
-                  <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+                  @if (e.proximoPlazo; as p) {
+                    <div class="proximo" [class]="'proximo r-' + p.nivel">
+                      <strong>{{ p.tipo | etiqueta: 'corta' }}</strong>
+                      <span>{{ p.fechaLimite | fecha }} · {{ textoDias(p.diasRestantes) }}</span>
+                    </div>
+                  } @else {
+                    <span class="texto-3 texto-chico">{{
+                      e.estado === 'ABIERTO' ? 'Sin plazos activos' : '—'
+                    }}</span>
+                  }
                 </td>
-                <td class="texto-2 texto-chico ocultar-movil" [title]="e.actualizadoEn">
-                  {{ haceCuanto(e.actualizadoEn) }}
+                <td class="ocultar-movil num-col">
+                  @if (e.tareasActivas > 0) {
+                    <span class="tareas-n">{{ e.tareasActivas }}</span>
+                  } @else {
+                    <span class="texto-3">—</span>
+                  }
+                </td>
+                <td class="ocultar-movil">
+                  <span [class]="'estado ' + tono(e.estado)">{{ e.estado | etiqueta }}</span>
+                  <div class="sub-celda" [title]="e.actualizadoEn">
+                    {{ haceCuanto(e.actualizadoEn) }}
+                  </div>
                 </td>
                 <td class="flecha"><app-icono nombre="chevron-right" [tamano]="16" /></td>
               </tr>

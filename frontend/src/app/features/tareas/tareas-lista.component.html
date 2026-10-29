@@ -43,6 +43,7 @@
           [ngModel]="filtros().estado"
           (ngModelChange)="filtrar('estado', $event)"
         >
+          <option value="ACTIVAS">Por hacer (por vencimiento)</option>
           <option value="">Todos los estados</option>
           @for (e of estados; track e) {
             <option [value]="e">{{ e | etiqueta }}</option>

@@ -66,7 +66,8 @@ public class ExpedienteService {
             }
             return cb.and(filtros.toArray(Predicate[]::new));
         };
-        return expedienteRepository.findAll(spec, pagina(page, size)).map(this::toResponse);
+        Page<Expediente> pagina = expedienteRepository.findAll(spec, pagina(page, size));
+        return pagina.map(conSituacion(pagina.getContent()));
     }
 
     @Transactional(readOnly = true)
@@ -177,9 +178,37 @@ public class ExpedienteService {
         trazabilidadService.registrar(tipo, "EXPEDIENTE", expediente.getId(), detalle);
     }
     private ExpedienteResponse toResponse(Expediente expediente) {
-        return new ExpedienteResponse(expediente.getId(), expediente.getCodigo(), expediente.getAsunto(),
-                expediente.getResponsableId(), expediente.getEstado(), expediente.getCreadoEn(),
-                expediente.getActualizadoEn(), expediente.getVersion());
+        return conSituacion(List.of(expediente)).apply(expediente);
+    }
+
+    /**
+     * Prepara la situación de un grupo de expedientes con dos consultas (tareas activas agrupadas y
+     * plazos activos ordenados), en lugar de dos consultas por expediente.
+     */
+    private java.util.function.Function<Expediente, ExpedienteResponse> conSituacion(List<Expediente> expedientes) {
+        List<Long> ids = expedientes.stream().map(Expediente::getId).toList();
+        java.util.Map<Long, Long> tareas = new java.util.HashMap<>();
+        java.util.Map<Long, Plazo> proximos = new java.util.HashMap<>();
+        if (!ids.isEmpty()) {
+            tareaRepository.contarActivasPorExpediente(ids, TareaService.ESTADOS_ACTIVOS)
+                    .forEach(r -> tareas.put((Long) r[0], ((Number) r[1]).longValue()));
+            for (Plazo p : plazoRepository.findByExpedientesAndEstadoOrdenados(ids, PlazoEstado.ACTIVO)) {
+                proximos.putIfAbsent(p.getExpediente().getId(), p);
+            }
+        }
+        java.time.LocalDate hoy = java.time.LocalDate.now(clock);
+        return e -> {
+            long activas = tareas.getOrDefault(e.getId(), 0L);
+            Plazo p = proximos.get(e.getId());
+            ExpedienteResponse.ProximoPlazo proximo = null;
+            if (p != null) {
+                long dias = java.time.temporal.ChronoUnit.DAYS.between(hoy, p.getFechaLimite());
+                proximo = new ExpedienteResponse.ProximoPlazo(p.getId(), p.getTipo(), p.getFechaLimite(), dias,
+                        PlazoService.clasificar(p.getEstado(), dias, activas));
+            }
+            return new ExpedienteResponse(e.getId(), e.getCodigo(), e.getAsunto(), e.getResponsableId(),
+                    e.getEstado(), e.getCreadoEn(), e.getActualizadoEn(), e.getVersion(), activas, proximo);
+        };
     }
 }
 

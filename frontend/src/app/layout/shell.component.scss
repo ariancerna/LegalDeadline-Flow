@@ -4,6 +4,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  // Las bandas a todo lo ancho (tablero) no generan desplazamiento horizontal.
+  overflow-x: clip;
 }
 
 // ---------------- Barra superior ----------------
@@ -129,6 +131,8 @@
         bottom: -1px;
         height: 3px;
         background: #e2cf96;
+        // Con View Transitions, la marca se desliza de una sección a otra.
+        view-transition-name: nav-indicador;
       }
     }
   }

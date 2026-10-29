@@ -46,13 +46,38 @@ public class IndicadoresService {
             long dias = ChronoUnit.DAYS.between(hoy, plazo.getFechaLimite());
             if (dias < 0) vencidos++;
             if (dias >= 0 && dias <= 7) proximos++;
-            NivelRiesgo nivel = plazoService.clasificar(plazo.getEstado(), dias, pendientes.getOrDefault(plazo.getExpediente().getId(), 0L));
+            NivelRiesgo nivel = PlazoService.clasificar(plazo.getEstado(), dias, pendientes.getOrDefault(plazo.getExpediente().getId(), 0L));
             riesgos.merge(nivel, 1L, Long::sum);
         }
         return new IndicadoresResponse(hoy, expedientes.getOrDefault(ExpedienteEstado.ABIERTO, 0L),
                 expedientes.getOrDefault(ExpedienteEstado.CERRADO, 0L), expedientes.getOrDefault(ExpedienteEstado.ARCHIVADO, 0L),
                 activas, cerradas, tareas.getOrDefault(TareaEstado.CANCELADA, 0L), repository.tareasVencidas(global, usuario.getId(), hoy),
                 activas + cerradas == 0 ? 0.0 : Math.round(10000.0 * cerradas / (activas + cerradas)) / 100.0,
-                plazosActivos, anulados, vencidos, proximos, riesgos);
+                plazosActivos, anulados, vencidos, proximos, riesgos,
+                movimientoMensual(global, usuario.getId(), hoy));
+    }
+
+    /** Ingresos y conclusiones de los últimos 12 meses, incluido el actual. */
+    private java.util.List<IndicadoresResponse.MovimientoMes> movimientoMensual(boolean global, Long usuarioId, LocalDate hoy) {
+        java.time.ZoneId zona = clock.getZone();
+        java.time.YearMonth actual = java.time.YearMonth.from(hoy);
+        java.time.YearMonth primero = actual.minusMonths(11);
+        java.time.Instant desde = primero.atDay(1).atStartOfDay(zona).toInstant();
+        java.util.Map<java.time.YearMonth, long[]> meses = new java.util.LinkedHashMap<>();
+        for (java.time.YearMonth m = primero; !m.isAfter(actual); m = m.plusMonths(1)) meses.put(m, new long[2]);
+        for (Object[] fila : repository.movimientoExpedientes(global, usuarioId, desde)) {
+            java.time.Instant creado = (java.time.Instant) fila[0];
+            ExpedienteEstado estado = (ExpedienteEstado) fila[1];
+            java.time.Instant actualizado = (java.time.Instant) fila[2];
+            long[] ingreso = meses.get(java.time.YearMonth.from(creado.atZone(zona)));
+            if (ingreso != null) ingreso[0]++;
+            if (estado != ExpedienteEstado.ABIERTO) {
+                long[] cierre = meses.get(java.time.YearMonth.from(actualizado.atZone(zona)));
+                if (cierre != null) cierre[1]++;
+            }
+        }
+        return meses.entrySet().stream()
+                .map(e -> new IndicadoresResponse.MovimientoMes(e.getKey().toString(), e.getValue()[0], e.getValue()[1]))
+                .toList();
     }
 }

@@ -52,3 +52,55 @@ tr:hover .partes {
 .margen {
   margin: 12px;
 }
+
+// Próximo plazo: tipo y cuenta regresiva; una franja a la izquierda indica el riesgo.
+.proximo {
+  display: flex;
+  flex-direction: column;
+  padding-left: 9px;
+  border-left: 3px solid var(--borde);
+  line-height: 1.3;
+  white-space: nowrap;
+
+  strong {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: var(--texto-3);
+  }
+
+  &.r-CRITICO {
+    border-left-color: var(--riesgo-critico);
+
+    span {
+      color: var(--riesgo-critico);
+      font-weight: 600;
+    }
+  }
+
+  &.r-ALTO {
+    border-left-color: var(--riesgo-alto);
+
+    span {
+      color: var(--riesgo-alto);
+      font-weight: 600;
+    }
+  }
+
+  &.r-MEDIO {
+    border-left-color: var(--riesgo-medio);
+  }
+}
+
+.num-col {
+  text-align: right !important;
+  width: 72px;
+}
+
+.tareas-n {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

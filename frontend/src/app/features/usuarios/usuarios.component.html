@@ -12,7 +12,7 @@
     @for (r of porRol(); track r.rol) {
       <div class="rol">
         <div>
-          <strong class="num">{{ r.cuenta }}</strong>
+          <strong class="num" [appContador]="r.cuenta"></strong>
           <small>{{ r.cuenta === 1 ? (r.rol | etiqueta) : plurales[r.rol] }}</small>
         </div>
       </div>

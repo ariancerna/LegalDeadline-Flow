@@ -16,7 +16,8 @@ import { DialogoComponent } from '../../shared/dialogo.component';
 import { EsqueletoComponent } from '../../shared/esqueleto.component';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { tono } from '../../shared/etiquetas';
-import { haceCuanto } from '../../shared/fechas';
+import { haceCuanto, textoDias } from '../../shared/fechas';
+import { FechaPipe } from '../../shared/fecha.pipe';
 import { IconoComponent } from '../../shared/icono.component';
 import { PaginadorComponent } from '../../shared/paginador.component';
 import { VacioComponent } from '../../shared/vacio.component';
@@ -39,6 +40,7 @@ type Pestana = ExpedienteEstado | '';
     EsqueletoComponent,
     VacioComponent,
     AsuntoPipe,
+    FechaPipe,
   ],
   templateUrl: './expedientes-lista.component.html',
   styleUrl: './expedientes-lista.component.scss',
@@ -52,9 +54,11 @@ export class ExpedientesListaComponent implements OnInit {
   protected readonly responsables = inject(ResponsablesStore);
   protected readonly tono = tono;
   protected readonly haceCuanto = haceCuanto;
+  protected readonly textoDias = textoDias;
 
   protected readonly q = signal('');
-  protected readonly estado = signal<Pestana>('');
+  // Abiertos por defecto: es la cartera con la que se trabaja cada día.
+  protected readonly estado = signal<Pestana>('ABIERTO');
   protected readonly responsableId = signal<number | null>(null);
   protected readonly pagina = signal(0);
   protected readonly tamano = 15;

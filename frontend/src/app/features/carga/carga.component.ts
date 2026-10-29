@@ -1,3 +1,4 @@
+import { ContadorDirective } from '../../shared/contador.directive';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin, map } from 'rxjs';
@@ -18,7 +19,15 @@ import { Sugerencia, recomendarReasignaciones } from './recomendacion';
 /** RF16: carga activa por responsable, sobrecargas y recomendación de reasignación. */
 @Component({
   selector: 'app-carga',
-  imports: [RouterLink, EtiquetaPipe, FechaPipe, IconoComponent, AvatarComponent, VacioComponent],
+  imports: [
+    ContadorDirective,
+    RouterLink,
+    EtiquetaPipe,
+    FechaPipe,
+    IconoComponent,
+    AvatarComponent,
+    VacioComponent,
+  ],
   templateUrl: './carga.component.html',
   styleUrl: './carga.component.scss',
 })

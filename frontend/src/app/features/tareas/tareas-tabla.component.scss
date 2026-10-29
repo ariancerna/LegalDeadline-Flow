@@ -19,8 +19,90 @@ tr.finalizada .titulo-celda {
   text-decoration-color: var(--borde-fuerte);
 }
 
-td:first-child {
+td:nth-child(2) {
   min-width: 240px;
+}
+
+// Casilla para cerrar una tarea con un clic: el visto se dibuja al marcarla.
+.col-casilla {
+  width: 36px;
+  padding-right: 0 !important;
+}
+
+.casilla {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1.5px solid var(--borde-fuerte);
+  border-radius: var(--radio-s);
+  background: var(--superficie);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.2s;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: var(--sobre-marca);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 16;
+    stroke-dashoffset: 16;
+    transition: stroke-dashoffset 0.3s ease 0.05s;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--texto);
+
+    svg {
+      stroke: var(--texto-3);
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &.hecha {
+    border-color: var(--exito);
+    background: var(--exito);
+
+    svg {
+      stroke: #fff;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &.ocupada {
+    border-color: var(--texto-3);
+    animation: latido 0.8s ease-in-out infinite;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+tr.recien {
+  animation: resaltar 1s ease;
+
+  .titulo-celda {
+    transition: color 0.3s;
+  }
+}
+
+@keyframes latido {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes resaltar {
+  from {
+    background: var(--exito-suave);
+  }
 }
 
 .relativo,

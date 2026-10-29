@@ -408,6 +408,39 @@ class ApiIntegrationTest {
         JsonNode tarea=call(get("/api/v1/tareas").param("size","1"),supervisor,null,200).get("content").get(0);
         assertThat(tarea.get("expedienteCodigo").asText()).isNotBlank();
 
+        // Cada expediente del listado trae su situación: tareas activas y el plazo activo más cercano.
+        JsonNode abiertos=call(get("/api/v1/expedientes").param("estado","ABIERTO").param("size","100"),supervisor,null,200).get("content");
+        boolean conPlazo=false;
+        for (JsonNode e:abiertos) {
+            long id=e.get("id").asLong();
+            assertThat(e.get("tareasActivas").asLong()).isEqualTo(jdbc.queryForObject(
+                    "select count(*) from tareas where expediente_id = ? and estado in ('PENDIENTE','EN_PROGRESO')",Long.class,id));
+            JsonNode prox=e.get("proximoPlazo");
+            if (prox!=null && !prox.isNull()) {
+                conPlazo=true;
+                assertThat(prox.get("fechaLimite").asText()).isEqualTo(jdbc.queryForObject(
+                        "select min(fecha_limite) from plazos where expediente_id = ? and estado = 'ACTIVO'",String.class,id));
+                assertThat(prox.get("nivel").asText()).isIn("CRITICO","ALTO","MEDIO","BAJO");
+            }
+        }
+        assertThat(conPlazo).isTrue();
+
+        // Lista de trabajo: solo tareas activas, de la más urgente a la menos urgente.
+        JsonNode activas=call(get("/api/v1/tareas").param("activas","true").param("size","50"),supervisor,null,200);
+        String anterior="";
+        for (JsonNode t:activas.get("content")) {
+            assertThat(t.get("estado").asText()).isIn("PENDIENTE","EN_PROGRESO");
+            assertThat(t.get("fechaLimite").asText()).isGreaterThanOrEqualTo(anterior);
+            anterior=t.get("fechaLimite").asText();
+        }
+
+        // Movimiento de 12 meses para el gráfico del tablero.
+        JsonNode movimiento=call(get("/api/v1/indicadores"),supervisor,null,200).get("movimientoMensual");
+        assertThat(movimiento.size()).isEqualTo(12);
+        long ingresados=0; for (JsonNode m:movimiento) ingresados+=m.get("ingresados").asLong();
+        assertThat(ingresados).isPositive();
+        assertThat(movimiento.get(11).get("mes").asText()).isEqualTo(java.time.YearMonth.now(clock).toString());
+
         // Historial de un expediente: sus eventos y los de sus tareas y plazos, sin mezclar otros.
         long expedienteId=pagina.get("content").get(0).get("expedienteId").asLong();
         JsonNode historial=call(get("/api/v1/auditoria/eventos").param("expedienteId",String.valueOf(expedienteId)).param("size","100"),supervisor,null,200);

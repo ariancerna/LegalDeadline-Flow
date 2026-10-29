@@ -1,3 +1,4 @@
+import { LowerCasePipe } from '@angular/common';
 import { Title } from '@angular/platform-browser';
 import { Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -35,6 +36,7 @@ type Pestana = 'tareas' | 'plazos' | 'actividad';
 @Component({
   selector: 'app-expediente-detalle',
   imports: [
+    LowerCasePipe,
     RouterLink,
     EtiquetaPipe,
     FechaPipe,
@@ -114,6 +116,10 @@ export class ExpedienteDetalleComponent implements OnInit, OnDestroy {
 
   protected dias(p: Plazo): number {
     return diasHasta(p.fechaLimite, this.hoy);
+  }
+
+  protected abs(n: number): number {
+    return Math.abs(n);
   }
 
   protected cambiarPestana(p: Pestana): void {

@@ -25,6 +25,34 @@
           @if (a.materia) {
             <p class="materia">{{ a.materia }}</p>
           }
+          @if (e.proximoPlazo; as p) {
+            <button
+              type="button"
+              class="cuenta-regresiva"
+              [class]="'cuenta-regresiva r-' + p.nivel"
+              (click)="cambiarPestana('plazos')"
+            >
+              <span class="dias">
+                <strong>{{ abs(p.diasRestantes) }}</strong>
+                <small>{{
+                  p.diasRestantes < 0
+                    ? abs(p.diasRestantes) === 1
+                      ? 'día vencido'
+                      : 'días vencido'
+                    : abs(p.diasRestantes) === 1
+                      ? 'día'
+                      : 'días'
+                }}</small>
+              </span>
+              <span class="que">
+                <small>Próximo plazo</small>
+                <strong>{{ p.tipo | etiqueta }}</strong>
+                <small
+                  >{{ p.fechaLimite | fecha }} · riesgo {{ p.nivel | etiqueta | lowercase }}</small
+                >
+              </span>
+            </button>
+          }
         </div>
       }
       @if (auth.esGestor() && e.estado !== 'ARCHIVADO') {
