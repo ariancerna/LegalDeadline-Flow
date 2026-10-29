@@ -27,23 +27,9 @@
 }
 
 .carpeta {
-  position: relative;
-  width: 20px;
-  height: 15px;
-  margin-top: 2px;
-  background: #d9c27f;
-  border-radius: 1px;
-  clip-path: polygon(0 0, 42% 0, 52% 18%, 100% 18%, 100% 100%, 0 100%);
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: 3px;
-    bottom: 0;
-    width: 3px;
-    height: 62%;
-    background: #c0261b;
-  }
+  display: block;
+  width: 26px;
+  height: 26px;
 }
 
 .nombre {
