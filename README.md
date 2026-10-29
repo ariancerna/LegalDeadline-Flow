@@ -1,5 +1,44 @@
 # LegalDeadline Flow
 
+> 🚧 **Status:** in active development during the 2026 academic term (through December 2026).
+
+**LegalDeadline Flow** is a web system that helps a law firm keep track of its case files, tasks and legal deadlines, with role-based permissions and a full audit trail. The firm and all demo data are fictional.
+
+**Live demo:** [legaldeadline-sigma.vercel.app](https://legaldeadline-sigma.vercel.app)
+
+### Highlights
+
+- **Case files, tasks and deadlines:** create, assign, close and archive records without losing their history.
+- **Deadline risk:** deadlines are counted in business days and flagged by risk level.
+- **Workload control:** shows how many active tasks each person has and flags anyone over the threshold.
+- **Four roles:** Administrator, Supervisor, Assignee and Auditor, enforced per resource on the API.
+- **Audit trail:** every change is saved together with its audit event and the user who made it.
+- **Safe concurrent edits:** record versions prevent silent overwrites (HTTP 409).
+- **Realistic demo data:** an optional seed of 5,000 case files to test search and performance.
+
+### Tech stack
+
+| Layer | Technologies |
+|---|---|
+| Backend | Java 17, Spring Boot, Spring Security + JWT, Spring Data JPA, Flyway |
+| Database | PostgreSQL (local with Docker or Neon in the cloud) |
+| Frontend | Angular 21, SASS |
+| Testing | JUnit, H2, JaCoCo (80% line coverage required on the service layer) |
+| Deployment | Docker Compose, Vercel (frontend), Render (backend), Neon (database) |
+
+### Quick start
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+The web app runs at `http://localhost:4200` and the API at `http://localhost:8081`. Demo accounts and the full technical guide are in the Spanish documentation below.
+
+---
+
+## Documentación (español)
+
 Sistema web para gestionar expedientes, tareas, plazos y auditoría de un estudio jurídico ficticio. El repositorio contiene:
 
 - **Backend** (esta carpeta): API REST con Spring Boot.
