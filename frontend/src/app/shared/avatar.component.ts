@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-/** Iniciales de la persona en un cuadro gris; sin colores de adorno. */
+/** Iniciales en un círculo; en manila para la cuenta propia. */
 @Component({
   selector: 'app-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -8,7 +8,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     class="avatar"
     [style.width.px]="tamano()"
     [style.height.px]="tamano()"
-    [style.font-size.px]="tamano() * 0.38"
+    [class.propio]="propio()"
+    [style.font-size.px]="tamano() * 0.4"
     [attr.title]="nombre()"
     >{{ iniciales() }}</span
   >`,
@@ -20,18 +21,27 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     .avatar {
       display: inline-grid;
       place-items: center;
-      border-radius: var(--radio);
-      font-stretch: 85%;
+      box-sizing: border-box;
+      border-radius: 50%;
       font-weight: 700;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.02em;
       color: var(--texto-2);
-      background: var(--neutro-suave);
+      background: var(--superficie-2);
+      border: 1px solid var(--borde);
+    }
+    // La persona que usa la sesión: iniciales en manila.
+    .avatar.propio {
+      background: var(--manila);
+      border-color: var(--manila);
+      color: var(--manila-tinta);
     }
   `,
 })
 export class AvatarComponent {
   readonly nombre = input<string>('');
   readonly tamano = input(28);
+  /** Iniciales en manila: la cuenta que usa la sesión. */
+  readonly propio = input(false);
 
   protected readonly iniciales = computed(() => {
     const partes = this.nombre().trim().split(/\s+/).filter(Boolean);

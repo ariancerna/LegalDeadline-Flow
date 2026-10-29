@@ -12,7 +12,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(480px, calc(100vw - 32px));
+  width: min(440px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
@@ -33,7 +33,7 @@
     bottom: 0;
     left: auto;
     transform: none;
-    width: min(500px, 100vw);
+    width: min(480px, 100vw);
     max-height: none;
     border-radius: 0;
     border-width: 0 0 0 1px;

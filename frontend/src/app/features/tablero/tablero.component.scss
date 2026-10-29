@@ -1,135 +1,154 @@
 @use 'tokens' as *;
 
-.alcance {
-  align-self: center;
-  padding: 3px 8px;
-  border-radius: var(--radio-s);
-  background: var(--manila);
-  color: var(--manila-texto);
-  font-stretch: 100%;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0;
-}
+// Tablero del supervisor (Claude Design · «Tablero Supervisor»).
 
-// ---------------- Banda del día ----------------
-// Un bloque en tinta abre el tablero: la fecha, lo urgente y las cifras, con el contraste de una
-// carátula. Usa los colores de la barra superior en ambos temas.
-// A todo lo ancho de la ventana, continuando la barra superior.
-.banda {
-  margin: -22px calc(50% - 50vw) 0;
-  padding: 22px calc(50vw - 50%) 0;
-  background: var(--barra);
-  color: var(--barra-texto);
-  border-bottom: 1px solid var(--barra-borde);
-
-  @include movil {
-    margin-top: -16px;
-    padding-top: 16px;
-  }
-}
-
-.banda-cab {
+// ---------------- Encabezado ----------------
+.cabecera {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 14px 20px;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+
+  .hoy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 
   h1 {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
     gap: 10px;
-    color: var(--barra-activo);
-    font-size: 2.4rem;
+    line-height: 1.15;
   }
 
-  .resumen {
-    margin-top: 4px;
-    font-size: 0.95rem;
+  .atencion {
+    color: var(--texto-2);
+
+    a {
+      color: var(--riesgo-critico-texto);
+      font-weight: 650;
+    }
   }
-}
 
-.btn-banda {
-  background: transparent;
-  color: var(--barra-activo);
-  border-color: #3d4046;
-
-  &:hover {
-    border-color: #6a6d73;
-    background: rgba(255, 255, 255, 0.05);
-  }
-}
-
-.btn-manila {
-  background: #e2cf96;
-  color: #17181a;
-
-  &:hover {
-    background: #ecdcab;
+  .acciones {
+    display: flex;
+    gap: 8px;
   }
 }
 
 .alcance {
   align-self: center;
-  padding: 3px 8px;
-  border-radius: var(--radio-s);
-  background: #e2cf96;
-  color: #17181a;
+  padding: 2px 8px;
+  border-radius: var(--radio-1);
+  background: var(--manila-suave);
+  border: 1px solid var(--manila-borde);
+  color: var(--manila-tinta);
   font-stretch: 100%;
-  font-size: 0.78rem;
+  font-size: var(--t-xs);
   font-weight: 600;
   letter-spacing: 0;
 }
 
+// ---------------- Lo más urgente ----------------
 .urgente {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 20px 16px 24px;
+  background: var(--manila-suave);
+  border: 1px solid var(--manila-borde);
+  border-radius: var(--radio-3);
+  animation: aparecer 0.35s ease-out both;
+
+  @include movil {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 16px;
+  }
+}
+
+// Sello de goma de mesa de partes: doble filete rojo, girado.
+.sello {
+  transform: rotate(-4deg);
+  padding: 7px 12px 6px;
+  border: 2px solid var(--sello);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 2px var(--manila-suave),
+    inset 0 0 0 3px var(--sello);
+  color: var(--sello);
+  font-stretch: 72%;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-align: center;
+  opacity: 0.92;
+  animation: sellar 0.4s 0.15s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+
+  @include movil {
+    justify-self: start;
+  }
+}
+
+.urgente-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.urgente-rotulo {
+  font-size: var(--t-sm);
+  font-weight: 650;
+  color: var(--manila-tinta);
+}
+
+.urgente-titulo {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  margin-top: 16px;
-  padding: 10px 14px;
-  border-left: 3px solid #e5574b;
-  background: rgba(229, 87, 75, 0.12);
-  color: var(--barra-activo);
-  text-decoration: none !important;
-  transition: background-color 0.15s;
+  gap: 10px;
 
-  &:hover {
-    background: rgba(229, 87, 75, 0.2);
-
-    .partes {
-      text-decoration: underline;
-    }
-  }
-
-  .marca-urgente {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #f2a39b;
-  }
-
-  strong {
-    font-weight: 650;
+  .tipo {
+    font-size: 18px;
+    font-weight: 680;
+    font-stretch: 92%;
   }
 
   .codigo {
-    font-size: 0.85rem;
-    color: var(--barra-texto);
+    font-size: var(--t-sm);
+    color: var(--texto-2);
   }
+}
 
-  .partes {
-    flex: 1 1 200px;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.urgente .partes {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .cuando {
-    font-weight: 650;
-    color: #f2a39b;
+.urgente .meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: var(--t-sm);
+  color: var(--texto-2);
+}
+
+.abrir {
+  border-color: var(--manila-borde);
+  background: var(--superficie);
+  font-weight: 600;
+
+  @include movil {
+    justify-self: start;
   }
 }
 
@@ -137,8 +156,14 @@
 .cifras {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-top: 18px;
-  border-top: 1px solid var(--barra-borde);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-3);
+  overflow: hidden;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 
   @include movil {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -149,186 +174,190 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 16px 16px 18px;
-  border-right: 1px solid var(--barra-borde);
-  color: var(--barra-activo);
+  min-width: 0;
+  padding: 14px 18px 16px;
+  // Filete izquierdo y superior: separa celdas en cualquier número de columnas.
+  box-shadow:
+    -1px 0 0 var(--borde),
+    0 -1px 0 var(--borde);
+  color: var(--texto);
   text-decoration: none !important;
-  transition: background-color 0.15s;
-
-  &:first-child {
-    padding-left: 0;
-  }
-
-  &:last-child {
-    border-right: none;
-  }
+  transition: background-color 0.12s;
 
   &[href]:hover {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  .valor {
-    @include cifra;
-    font-size: 2.6rem;
-
-    small {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: var(--barra-texto);
-      margin-left: 1px;
-    }
-
-    &.mala {
-      color: #f07b6f;
-    }
+    background: var(--superficie-hover);
   }
 
   .rotulo {
-    margin-top: 6px;
-    font-size: 0.82rem;
-    font-weight: 600;
+    font-size: var(--t-sm);
+    font-weight: 550;
+    color: var(--texto-2);
+  }
+
+  .valor {
+    font-size: var(--t-cifra);
+    font-weight: 650;
+    font-stretch: $condensada;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   .nota {
-    font-size: 0.78rem;
-    color: var(--barra-texto);
+    font-size: var(--t-sm);
+    color: var(--texto-3);
+    font-variant-numeric: tabular-nums;
 
     &.mala {
-      color: #f2a39b;
+      color: var(--riesgo-critico-texto);
       font-weight: 600;
     }
   }
 
-  .progreso {
-    margin-top: 8px;
-    background: rgba(255, 255, 255, 0.12);
-
-    > div {
-      background: #e2cf96;
-    }
+  a.nota:hover {
+    text-decoration: underline;
   }
 
-  @include movil {
-    border-bottom: 1px solid var(--barra-borde);
+  // Plazos vencidos: la única celda que se tiñe cuando hay alguno.
+  &.alarma {
+    background: var(--riesgo-critico-fondo);
 
-    &:nth-child(odd) {
-      padding-left: 0;
+    .rotulo,
+    .valor {
+      color: var(--riesgo-critico-texto);
     }
 
-    &:nth-child(2n) {
-      border-right: none;
+    .rotulo {
+      font-weight: 650;
     }
 
     .valor {
-      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .nota {
+      color: var(--texto-2);
+    }
+
+    &:hover {
+      background: color-mix(in oklch, var(--riesgo-critico-fondo) 85%, var(--riesgo-critico));
     }
   }
-}
 
-// ---------------- Gráficos ----------------
-.graficos {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 16px;
+  .pista {
+    height: 4px;
+    margin-top: 8px;
+    border-radius: 2px;
+    background: var(--superficie-2);
+    overflow: hidden;
 
-  @media (max-width: 1000px) {
-    grid-template-columns: minmax(0, 1fr);
+    > div {
+      height: 100%;
+      background: var(--estado-cerrado);
+      transform-origin: left;
+      animation: crecer-x 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
   }
-}
-
-.nota-cab {
-  font-size: 0.8rem;
-  color: var(--texto-3);
-}
-
-.cuerpo-grafico {
-  padding: 12px 16px 14px;
 }
 
 // ---------------- Bloques ----------------
 .bloque {
+  min-width: 0;
+  padding: 14px 16px 16px;
   background: var(--superficie);
   border: 1px solid var(--borde);
-  border-radius: var(--radio-l);
-  min-width: 0;
+  border-radius: var(--radio-3);
 }
 
-.bloque-cabecera {
+.bloque-cab {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 44px;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--borde);
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
 
   h2 {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
+    font-size: var(--t-md);
+    font-weight: 650;
   }
 
-  .cuenta {
-    font-stretch: 100%;
-    font-weight: 500;
-    font-size: 0.85rem;
-    color: var(--texto-3);
-    font-variant-numeric: tabular-nums;
+  > a {
+    font-size: var(--t-sm);
   }
 }
 
-.enlace-cab {
-  font-size: 0.82rem;
-  font-weight: 600;
+.titulo-cab {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.nota-cab {
+  font-size: var(--t-sm);
+  color: var(--texto-3);
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------------- Próximos 14 días ----------------
+.calendario .bloque-cab {
+  align-items: center;
 }
 
 .leyenda {
   display: flex;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.78rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: var(--t-xs);
   color: var(--texto-2);
 
-  li {
+  span {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
   }
 
-  @include movil {
-    display: none;
+  i {
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  a {
+    margin-left: 6px;
+    font-size: var(--t-sm);
+  }
+
+  .r-CRITICO {
+    background: var(--riesgo-critico);
+  }
+
+  .r-ALTO {
+    background: var(--riesgo-alto-fondo);
+    box-shadow: inset 0 0 0 1px var(--riesgo-alto);
+  }
+
+  .r-MEDIO {
+    background: var(--riesgo-medio-fondo);
+    box-shadow: inset 0 0 0 1px var(--riesgo-medio);
+  }
+
+  .r-BAJO {
+    background: var(--superficie);
+    box-shadow: inset 0 0 0 1px var(--borde-fuerte);
   }
 }
 
-i[class^='r-'] {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 1px;
-}
-
-.r-CRITICO {
-  background: var(--riesgo-critico);
-}
-.r-ALTO {
-  background: var(--riesgo-alto);
-}
-.r-MEDIO {
-  background: var(--riesgo-medio);
-}
-.r-BAJO {
-  background: var(--borde-fuerte);
-}
-
+// ---------------- Agenda + columna derecha ----------------
 .columnas {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
   align-items: start;
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1180px) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -336,34 +365,77 @@ i[class^='r-'] {
 .lateral {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  min-width: 0;
 }
 
-// ---------------- Agenda ----------------
+.agenda {
+  padding: 0;
+  overflow: hidden;
+
+  .bloque-cab {
+    margin: 0;
+    padding: 14px 16px 10px;
+  }
+
+  .tabla-contenedor {
+    border: none;
+    border-radius: 0;
+  }
+}
+
 .registro {
+  th {
+    border-top: 1px solid var(--borde);
+  }
+
   td {
     padding-top: 8px;
     padding-bottom: 8px;
+    vertical-align: middle;
   }
 
-  tr.vencido td:first-child {
-    box-shadow: inset 3px 0 0 var(--riesgo-critico);
+  .col-vence {
+    width: 64px;
   }
 
-  .fecha-celda {
-    width: 82px;
-    white-space: nowrap;
+  .col-plazo {
+    width: 200px;
+  }
+
+  .col-riesgo {
+    width: 84px;
+  }
+
+  .fecha {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    color: var(--texto);
+    text-decoration: none;
   }
 
   .dia {
-    @include cifra;
-    display: block;
-    font-size: 1.5rem;
+    font-size: 18px;
+    font-weight: 680;
+    font-stretch: $condensada;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
   }
 
   .mes {
-    font-size: 0.75rem;
-    color: var(--texto-3);
+    font-size: var(--t-xs);
+    color: var(--texto-2);
+
+    &.es-hoy {
+      font-weight: 700;
+      color: var(--texto);
+    }
+  }
+
+  // La celda del expediente toma el ancho restante y recorta las partes.
+  .celda-exp {
+    max-width: 0;
   }
 
   .exp {
@@ -379,163 +451,312 @@ i[class^='r-'] {
   }
 
   .codigo {
-    font-size: 0.78rem;
-    color: var(--texto-3);
+    font-size: 12.5px;
+    color: var(--texto-2);
   }
 
   .partes {
     font-weight: 600;
-    max-width: 380px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .mala {
-    color: var(--riesgo-critico);
-    font-weight: 600;
+  .tipo {
+    font-weight: 550;
+  }
+
+  .relativo {
+    font-size: var(--t-xs);
+    color: var(--texto-2);
+
+    &.vencio {
+      color: var(--riesgo-critico-texto);
+      font-weight: 650;
+    }
+
+    &.hoy {
+      color: var(--riesgo-alto-texto);
+      font-weight: 650;
+    }
+  }
+
+  @include movil {
+    .col-plazo {
+      width: auto;
+    }
   }
 }
 
-// ---------------- Riesgo ----------------
-.cuerpo {
-  padding: 14px 16px 6px;
-}
-
+// ---------------- Riesgo de la cartera ----------------
 .barra-riesgo {
   display: flex;
-  height: 10px;
+  height: 14px;
   gap: 2px;
+  margin-bottom: 12px;
+  border-radius: 3px;
+  overflow: hidden;
   transform-origin: left;
-  animation: crecer-x 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: crecer-x 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
   span {
-    min-width: 3px;
+    min-width: 5px;
+  }
+
+  .r-CRITICO {
+    background: var(--riesgo-critico);
+  }
+
+  .r-ALTO {
+    background: var(--riesgo-alto);
+  }
+
+  .r-MEDIO {
+    background: var(--riesgo-medio);
+  }
+
+  .r-BAJO {
+    background: var(--riesgo-bajo);
+    opacity: 0.45;
   }
 }
 
 .niveles {
-  margin: 10px 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 
-  div {
+  .nivel {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--borde);
-
-    &:last-child {
-      border-bottom: none;
-    }
+    flex-direction: column;
+    gap: 2px;
   }
 
-  dt {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.875rem;
-  }
-
-  dd {
-    margin: 0;
-    font-weight: 700;
+  .num {
+    font-size: 22px;
+    font-weight: 680;
     font-stretch: $condensada;
-    font-size: 1.15rem;
     font-variant-numeric: tabular-nums;
-  }
-}
-
-// ---------------- Equipo ----------------
-.equipo {
-  list-style: none;
-  margin: 0;
-  padding: 6px 16px 12px;
-
-  li {
-    padding: 7px 0 6px;
+    line-height: 1.1;
   }
 
-  .fila {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 0.85rem;
-    margin-bottom: 5px;
+  .nombre {
+    font-size: var(--t-xs);
+    font-weight: 600;
+  }
+
+  .n-CRITICO {
+    color: var(--riesgo-critico-texto);
 
     .num {
       font-weight: 700;
     }
   }
 
-  .pista {
-    position: relative;
-    height: 6px;
-    background: var(--neutro-suave);
+  .n-ALTO {
+    color: var(--riesgo-alto-texto);
   }
 
-  .relleno {
-    height: 100%;
+  .n-MEDIO {
+    color: var(--riesgo-medio-texto);
+  }
+
+  .n-BAJO {
+    color: var(--riesgo-bajo-texto);
+
+    .num {
+      font-weight: 650;
+      color: var(--texto-2);
+    }
+  }
+}
+
+// ---------------- Más cargados ----------------
+.equipo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .fila {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: var(--t-sm);
+  }
+
+  .nombre {
+    font-weight: 550;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cuenta {
+    display: flex;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .proporcion {
+    color: var(--texto-2);
+  }
+
+  .exceso {
+    min-width: 22px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--riesgo-critico-texto);
+  }
+}
+
+// Una casilla por tarea activa; las que pasan el umbral, en rojo.
+.casillas {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  height: 12px;
+
+  > span:not(.umbral) {
+    width: 14px;
+    height: 12px;
+    border-radius: 1.5px;
+    background: var(--superficie-2);
+  }
+
+  .dentro,
+  .fuera {
+    transform-origin: bottom;
+    animation: crecer-y 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  > span.dentro {
     background: var(--texto-2);
-    transform-origin: left;
-    animation: crecer-x 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  > span.fuera {
+    background: var(--riesgo-critico);
   }
 
   .umbral {
     position: absolute;
-    top: -3px;
-    bottom: -3px;
+    top: -4px;
+    bottom: -4px;
     width: 2px;
     background: var(--texto);
   }
+}
 
-  .excedido {
-    .relleno {
-      background: var(--riesgo-critico);
-    }
+.pie-umbral {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: var(--t-xs);
+  color: var(--texto-3);
 
-    .num {
-      color: var(--riesgo-critico);
-    }
+  span {
+    width: 2px;
+    height: 12px;
+    background: var(--texto);
   }
 }
 
-// ---------------- Actividad ----------------
+// ---------------- Actividad reciente ----------------
 .diario {
+  display: flex;
+  flex-direction: column;
+  margin: -4px 0 -4px;
+  padding: 0;
   list-style: none;
-  margin: 0;
-  padding: 4px 16px 8px;
 
   li {
-    padding: 9px 0;
-    border-bottom: 1px solid var(--borde);
-    font-size: 0.85rem;
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 0;
+    font-size: var(--t-sm);
 
-    &:last-child {
-      border-bottom: none;
+    & + li {
+      border-top: 1px solid var(--borde);
     }
   }
 
-  .cuando {
-    float: right;
-    margin-left: 8px;
-    font-size: 0.75rem;
-    color: var(--texto-3);
+  .texto {
+    min-width: 0;
   }
 
-  strong {
+  b {
     font-weight: 650;
   }
 
-  .detalle-diario {
-    margin-top: 1px;
+  .cuando {
     color: var(--texto-3);
-    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .detalle-diario {
+    color: var(--texto-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-// Copia local: los estilos de componente no ven las animaciones globales con certeza.
+// ---------------- Gráficos ----------------
+.graficos {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// Copias locales: las animaciones de un componente no ven las globales con certeza.
 @keyframes crecer-x {
   from {
     transform: scaleX(0);
+  }
+}
+
+@keyframes crecer-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes sellar {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .urgente,
+  .sello,
+  .barra-riesgo,
+  .casillas span,
+  .cifra .pista > div {
+    animation: none;
   }
 }

@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { CifraPipe } from '../../shared/cifra';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -29,7 +29,7 @@ type Pestana = ExpedienteEstado | '';
 @Component({
   selector: 'app-expedientes-lista',
   imports: [
-    DecimalPipe,
+    CifraPipe,
     FormsModule,
     EtiquetaPipe,
     PaginadorComponent,

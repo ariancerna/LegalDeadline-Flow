@@ -63,8 +63,15 @@ export class PlazosListaComponent implements OnInit {
   );
 
   constructor() {
-    if (inject(ActivatedRoute).snapshot.queryParamMap.get('nuevo') && this.auth.puedeEscribir())
-      this.creando.set(true);
+    const parametros = inject(ActivatedRoute).snapshot.queryParamMap;
+    if (parametros.get('nuevo') && this.auth.puedeEscribir()) this.creando.set(true);
+    // Desde el tablero: /plazos?ver=vencidos abre directamente ese atajo.
+    if (parametros.get('vista') === 'calendario') this.vista.set('calendario');
+    const ver = parametros.get('ver');
+    if (ver === 'vencidos' || ver === 'proximos') {
+      this.rapido.set(ver);
+      this.filtros.set(filtrosDe(ver));
+    }
   }
 
   ngOnInit(): void {

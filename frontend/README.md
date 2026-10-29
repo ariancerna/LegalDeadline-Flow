@@ -3,8 +3,10 @@
 Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y muestra cada pantalla según el rol del usuario. Cubre RF20–RF23 y RNF19–RNF20 del informe.
 
 - **Angular 21** (componentes standalone, signals, formularios reactivos) y **SASS**.
-- Estilo de **mesa de partes** en `src/styles/`, pensado como herramienta de trabajo diario:
-  - Una sola familia tipográfica, [Archivo](https://fonts.google.com/specimen/Archivo), con eje de ancho: condensada y gruesa en títulos y cifras, normal en el texto. Los números de expediente usan cifras de ancho fijo.
+- Estilo de **mesa de partes** en `src/styles/`, pensado como herramienta de trabajo diario. El sistema de diseño (tokens, componentes, menú lateral y tablero) se definió en Claude Design y se trasladó a `_tema.scss`, `_tokens.scss` y `_components.scss`:
+  - [Archivo](https://fonts.google.com/specimen/Archivo) con eje de ancho: condensada y gruesa en títulos y cifras, normal en el texto. Los números de expediente van en [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono).
+  - Colores en `oklch`, definidos por separado para el tema claro y el oscuro.
+  - Cifras con coma decimal y espacio fino como separador de miles desde cinco dígitos: 4187, 14 732, 97,9 % (`shared/cifra.ts`).
   - Grises neutros, tinta casi negra en la acción principal, un azul de sello para enlaces y foco, y el manila de las carpetas de expediente en la carátula y en la marca.
   - El color se reserva para el riesgo y sube de intensidad: «Crítico» va en rojo lleno; «Bajo» es solo texto gris.
   - Tablas densas, esquinas casi rectas y sin sombras salvo en menús. Modo claro y oscuro (`_tema.scss`).
@@ -17,7 +19,7 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 | Pantalla | Qué ofrece |
 |---|---|
 | Login | Formulario, tabla de cuentas demo y la carátula de un expediente con su sello de vencimiento. |
-| Tablero | Banda del día (fecha, lo más urgente y cifras que cuentan al cargar), calendario de 14 días por riesgo, gráficos de movimiento mensual de la cartera y de plazos por semana, agenda de plazos, riesgo, carga del equipo y actividad reciente. |
+| Tablero | Fecha y enlaces a lo que requiere atención; lo más urgente en una carpeta manila con su sello («VENCIÓ HACE 6 DÍAS»), responsable y tareas pendientes; cinco cifras que cuentan al cargar; calendario de 14 días por riesgo; agenda de plazos con los vencidos primero; riesgo de la cartera; los más cargados frente al umbral; actividad reciente; gráficos de movimiento mensual y de plazos por semana. |
 | Expedientes | Abre en los abiertos. Cada fila muestra el próximo plazo con su cuenta regresiva y riesgo, y las tareas activas. Búsqueda con tiempo de respuesta (RF04); si no hay resultados en la pestaña, ofrece buscar en todos los estados. La carátula muestra la cuenta regresiva del plazo más cercano. |
 | Tareas | Abre en **Por hacer**: pendientes y en progreso, de la más urgente a la menos urgente. Una casilla cierra la tarea con un clic (las de prioridad ALTA piden la confirmación del supervisor). Vista **Tablero Kanban** con arrastrar y soltar. |
 | Plazos | Abre en **Por vencer**, ordenados por fecha. Pestañas de próximos 10 días, vencidos y todos; vista **Calendario** mensual por riesgo. |
@@ -29,7 +31,7 @@ En toda la aplicación:
 
 - **Ctrl/⌘ + K** abre el buscador: ir a una sección, crear registros o encontrar un expediente por código o asunto.
 - La **campana** muestra los plazos críticos o altos de los próximos 10 días.
-- La barra superior muestra la navegación del rol con contadores (plazos críticos, personas sobrecargadas). En pantallas angostas se abre como menú lateral.
+- El **menú lateral** (248 px) reúne el buscador, las secciones del rol con contadores (plazos críticos, personas sobrecargadas), las alertas y el menú del usuario. Se contrae a 64 px con solo iconos y recuerda la preferencia; en pantallas angostas se abre como cajón.
 - La pestaña del navegador muestra el número del expediente abierto.
 - Formularios en paneles laterales, confirmaciones en ventanas, skeletons de carga y estados vacíos con acciones.
 - Tema claro, oscuro o el del sistema (menú del usuario).
@@ -70,7 +72,7 @@ src/app/
     api/           un servicio por recurso: expedientes, tareas, plazos, usuarios, consultas
     auth/          AuthService, authInterceptor, guards, permisos por rol
   shared/          icono, avatar, diálogo/panel, skeleton, estado vacío, paginador, pipes, fechas de Lima
-  layout/          barra superior por rol, menú móvil, buscador Ctrl+K, alertas, notificaciones
+  layout/          menú lateral por rol, buscador Ctrl+K, alertas, notificaciones
   features/
     auth/          login
     tablero/       indicadores, distribución del riesgo, alertas de plazos
@@ -88,14 +90,14 @@ Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-
 
 ## Movimiento
 
-- Transición suave entre páginas con la View Transitions API; la marca de la sección activa se desliza en la barra superior.
+- Transición suave entre páginas con la View Transitions API; la marca de la sección activa se desliza en el menú lateral.
 - Las cifras del tablero, de la carga y de usuarios cuentan hasta su valor (`shared/contador.directive.ts`).
 - Las filas de las tablas aparecen en cascada; las columnas de los gráficos y las barras de progreso crecen desde su base.
 - Todo se desactiva con la preferencia del sistema «reducir movimiento».
 
 ## Gráficos
 
-`shared/grafico-columnas.component.ts` dibuja columnas en SVG, sin librerías. Tiene leyenda, tooltip con mouse o teclado y una vista de tabla con los mismos valores. Los colores de las series (`--serie-1`, `--serie-2`) se validaron contra daltonismo en modo claro y oscuro.
+`shared/grafico-columnas.component.ts` dibuja columnas agrupadas con HTML y CSS, sin librerías. Tiene título, leyenda, eje con números redondos, tooltip con mouse o teclado y una vista de tabla con los mismos valores. Los colores de las series (`--serie-1`, `--serie-2`) se validaron contra daltonismo en modo claro y oscuro.
 
 ## Volumen de datos
 
@@ -138,4 +140,4 @@ El frontend se publica en Vercel con **Root Directory** `frontend`. `vercel.json
 
 ## Créditos
 
-- Iconos de [Lucide](https://lucide.dev) (licencia ISC). Tipografía Archivo, de Omnibus-Type (licencia SIL Open Font).
+- Iconos de [Lucide](https://lucide.dev) (licencia ISC). Tipografías Archivo, de Omnibus-Type, e IBM Plex Mono, de IBM (ambas con licencia SIL Open Font).

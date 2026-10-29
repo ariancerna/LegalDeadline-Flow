@@ -1,84 +1,45 @@
-<div class="pagina">
-  <!-- Banda del día: fecha, lo urgente y las cifras de la cartera -->
-  <section class="banda">
-    <div class="banda-cab">
-      <div class="hoy">
-        <h1>
-          {{ fechaHoy }}
-          @if (!auth.lecturaGlobal()) {
-            <span class="alcance">Tus expedientes</span>
-          }
-        </h1>
-        @if (indicadores()) {
-          <p class="resumen">{{ resumen() }}</p>
+<div class="pagina tablero">
+  <header class="cabecera">
+    <div class="hoy">
+      <h1>
+        {{ fechaHoy }}
+        @if (!auth.lecturaGlobal()) {
+          <span class="alcance">Tus expedientes</span>
         }
-      </div>
-      <div class="acciones">
-        <a routerLink="/plazos" class="btn btn-banda">Plazos</a>
-        @if (auth.esGestor()) {
-          <a routerLink="/expedientes" [queryParams]="{ nuevo: 1 }" class="btn btn-manila"
-            ><app-icono nombre="plus" [tamano]="15" />Nuevo expediente</a
-          >
-        }
-      </div>
-    </div>
-
-    @if (urgente(); as u) {
-      <a class="urgente" [routerLink]="['/expedientes', u.plazo.expedienteId]">
-        <span class="marca-urgente">Lo más urgente</span>
-        <strong>{{ u.plazo.tipo | etiqueta }}</strong>
-        <span class="codigo">{{ expedientes.codigo(u.plazo.expedienteId) }}</span>
-        <span class="partes">{{ expedientes.titulo(u.plazo.expedienteId) }}</span>
-        <span class="cuando">{{ textoDias(u.riesgo.diasRestantes) }}</span>
-      </a>
-    }
-
-    <section class="cifras" aria-label="Resumen">
+      </h1>
       @if (indicadores(); as i) {
-        <a class="cifra" routerLink="/expedientes">
-          <span class="valor" [appContador]="i.expedientesAbiertos"></span>
-          <span class="rotulo">Expedientes abiertos</span>
-          <span class="nota">{{ i.expedientesCerrados + i.expedientesArchivados }} concluidos</span>
-        </a>
-        <a class="cifra" routerLink="/tareas">
-          <span class="valor" [appContador]="i.tareasActivas"></span>
-          <span class="rotulo">Tareas activas</span>
-          <span class="nota" [class.mala]="i.tareasVencidas > 0"
-            >{{ i.tareasVencidas }} {{ i.tareasVencidas === 1 ? 'vencida' : 'vencidas' }}</span
-          >
-        </a>
-        <a class="cifra" routerLink="/plazos">
-          <span class="valor" [appContador]="i.plazosProximos"></span>
-          <span class="rotulo">Plazos en 7 días</span>
-          <span class="nota">{{ i.plazosActivos }} activos en total</span>
-        </a>
-        <a class="cifra" routerLink="/plazos">
-          <span
-            class="valor"
-            [class.mala]="i.plazosVencidos > 0"
-            [appContador]="i.plazosVencidos"
-          ></span>
-          <span class="rotulo">Plazos vencidos</span>
-          <span class="nota"
-            >{{ i.plazosAnulados }} {{ i.plazosAnulados === 1 ? 'anulado' : 'anulados' }} con
-            motivo</span
-          >
-        </a>
-        <div class="cifra">
-          <span class="valor"
-            ><span [appContador]="i.porcentajeTareasCerradas" [decimales]="1"></span
-            ><small>%</small></span
-          >
-          <span class="rotulo">Tareas cerradas</span>
-          <div class="progreso"><div [style.width.%]="i.porcentajeTareasCerradas"></div></div>
-        </div>
-      } @else {
-        @for (k of [1, 2, 3, 4, 5]; track k) {
-          <div class="cifra"><span class="esqueleto" style="height: 70px"></span></div>
-        }
+        <p class="atencion">
+          @if (criticos() > 0 || i.tareasVencidas > 0) {
+            Requieren atención:
+            @if (criticos() > 0) {
+              <a href="#agenda" (click)="$event.preventDefault(); irAgenda()"
+                >{{ criticos() }} {{ criticos() === 1 ? 'plazo crítico' : 'plazos críticos' }}</a
+              >
+            }
+            @if (criticos() > 0 && i.tareasVencidas > 0) {
+              y
+            }
+            @if (i.tareasVencidas > 0) {
+              <a routerLink="/tareas" [queryParams]="{ vencidas: 1 }"
+                >{{ i.tareasVencidas }}
+                {{ i.tareasVencidas === 1 ? 'tarea vencida' : 'tareas vencidas' }}</a
+              >
+            }
+          } @else {
+            Sin plazos críticos ni tareas vencidas: la cartera está al día.
+          }
+        </p>
       }
-    </section>
-  </section>
+    </div>
+    <div class="acciones">
+      <a routerLink="/plazos" class="btn btn-secundario">Plazos</a>
+      @if (auth.esGestor()) {
+        <a routerLink="/expedientes" [queryParams]="{ nuevo: 1 }" class="btn btn-primario"
+          ><app-icono nombre="plus" [tamano]="14" />Nuevo expediente</a
+        >
+      }
+    </div>
+  </header>
 
   @if (error(); as mensaje) {
     <div class="aviso aviso-error" role="alert">
@@ -86,81 +47,134 @@
     </div>
   }
 
-  <!-- Línea de tiempo -->
-  <section class="bloque">
-    <header class="bloque-cabecera">
-      <h2>Próximos 14 días</h2>
-      <ul class="leyenda">
-        <li><i class="r-CRITICO"></i>Crítico</li>
-        <li><i class="r-ALTO"></i>Alto</li>
-        <li><i class="r-MEDIO"></i>Medio</li>
-        <li><i class="r-BAJO"></i>Bajo</li>
-      </ul>
-    </header>
-    @if (alertas.proximos(); as lista) {
-      <app-linea-vencimientos [alertas]="lista" [hoy]="hoy" />
+  <!-- Lo más urgente: carpeta manila con el sello de mesa de partes -->
+  @if (urgente(); as u) {
+    <section class="urgente" aria-labelledby="urgente-t">
+      @if (sello(); as s) {
+        <div class="sello" aria-hidden="true">{{ s[0] }}<br />{{ s[1] }}</div>
+      }
+      <div class="urgente-cuerpo">
+        <div id="urgente-t" class="urgente-rotulo">Lo más urgente</div>
+        <div class="urgente-titulo">
+          <span class="tipo">{{ u.plazo.tipo | etiqueta }}</span>
+          <span class="codigo">{{ expedientes.codigo(u.plazo.expedienteId) }}</span>
+        </div>
+        <div class="partes">{{ expedientes.titulo(u.plazo.expedienteId) }}</div>
+        <div class="meta">
+          <span [class]="'estado riesgo-' + u.riesgo.nivel">{{ u.riesgo.nivel | etiqueta }}</span>
+          <span
+            >{{ u.riesgo.diasRestantes < 0 ? 'Venció el' : 'Vence el' }}
+            {{ formatoFecha(u.plazo.fechaLimite) }} · {{ textoDias(u.riesgo.diasRestantes) }}</span
+          >
+          @if (expedienteUrgente(); as e) {
+            @if (e.id === u.plazo.expedienteId) {
+              <span aria-hidden="true">·</span>
+              <span>Responsable: {{ responsables.nombre(e.responsableId) }}</span>
+              <span aria-hidden="true">·</span>
+              <span
+                >{{ e.tareasActivas }}
+                {{ e.tareasActivas === 1 ? 'tarea pendiente' : 'tareas pendientes' }}</span
+              >
+            }
+          }
+        </div>
+      </div>
+      <a class="btn btn-secundario abrir" [routerLink]="['/expedientes', u.plazo.expedienteId]"
+        >Abrir expediente</a
+      >
+    </section>
+  }
+
+  <!-- Cifras de la cartera -->
+  <section class="cifras" aria-label="Cifras de la cartera">
+    @if (indicadores(); as i) {
+      <a class="cifra" routerLink="/expedientes">
+        <span class="rotulo">Expedientes abiertos</span>
+        <span class="valor" [appContador]="i.expedientesAbiertos"></span>
+        <span class="nota"
+          >{{ i.expedientesCerrados + i.expedientesArchivados | cifra }} concluidos</span
+        >
+      </a>
+      <div class="cifra">
+        <span class="rotulo">Tareas activas</span>
+        <span class="valor" [appContador]="i.tareasActivas"></span>
+        @if (i.tareasVencidas > 0) {
+          <a class="nota mala" routerLink="/tareas" [queryParams]="{ vencidas: 1 }"
+            >{{ i.tareasVencidas | cifra }} {{ i.tareasVencidas === 1 ? 'vencida' : 'vencidas' }}</a
+          >
+        } @else {
+          <a class="nota" routerLink="/tareas">Ninguna vencida</a>
+        }
+      </div>
+      <a class="cifra" routerLink="/plazos" [queryParams]="{ ver: 'proximos' }">
+        <span class="rotulo">Plazos en 7 días</span>
+        <span class="valor" [appContador]="i.plazosProximos"></span>
+        <span class="nota">{{ i.plazosActivos | cifra }} activos</span>
+      </a>
+      <a
+        class="cifra"
+        routerLink="/plazos"
+        [queryParams]="{ ver: 'vencidos' }"
+        [class.alarma]="i.plazosVencidos > 0"
+      >
+        <span class="rotulo">Plazos vencidos</span>
+        <span class="valor" [appContador]="i.plazosVencidos"></span>
+        <span class="nota"
+          >{{ i.plazosAnulados | cifra }} {{ i.plazosAnulados === 1 ? 'anulado' : 'anulados' }} con
+          motivo</span
+        >
+      </a>
+      <div class="cifra">
+        <span class="rotulo">Tareas cerradas</span>
+        <span class="valor"
+          ><span [appContador]="i.porcentajeTareasCerradas" [decimales]="1"></span> %</span
+        >
+        <div
+          class="pista"
+          role="img"
+          [attr.aria-label]="(i.porcentajeTareasCerradas | cifra: 1) + ' % de tareas cerradas'"
+        >
+          <div [style.width.%]="i.porcentajeTareasCerradas"></div>
+        </div>
+      </div>
     } @else {
-      <span class="esqueleto" style="height: 210px; margin: 0 20px 20px"></span>
+      @for (k of [1, 2, 3, 4, 5]; track k) {
+        <div class="cifra"><span class="esqueleto" style="height: 66px"></span></div>
+      }
     }
   </section>
 
-  <!-- Gráficos -->
-  <div class="graficos">
-    <section class="bloque">
-      <header class="bloque-cabecera">
-        <h2>Movimiento de la cartera</h2>
-        <span class="nota-cab">Expedientes por mes</span>
-      </header>
-      <div class="cuerpo-grafico">
-        @if (movimiento(); as m) {
-          <app-grafico-columnas
-            [categorias]="m.categorias"
-            [detalles]="m.detalles"
-            [series]="m.series"
-            [resaltar]="m.categorias.length - 1"
-            nombreCategoria="Mes"
-            descripcion="Expedientes ingresados y concluidos en los últimos 12 meses"
-          />
-        } @else {
-          <span class="esqueleto" style="height: 200px"></span>
-        }
+  <!-- Próximos 14 días -->
+  <section class="bloque calendario" aria-labelledby="cal-t">
+    <div class="bloque-cab">
+      <h2 id="cal-t">Próximos 14 días</h2>
+      <div class="leyenda">
+        <span><i class="r-CRITICO"></i>Crítico</span>
+        <span><i class="r-ALTO"></i>Alto</span>
+        <span><i class="r-MEDIO"></i>Medio</span>
+        <span><i class="r-BAJO"></i>Bajo</span>
+        <a routerLink="/plazos" [queryParams]="{ vista: 'calendario' }">Ver calendario</a>
       </div>
-    </section>
-    <section class="bloque">
-      <header class="bloque-cabecera">
-        <h2>Plazos por semana</h2>
-        <span class="nota-cab">Próximas 8 semanas</span>
-      </header>
-      <div class="cuerpo-grafico">
-        @if (semanas(); as w) {
-          <app-grafico-columnas
-            [categorias]="w.categorias"
-            [detalles]="w.detalles"
-            [series]="w.series"
-            [resaltar]="0"
-            [etiquetas]="true"
-            nombreCategoria="Semana"
-            descripcion="Plazos activos que vencen en cada una de las próximas 8 semanas"
-          />
-        } @else {
-          <span class="esqueleto" style="height: 200px"></span>
-        }
-      </div>
-    </section>
-  </div>
+    </div>
+    @if (alertas.proximos(); as lista) {
+      <app-linea-vencimientos [alertas]="lista" [hoy]="hoy" />
+    } @else {
+      <span class="esqueleto" style="height: 210px"></span>
+    }
+  </section>
 
   <div class="columnas">
-    <!-- Registro de plazos -->
-    <section class="bloque">
-      <header class="bloque-cabecera">
-        <h2>
-          Agenda de plazos
-          @if (alertas.proximos(); as lista) {
-            <span class="cuenta">{{ lista.length }}</span>
-          }
-        </h2>
-        <a routerLink="/plazos" class="enlace-cab">Ver todos</a>
-      </header>
+    <!-- Agenda de plazos -->
+    <section id="agenda" class="bloque agenda" aria-labelledby="agenda-t">
+      <div class="bloque-cab">
+        <div class="titulo-cab">
+          <h2 id="agenda-t">Agenda de plazos</h2>
+          <span class="nota-cab">Vencidos primero</span>
+        </div>
+        <a routerLink="/plazos"
+          >Ver los {{ indicadores()?.plazosActivos ?? 0 | cifra }} plazos activos</a
+        >
+      </div>
       @if (alertas.proximos(); as lista) {
         @if (lista.length === 0) {
           <app-vacio
@@ -173,34 +187,42 @@
             <table class="tabla registro">
               <thead>
                 <tr>
-                  <th>Vence</th>
+                  <th class="col-vence">Vence</th>
                   <th class="ocultar-movil">Expediente</th>
-                  <th>Plazo</th>
-                  <th>Riesgo</th>
+                  <th class="col-plazo">Plazo</th>
+                  <th class="col-riesgo">Riesgo</th>
                 </tr>
               </thead>
               <tbody>
                 @for (a of registro(); track a.plazo.id) {
-                  <tr [class.vencido]="a.riesgo.diasRestantes < 0">
-                    <td class="fecha-celda">
-                      <span class="dia">{{ a.plazo.fechaLimite.slice(8, 10) }}</span>
-                      <span class="mes"
-                        >{{ mesCorto(a.plazo.fechaLimite) }} ·
-                        {{ diaSemana(a.plazo.fechaLimite) }}</span
+                  <tr>
+                    <td>
+                      <a
+                        class="fila-enlace fecha"
+                        [routerLink]="['/expedientes', a.plazo.expedienteId]"
                       >
+                        <span class="dia">{{ +a.plazo.fechaLimite.slice(8, 10) }}</span>
+                        <span class="mes" [class.es-hoy]="a.plazo.fechaLimite === hoy">{{
+                          mesDe(a)
+                        }}</span>
+                      </a>
                     </td>
-                    <td class="ocultar-movil">
+                    <td class="celda-exp ocultar-movil">
                       <a class="exp" [routerLink]="['/expedientes', a.plazo.expedienteId]">
                         <span class="codigo">{{ expedientes.codigo(a.plazo.expedienteId) }}</span>
                         <span class="partes">{{ expedientes.titulo(a.plazo.expedienteId) }}</span>
                       </a>
                     </td>
                     <td>
-                      <div class="titulo-celda">{{ a.plazo.tipo | etiqueta }}</div>
-                      <div class="sub-celda codigo solo-movil">
+                      <div class="tipo">{{ a.plazo.tipo | etiqueta }}</div>
+                      <div class="codigo solo-movil">
                         {{ expedientes.codigo(a.plazo.expedienteId) }}
                       </div>
-                      <div class="sub-celda" [class.mala]="a.riesgo.diasRestantes < 0">
+                      <div
+                        class="relativo"
+                        [class.vencio]="a.riesgo.diasRestantes < 0"
+                        [class.hoy]="a.riesgo.diasRestantes === 0"
+                      >
                         {{ textoDias(a.riesgo.diasRestantes) }}
                       </div>
                     </td>
@@ -216,85 +238,93 @@
           </div>
         }
       } @else {
-        <span class="esqueleto" style="height: 260px; margin: 0 20px 20px"></span>
+        <span class="esqueleto" style="height: 260px; margin: 0 16px 16px"></span>
       }
     </section>
 
     <aside class="lateral">
       <!-- Riesgo de la cartera -->
-      <section class="bloque">
-        <header class="bloque-cabecera">
-          <h2>
-            Riesgo de la cartera <span class="cuenta">{{ totalRiesgo() }}</span>
-          </h2>
-        </header>
-        <div class="cuerpo">
-          @if (indicadores()) {
-            <div
-              class="barra-riesgo"
-              role="img"
-              [attr.aria-label]="'Riesgo de ' + totalRiesgo() + ' plazos activos'"
-            >
-              @for (n of niveles; track n) {
-                @if (cantidad(n) > 0) {
-                  <span [class]="'r-' + n" [style.width.%]="porcentaje(n)"></span>
-                }
-              }
-            </div>
-            <dl class="niveles">
-              @for (n of niveles; track n) {
-                <div>
-                  <dt><i [class]="'r-' + n"></i>{{ n | etiqueta }}</dt>
-                  <dd>{{ cantidad(n) }}</dd>
-                </div>
-              }
-            </dl>
-          }
+      <section class="bloque" aria-labelledby="riesgo-t">
+        <div class="bloque-cab">
+          <h2 id="riesgo-t">Riesgo de la cartera</h2>
+          <span class="nota-cab">{{ totalRiesgo() | cifra }} plazos activos</span>
         </div>
+        @if (indicadores()) {
+          <div class="barra-riesgo" role="img" [attr.aria-label]="textoRiesgo()">
+            @for (n of niveles; track n) {
+              @if (cantidad(n) > 0) {
+                <span [class]="'r-' + n" [style.width.%]="porcentaje(n)"></span>
+              }
+            }
+          </div>
+          <div class="niveles">
+            @for (n of niveles; track n) {
+              <div [class]="'nivel n-' + n">
+                <span class="num">{{ cantidad(n) | cifra }}</span>
+                <span class="nombre">{{ n | etiqueta }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <span class="esqueleto" style="height: 70px"></span>
+        }
       </section>
 
-      <!-- Carga del equipo -->
-      <section class="bloque">
-        <header class="bloque-cabecera">
-          <h2>Más cargados</h2>
-          <a routerLink="/carga" class="enlace-cab">Balance</a>
-        </header>
+      <!-- Más cargados -->
+      <section class="bloque" aria-labelledby="carga-t">
+        <div class="bloque-cab">
+          <h2 id="carga-t">Más cargados</h2>
+          <a routerLink="/carga">Carga de trabajo</a>
+        </div>
         <ul class="equipo">
           @for (r of equipo(); track r.responsableId) {
-            <li [class.excedido]="r.sobrecargado">
+            <li>
               <div class="fila">
-                <span>{{ r.nombre }}</span>
-                <span class="num"
-                  >{{ r.tareasActivas }}<span class="texto-3">/{{ r.umbral }}</span></span
+                <span class="nombre">{{ r.nombre }}</span>
+                <span class="cuenta"
+                  ><span class="proporcion">{{ r.tareasActivas }}/{{ r.umbral }}</span
+                  ><span class="exceso">{{ r.exceso > 0 ? '+' + r.exceso : '' }}</span></span
                 >
               </div>
-              <div class="pista">
-                <div class="relleno" [style.width.%]="ancho(r.tareasActivas)"></div>
-                <div class="umbral" [style.left.%]="ancho(r.umbral)"></div>
+              <div
+                class="casillas"
+                role="img"
+                [attr.aria-label]="
+                  r.nombre + ': ' + r.tareasActivas + ' tareas activas, umbral ' + r.umbral
+                "
+              >
+                @for (c of r.casillas; track $index) {
+                  <span [class]="c" [style.animation-delay.ms]="$index * 30"></span>
+                }
+                <span class="umbral" [style.left.px]="r.umbral * pasoCasilla - 1"></span>
               </div>
             </li>
           } @empty {
             <li class="texto-3">Sin responsables activos.</li>
           }
         </ul>
+        <div class="pie-umbral"><span></span>Umbral: {{ umbral() }} tareas activas por persona</div>
       </section>
 
-      <!-- Diario -->
+      <!-- Actividad reciente -->
       @if (auth.puedeVerAuditoria()) {
-        <section class="bloque">
-          <header class="bloque-cabecera">
-            <h2>Actividad reciente</h2>
-            <a routerLink="/auditoria" class="enlace-cab">Bitácora</a>
-          </header>
+        <section class="bloque" aria-labelledby="act-t">
+          <div class="bloque-cab">
+            <h2 id="act-t">Actividad reciente</h2>
+            <a routerLink="/auditoria">Ver bitácora</a>
+          </div>
           <ol class="diario">
             @for (e of actividad() ?? []; track e.id) {
+              @let autor = responsables.autor(e.usuarioId, e.usuarioEmail);
               <li>
-                <span class="cuando">{{ haceCuanto(e.fecha) }}</span>
-                <p>
-                  <strong>{{ responsables.autor(e.usuarioId, e.usuarioEmail) }}</strong>
-                  {{ eventosInfo[e.tipo].verbo }}
-                </p>
-                <p class="detalle-diario">{{ detalleLegible(e.detalle) }}</p>
+                <app-avatar [nombre]="autor" [tamano]="26" />
+                <div class="texto">
+                  <div>
+                    <b>{{ autor }}</b> {{ eventosInfo[e.tipo].verbo }}
+                    <span class="cuando">· {{ haceCuanto(e.fecha) }}</span>
+                  </div>
+                  <div class="detalle-diario">{{ detalleLegible(e.detalle) }}</div>
+                </div>
               </li>
             } @empty {
               <li class="texto-3">Sin actividad registrada.</li>
@@ -303,5 +333,44 @@
         </section>
       }
     </aside>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="graficos">
+    <section class="bloque">
+      @if (movimiento(); as m) {
+        <app-grafico-columnas
+          titulo="Movimiento de la cartera"
+          subtitulo="Expedientes por mes · últimos 12 meses"
+          [categorias]="m.categorias"
+          [subetiquetas]="m.subetiquetas"
+          [detalles]="m.detalles"
+          [series]="m.series"
+          [resaltar]="m.categorias.length - 1"
+          nombreCategoria="Mes"
+          descripcion="Expedientes ingresados y concluidos en los últimos 12 meses"
+        />
+      } @else {
+        <span class="esqueleto" style="height: 240px"></span>
+      }
+    </section>
+    <section class="bloque">
+      @if (semanas(); as w) {
+        <app-grafico-columnas
+          titulo="Plazos por semana"
+          subtitulo="Plazos activos · próximas 8 semanas"
+          [categorias]="w.categorias"
+          [subetiquetas]="w.subetiquetas"
+          [detalles]="w.detalles"
+          [series]="w.series"
+          [resaltar]="0"
+          [etiquetas]="true"
+          nombreCategoria="Semana"
+          descripcion="Plazos activos que vencen en cada una de las próximas 8 semanas"
+        />
+      } @else {
+        <span class="esqueleto" style="height: 240px"></span>
+      }
+    </section>
   </div>
 </div>

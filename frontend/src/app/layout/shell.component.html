@@ -1,66 +1,234 @@
-<div class="app" [class.menu-abierto]="menuMovil()">
-  <header class="barra">
-    <div class="barra-interior">
-      <button
-        type="button"
-        class="hamburguesa"
-        aria-label="Abrir menú"
-        (click)="menuMovil.set(true)"
+<div class="app" [class.contraido]="contraido()" [class.menu-abierto]="menuMovil()">
+  <!-- Barra mínima en pantallas angostas -->
+  <header class="barra-movil">
+    <button type="button" class="icono-btn" aria-label="Abrir menú" (click)="menuMovil.set(true)">
+      <app-icono nombre="menu" [tamano]="20" />
+    </button>
+    <span class="marca-texto"><b>LegalDeadline</b> <span>Flow</span></span>
+  </header>
+
+  <nav class="lateral" aria-label="Navegación principal">
+    <a
+      class="marca"
+      routerLink="/tablero"
+      title="LegalDeadline Flow"
+      (click)="menuMovil.set(false)"
+    >
+      <span class="carpeta" aria-hidden="true"
+        ><span class="pestana"></span><span class="sello"></span
+      ></span>
+      <span class="marca-texto solo-expandido"><b>LegalDeadline</b> <span>Flow</span></span>
+    </a>
+
+    <button
+      type="button"
+      class="buscar"
+      title="Buscar expediente (Ctrl+K)"
+      aria-keyshortcuts="Control+K"
+      (click)="paleta.abrir(); menuMovil.set(false)"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        aria-hidden="true"
       >
-        <app-icono nombre="menu" [tamano]="20" />
-      </button>
+        <circle cx="9" cy="9" r="5.5" />
+        <path d="M13.2 13.2l3.8 3.8" />
+      </svg>
+      <span class="solo-expandido crece">Buscar expediente</span>
+      <kbd class="solo-expandido">{{ esMac ? '⌘' : 'Ctrl' }} K</kbd>
+    </button>
 
-      <a class="marca" routerLink="/tablero" aria-label="LegalDeadline Flow, ir al tablero">
-        <span class="carpeta" aria-hidden="true"></span>
-        <span class="nombre">LegalDeadline<em>Flow</em></span>
-      </a>
-
-      <nav class="nav" aria-label="Navegación principal">
-        @for (e of enlaces(); track e.ruta) {
-          <a [routerLink]="e.ruta" routerLinkActive="activo">
-            {{ e.texto }}
-            @if (contador(e) > 0) {
-              <span class="contador" [class.urgente]="e.contador === 'alertas'">{{
+    <div class="enlaces">
+      @for (e of enlaces(); track e.ruta) {
+        <a
+          [routerLink]="e.ruta"
+          routerLinkActive="activo"
+          #rla="routerLinkActive"
+          [attr.aria-current]="rla.isActive ? 'page' : null"
+          [title]="tituloEnlace(e)"
+          (click)="menuMovil.set(false)"
+        >
+          <span class="icono">
+            @switch (e.icono) {
+              @case ('tablero') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="6" height="6" rx="1" />
+                  <rect x="11" y="3" width="6" height="6" rx="1" />
+                  <rect x="3" y="11" width="6" height="6" rx="1" />
+                  <rect x="11" y="11" width="6" height="6" rx="1" />
+                </svg>
+              }
+              @case ('expedientes') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M2.5 5h5l1.5 1.8h8.5v9.2h-15z" />
+                </svg>
+              }
+              @case ('tareas') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="14" height="14" rx="2" />
+                  <path d="M6.5 10.2l2.4 2.4 4.6-5" />
+                </svg>
+              }
+              @case ('plazos') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="10" cy="10" r="7" />
+                  <path d="M10 6v4.2l2.6 1.8" />
+                </svg>
+              }
+              @case ('carga') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4.5 16.5V10M10 16.5V4M15.5 16.5v-5" />
+                </svg>
+              }
+              @case ('auditoria') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7.5 5.5H17M7.5 10H17M7.5 14.5H17" />
+                  <path d="M3.5 5.5h.5M3.5 10h.5M3.5 14.5h.5" stroke-width="2.2" />
+                </svg>
+              }
+              @case ('usuarios') {
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="10" cy="7" r="3" />
+                  <path d="M4 16.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5" />
+                </svg>
+              }
+            }
+            @if (contraido() && contador(e) > 0) {
+              <span class="globo" [class.critico]="e.contador === 'alertas'">{{
                 contador(e)
               }}</span>
             }
-          </a>
-        }
-      </nav>
+          </span>
+          <span class="solo-expandido crece">{{ e.texto }}</span>
+          @if (contador(e) > 0) {
+            <span
+              class="contador solo-expandido"
+              [class.critico]="e.contador === 'alertas'"
+              [attr.aria-label]="tituloEnlace(e)"
+              >{{ contador(e) }}</span
+            >
+          }
+        </a>
+      }
+    </div>
 
-      <button type="button" class="buscar" (click)="paleta.abrir()" aria-label="Buscar o ir a">
-        <app-icono nombre="search" [tamano]="15" />
-        <span class="texto">Buscar expediente…</span>
-        <kbd>{{ esMac ? '⌘' : 'Ctrl' }} K</kbd>
-      </button>
+    <div class="crece"></div>
 
+    <div class="enlaces inferiores">
       <div class="ancla">
         <button
           type="button"
-          class="icono-barra"
+          class="item"
           aria-label="Alertas de plazos"
           [attr.aria-expanded]="abierto() === 'alertas'"
+          [title]="'Alertas · ' + alertas.total() + ' plazos críticos o altos en 10 días'"
           (click)="alternarMenu('alertas', $event)"
         >
-          <app-icono nombre="bell" [tamano]="18" />
+          <span class="icono">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M5 13.5V9a5 5 0 0110 0v4.5l1.5 1.5h-13z" />
+              <path d="M8.3 17.2h3.4" />
+            </svg>
+            @if (contraido() && alertas.total() > 0) {
+              <span class="globo suave">{{ alertas.total() }}</span>
+            }
+          </span>
+          <span class="solo-expandido crece">Alertas</span>
           @if (alertas.total() > 0) {
-            <span class="punto" [class.critico]="alertas.criticas() > 0">{{
-              alertas.total()
-            }}</span>
+            <span class="contador suave solo-expandido">{{ alertas.total() }}</span>
           }
         </button>
         @if (abierto() === 'alertas') {
           <div class="desplegable panel-alertas" (click)="$event.stopPropagation()">
             <div class="cab">
               <strong>Plazos por atender</strong>
-              <span class="texto-3 texto-chico">Riesgo crítico o alto, próximos 10 días</span>
+              <span class="texto-3 texto-chico">Riesgo crítico o alto · próximos 10 días</span>
             </div>
             <div class="lista-alertas">
               @for (a of alertas.lista() ?? []; track a.plazo.id) {
                 <a
                   class="alerta"
                   [routerLink]="['/expedientes', a.plazo.expedienteId]"
-                  (click)="cerrarMenus()"
+                  (click)="cerrarMenus(); menuMovil.set(false)"
                 >
                   <span class="dias" [class]="'dias r-' + a.riesgo.nivel">
                     <strong
@@ -72,7 +240,7 @@
                   <span class="cuerpo">
                     <strong>{{ a.plazo.tipo | etiqueta }}</strong>
                     <small
-                      ><span class="codigo">{{ expedientes.codigo(a.plazo.expedienteId) }}</span> ·
+                      ><span class="mono">{{ expedientes.codigo(a.plazo.expedienteId) }}</span> ·
                       {{ a.plazo.fechaLimite | fecha }}</small
                     >
                   </span>
@@ -81,95 +249,115 @@
                 <p class="vacio-alertas">Nada urgente en los próximos 10 días.</p>
               }
             </div>
-            <a class="ver-todo" routerLink="/plazos" (click)="cerrarMenus()"
+            <a class="ver-todo" routerLink="/plazos" (click)="cerrarMenus(); menuMovil.set(false)"
               >Ver todos los plazos</a
             >
           </div>
         }
       </div>
-
-      <div class="ancla">
-        @if (auth.usuario(); as u) {
-          <button
-            type="button"
-            class="usuario"
-            aria-label="Menú de usuario"
-            [attr.aria-expanded]="abierto() === 'usuario'"
-            (click)="alternarMenu('usuario', $event)"
-          >
-            <app-avatar [nombre]="u.nombre" [tamano]="28" />
-            <span class="quien">
-              <strong>{{ primerNombre(u.nombre) }}</strong>
-              <small>{{ u.rol | etiqueta }}</small>
-            </span>
-            <app-icono nombre="chevron-down" [tamano]="14" class="flecha" />
-          </button>
-          @if (abierto() === 'usuario') {
-            <div class="desplegable menu-usuario" (click)="$event.stopPropagation()">
-              <div class="cab-usuario">
-                <strong>{{ u.nombre }}</strong>
-                <small>{{ u.email }}</small>
-              </div>
-              <div class="separador"></div>
-              <p class="etiqueta">Apariencia</p>
-              <div class="temas segmentado">
-                <button
-                  type="button"
-                  [class.activo]="tema.modo() === 'claro'"
-                  (click)="cambiarTema('claro')"
-                >
-                  Claro
-                </button>
-                <button
-                  type="button"
-                  [class.activo]="tema.modo() === 'oscuro'"
-                  (click)="cambiarTema('oscuro')"
-                >
-                  Oscuro
-                </button>
-                <button
-                  type="button"
-                  [class.activo]="tema.modo() === 'sistema'"
-                  (click)="cambiarTema('sistema')"
-                >
-                  Sistema
-                </button>
-              </div>
-              <div class="separador"></div>
-              <button type="button" class="opcion" (click)="salir()">Cerrar sesión</button>
-            </div>
-          }
-        }
-      </div>
-    </div>
-  </header>
-
-  <!-- Menú en pantallas angostas -->
-  <aside class="cajon" aria-label="Menú" [attr.aria-hidden]="!menuMovil()">
-    <div class="cajon-cab">
-      <span class="nombre">LegalDeadline<em>Flow</em></span>
       <button
         type="button"
-        class="icono-barra"
-        aria-label="Cerrar menú"
-        (click)="menuMovil.set(false)"
+        class="item contraer"
+        [title]="contraido() ? 'Expandir menú' : 'Contraer menú'"
+        [attr.aria-label]="contraido() ? 'Expandir menú' : 'Contraer menú'"
+        (click)="alternarContraido()"
       >
-        <app-icono nombre="x" [tamano]="20" />
+        <span class="icono">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3.5" width="14" height="13" rx="2" />
+            <path d="M8 3.5v13M13.5 8l-2 2 2 2" />
+          </svg>
+        </span>
+        <span class="solo-expandido crece">Contraer menú</span>
       </button>
     </div>
-    <nav>
-      @for (e of enlaces(); track e.ruta) {
-        <a [routerLink]="e.ruta" routerLinkActive="activo" (click)="menuMovil.set(false)">
-          {{ e.texto }}
-          @if (contador(e) > 0) {
-            <span class="contador" [class.urgente]="e.contador === 'alertas'">{{
-              contador(e)
-            }}</span>
-          }
-        </a>
+
+    <div class="usuario-bloque ancla">
+      @if (auth.usuario(); as u) {
+        @if (abierto() === 'usuario') {
+          <div class="desplegable menu-usuario" role="menu" (click)="$event.stopPropagation()">
+            <div class="cab-usuario">
+              <strong>{{ u.nombre }}</strong>
+              <small>{{ u.email }}</small>
+            </div>
+            <p class="etiqueta">Tema</p>
+            <div class="temas segmentado" role="radiogroup" aria-label="Tema">
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="tema.modo() === 'claro'"
+                [class.activo]="tema.modo() === 'claro'"
+                (click)="cambiarTema('claro')"
+              >
+                Claro
+              </button>
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="tema.modo() === 'oscuro'"
+                [class.activo]="tema.modo() === 'oscuro'"
+                (click)="cambiarTema('oscuro')"
+              >
+                Oscuro
+              </button>
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="tema.modo() === 'sistema'"
+                [class.activo]="tema.modo() === 'sistema'"
+                (click)="cambiarTema('sistema')"
+              >
+                Sistema
+              </button>
+            </div>
+            <div class="separador"></div>
+            <button type="button" class="opcion" role="menuitem" (click)="salir()">
+              Cerrar sesión
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          class="usuario"
+          aria-label="Menú de usuario"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="abierto() === 'usuario'"
+          [title]="u.nombre + ' · ' + (u.rol | etiqueta)"
+          (click)="alternarMenu('usuario', $event)"
+        >
+          <app-avatar [nombre]="u.nombre" [tamano]="30" [propio]="true" />
+          <span class="quien solo-expandido">
+            <strong>{{ u.nombre }}</strong>
+            <small>{{ u.rol | etiqueta }}</small>
+          </span>
+          <svg
+            class="solo-expandido flecha"
+            width="14"
+            height="14"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 12l4-4 4 4" />
+          </svg>
+        </button>
       }
-    </nav>
-  </aside>
+    </div>
+  </nav>
   <div class="cortina" (click)="menuMovil.set(false)"></div>
 
   <main class="contenido">

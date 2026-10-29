@@ -1,121 +1,171 @@
-// Colores de LegalDeadline Flow: papel gris, tinta casi negra para la acción principal, azul de sello
-// para enlaces y foco, y el manila de las carpetas de expediente. El rojo, naranja y ocre quedan
-// reservados al riesgo de los plazos.
-:root {
+// Tokens del diseño "LegalDeadline Flow · etapa 1" (Claude Design): papel cálido, tinta azul-negra,
+// manila de carpeta y rojo de sello. Claro y oscuro definidos por separado, no invertidos.
+// Debajo de cada bloque, alias con los nombres que ya usan los componentes.
+
+@mixin claro {
   color-scheme: light;
-  --fondo: #f3f3f1;
-  --superficie: #ffffff;
-  --superficie-2: #f7f7f5;
-  --superficie-hover: #f1f1ee;
-  --borde: #e1e0db;
-  --borde-fuerte: #c9c7c0;
-  --regla: #17181a;
-  --texto: #17181a;
-  --texto-2: #4b4d52;
-  --texto-3: #7f8187;
+  --fondo: oklch(0.972 0.006 85);
+  --superficie: oklch(0.995 0.003 85);
+  --superficie-2: oklch(0.957 0.008 85);
+  --superficie-hover: oklch(0.963 0.013 85);
+  --lateral: oklch(0.947 0.016 85);
+  --lateral-hover: oklch(0.915 0.022 85);
+  --lateral-activo: oklch(0.995 0.003 85);
+  --borde: oklch(0.885 0.011 85);
+  --borde-fuerte: oklch(0.78 0.014 85);
+  --cuadricula: oklch(0.92 0.008 85);
 
-  --marca: #17181a; // botón principal: tinta
-  --marca-hover: #000000;
-  --marca-suave: #e9ecfa;
-  --marca-texto: #2a45bd; // azul de sello: enlaces y foco
-  --sobre-marca: #ffffff;
-  --sello: #2a45bd;
-  --acento: #2a45bd;
-  --acento-suave: #e9ecfa;
+  --texto: oklch(0.24 0.025 262);
+  --texto-2: oklch(0.42 0.02 262);
+  --texto-3: oklch(0.52 0.016 262);
+  --texto-invertido: oklch(0.985 0.004 85);
 
-  --manila: #f1e6c6;
-  --manila-borde: #dcc78e;
-  --manila-texto: #5f4b17;
+  --primario: oklch(0.27 0.035 262);
+  --primario-hover: oklch(0.34 0.04 262);
+  --acento: oklch(0.46 0.14 258);
+  --acento-hover: oklch(0.39 0.14 258);
+  --acento-suave: oklch(0.945 0.025 258);
+  --foco: oklch(0.56 0.17 258);
+  --peligro: oklch(0.48 0.17 27);
 
-  --barra: #17181a; // barra superior
-  --barra-texto: #c9cacd;
-  --barra-activo: #ffffff;
-  --barra-borde: #2b2d31;
+  --manila: oklch(0.85 0.07 82);
+  --manila-suave: oklch(0.938 0.038 86);
+  --manila-borde: oklch(0.8 0.06 80);
+  --manila-tinta: oklch(0.37 0.06 65);
+  --sello: oklch(0.5 0.19 27);
 
-  --exito: #2b7148;
-  --exito-suave: #e3f0e7;
-  --peligro: #c0261b;
-  --peligro-suave: #fbe6e3;
-  --aviso: #a25f00;
-  --aviso-suave: #fbefd9;
-  --info: #2a45bd;
-  --info-suave: #e9ecfa;
-  --neutro-suave: #ebebe7;
+  --riesgo-critico: oklch(0.5 0.19 27);
+  --riesgo-critico-texto: oklch(0.47 0.18 27);
+  --riesgo-critico-fondo: oklch(0.945 0.035 27);
+  --riesgo-alto: oklch(0.64 0.16 52);
+  --riesgo-alto-texto: oklch(0.49 0.13 48);
+  --riesgo-alto-fondo: oklch(0.952 0.04 62);
+  --riesgo-medio: oklch(0.74 0.13 86);
+  --riesgo-medio-texto: oklch(0.47 0.09 78);
+  --riesgo-medio-fondo: oklch(0.958 0.045 94);
+  --riesgo-bajo: oklch(0.66 0.02 250);
+  --riesgo-bajo-texto: oklch(0.45 0.02 250);
+  --riesgo-bajo-fondo: oklch(0.955 0.006 250);
 
-  // Series de gráficos (validadas para daltonismo contra la superficie, ver dataviz).
-  --serie-1: #2a45bd;
-  --serie-2: #a8822a;
+  --estado-abierto: oklch(0.42 0.09 245);
+  --estado-abierto-fondo: oklch(0.948 0.024 245);
+  --estado-pendiente: oklch(0.43 0.07 300);
+  --estado-pendiente-fondo: oklch(0.952 0.018 300);
+  --estado-progreso: oklch(0.41 0.07 195);
+  --estado-progreso-fondo: oklch(0.948 0.024 195);
+  --estado-cerrado: oklch(0.41 0.08 150);
+  --estado-cerrado-fondo: oklch(0.948 0.028 150);
+  --estado-archivado: oklch(0.4 0.05 70);
+  --estado-archivado-fondo: oklch(0.938 0.03 80);
+  --estado-anulado: oklch(0.47 0.01 260);
+  --estado-anulado-fondo: oklch(0.94 0.004 260);
 
-  --riesgo-critico: #c0261b;
-  --riesgo-alto: #d9650f;
-  --riesgo-medio: #b48c0c;
-  --riesgo-bajo: #7f8187;
+  --serie-1: oklch(0.4 0.12 258);
+  --serie-2: oklch(0.68 0.09 225);
 
-  --anillo: 0 0 0 2px var(--superficie), 0 0 0 4px rgba(42, 69, 189, 0.55);
-  --sombra-1: none;
-  --sombra-2: none;
-  --sombra-3: 0 12px 32px -12px rgba(23, 24, 26, 0.28), 0 2px 6px rgba(23, 24, 26, 0.06);
-  --sombra-flotante: 0 24px 64px -16px rgba(23, 24, 26, 0.4);
-  --velo: rgba(23, 24, 26, 0.4);
-
-  --radio-s: 2px;
-  --radio: 3px;
-  --radio-l: 4px;
+  --sombra-flotante:
+    0 14px 36px -10px oklch(0.2 0.02 262 / 0.24), 0 2px 6px oklch(0.2 0.02 262 / 0.08);
+  --velo: oklch(0.22 0.02 262 / 0.38);
 }
 
 @mixin oscuro {
   color-scheme: dark;
-  --fondo: #111214;
-  --superficie: #18191c;
-  --superficie-2: #1d1e21;
-  --superficie-hover: #222327;
-  --borde: #2c2e32;
-  --borde-fuerte: #41444a;
-  --regla: #e6e6e3;
-  --texto: #ebebe8;
-  --texto-2: #b0b2b7;
-  --texto-3: #7c7f86;
+  --fondo: oklch(0.175 0.011 255);
+  --superficie: oklch(0.212 0.012 255);
+  --superficie-2: oklch(0.243 0.013 255);
+  --superficie-hover: oklch(0.255 0.014 255);
+  --lateral: oklch(0.155 0.01 255);
+  --lateral-hover: oklch(0.225 0.013 255);
+  --lateral-activo: oklch(0.255 0.014 255);
+  --borde: oklch(0.305 0.013 255);
+  --borde-fuerte: oklch(0.4 0.014 255);
+  --cuadricula: oklch(0.27 0.012 255);
+  --texto: oklch(0.935 0.012 85);
+  --texto-2: oklch(0.78 0.014 85);
+  --texto-3: oklch(0.67 0.014 85);
+  --texto-invertido: oklch(0.18 0.012 255);
+  --primario: oklch(0.9 0.03 86);
+  --primario-hover: oklch(0.96 0.02 86);
+  --acento: oklch(0.76 0.11 252);
+  --acento-hover: oklch(0.83 0.09 252);
+  --acento-suave: oklch(0.3 0.05 255);
+  --foco: oklch(0.74 0.14 252);
+  --peligro: oklch(0.68 0.17 27);
+  --manila: oklch(0.7 0.07 80);
+  --manila-suave: oklch(0.26 0.028 78);
+  --manila-borde: oklch(0.4 0.045 78);
+  --manila-tinta: oklch(0.86 0.06 85);
+  --sello: oklch(0.68 0.18 27);
+  --riesgo-critico: oklch(0.56 0.19 27);
+  --riesgo-critico-texto: oklch(0.72 0.16 27);
+  --riesgo-critico-fondo: oklch(0.29 0.07 27);
+  --riesgo-alto: oklch(0.7 0.15 55);
+  --riesgo-alto-texto: oklch(0.79 0.13 58);
+  --riesgo-alto-fondo: oklch(0.29 0.055 55);
+  --riesgo-medio: oklch(0.78 0.12 88);
+  --riesgo-medio-texto: oklch(0.84 0.11 90);
+  --riesgo-medio-fondo: oklch(0.29 0.045 88);
+  --riesgo-bajo: oklch(0.6 0.02 250);
+  --riesgo-bajo-texto: oklch(0.76 0.015 250);
+  --riesgo-bajo-fondo: oklch(0.27 0.012 250);
+  --estado-abierto: oklch(0.8 0.08 245);
+  --estado-abierto-fondo: oklch(0.29 0.04 245);
+  --estado-pendiente: oklch(0.8 0.06 300);
+  --estado-pendiente-fondo: oklch(0.29 0.03 300);
+  --estado-progreso: oklch(0.8 0.07 195);
+  --estado-progreso-fondo: oklch(0.29 0.035 195);
+  --estado-cerrado: oklch(0.8 0.08 150);
+  --estado-cerrado-fondo: oklch(0.29 0.04 150);
+  --estado-archivado: oklch(0.82 0.05 80);
+  --estado-archivado-fondo: oklch(0.29 0.03 78);
+  --estado-anulado: oklch(0.7 0.01 260);
+  --estado-anulado-fondo: oklch(0.27 0.006 260);
+  --serie-1: oklch(0.78 0.1 245);
+  --serie-2: oklch(0.56 0.08 238);
+  --sombra-flotante: 0 16px 40px -10px oklch(0 0 0 / 0.6), 0 2px 6px oklch(0 0 0 / 0.35);
+  --velo: oklch(0.08 0.01 255 / 0.6);
+}
 
-  --marca: #ebebe8;
-  --marca-hover: #ffffff;
-  --marca-suave: rgba(140, 160, 255, 0.14);
-  --marca-texto: #9aabff;
-  --sobre-marca: #111214;
-  --sello: #9aabff;
-  --acento: #9aabff;
-  --acento-suave: rgba(140, 160, 255, 0.14);
+// Medidas y alias (iguales en ambos temas).
+:root {
+  @include claro;
 
-  --manila: #2f2a1c;
-  --manila-borde: #574b29;
-  --manila-texto: #e3cf95;
+  --radio-1: 3px;
+  --radio-2: 5px;
+  --radio-3: 8px;
+  --radio-redondo: 999px;
+  --radio-s: var(--radio-1);
+  --radio: var(--radio-2);
+  --radio-l: var(--radio-3);
 
-  --barra: #0b0c0d;
-  --barra-texto: #a7a9ae;
-  --barra-activo: #ffffff;
-  --barra-borde: #26282c;
+  --t-xs: 12px;
+  --t-sm: 13px;
+  --t-base: 14px;
+  --t-md: 16px;
+  --t-lg: 20px;
+  --t-xl: 26px;
+  --t-cifra: 32px;
 
-  --exito: #78c194;
-  --exito-suave: rgba(120, 193, 148, 0.13);
-  --peligro: #f08377;
-  --peligro-suave: rgba(240, 131, 119, 0.14);
-  --aviso: #e7ad5c;
-  --aviso-suave: rgba(231, 173, 92, 0.13);
-  --info: #9aabff;
-  --info-suave: rgba(140, 160, 255, 0.14);
-  --neutro-suave: rgba(235, 235, 232, 0.08);
-
-  --serie-1: #6f82ee;
-  --serie-2: #ad872e;
-
-  --riesgo-critico: #e5574b;
-  --riesgo-alto: #ef9447;
-  --riesgo-medio: #d8b84f;
-  --riesgo-bajo: #8a8d94;
-
-  --anillo: 0 0 0 2px var(--superficie), 0 0 0 4px rgba(154, 171, 255, 0.6);
-  --sombra-3: 0 14px 36px -12px rgba(0, 0, 0, 0.75);
-  --sombra-flotante: 0 28px 64px -16px rgba(0, 0, 0, 0.85);
-  --velo: rgba(0, 0, 0, 0.6);
+  // Alias de nombres anteriores.
+  --marca: var(--primario);
+  --marca-hover: var(--primario-hover);
+  --marca-suave: var(--acento-suave);
+  --marca-texto: var(--acento);
+  --sobre-marca: var(--texto-invertido);
+  --manila-texto: var(--manila-tinta);
+  --regla: var(--texto);
+  --exito: var(--estado-cerrado);
+  --exito-suave: var(--estado-cerrado-fondo);
+  --peligro-suave: var(--riesgo-critico-fondo);
+  --aviso: var(--riesgo-alto-texto);
+  --aviso-suave: var(--riesgo-alto-fondo);
+  --info: var(--estado-abierto);
+  --info-suave: var(--estado-abierto-fondo);
+  --neutro-suave: var(--superficie-2);
+  --anillo: 0 0 0 2px var(--superficie), 0 0 0 4px var(--foco);
+  --sombra-1: none;
+  --sombra-2: none;
+  --sombra-3: var(--sombra-flotante);
 }
 
 :root[data-tema='oscuro'] {

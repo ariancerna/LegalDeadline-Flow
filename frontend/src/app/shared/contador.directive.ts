@@ -1,10 +1,12 @@
+import { formatoCifra } from './cifra';
 import { DestroyRef, Directive, ElementRef, effect, inject, input } from '@angular/core';
 
 const DURACION_MS = 700;
 
 /**
  * Anima una cifra desde su valor anterior (0 la primera vez) hasta el nuevo, con desaceleración.
- * Escribe el texto con el formato de Perú (5,001 · 97.9). Respeta «reducir movimiento».
+ * Escribe la cifra con coma decimal y espacio fino desde 5 cifras (4187 · 14 732 · 97,9).
+ * Respeta «reducir movimiento».
  *
  * Uso: `<span [appContador]="indicadores.expedientesAbiertos"></span>`
  */
@@ -25,11 +27,8 @@ export class ContadorDirective {
 
   private animar(destino: number, decimales: number): void {
     cancelAnimationFrame(this.cuadro);
-    const formato = new Intl.NumberFormat('es-PE', {
-      minimumFractionDigits: decimales,
-      maximumFractionDigits: decimales,
-    });
-    const escribir = (v: number) => (this.elemento.nativeElement.textContent = formato.format(v));
+    const escribir = (v: number) =>
+      (this.elemento.nativeElement.textContent = formatoCifra(v, decimales));
     const quieto =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (quieto || typeof requestAnimationFrame !== 'function') {

@@ -31,12 +31,12 @@
             ],
             "styles": [
               "node_modules/@fontsource-variable/archivo/wdth.css",
+              "node_modules/@fontsource/ibm-plex-mono/400.css",
+              "node_modules/@fontsource/ibm-plex-mono/500.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles"
-              ]
+              "includePaths": ["src/styles"]
             }
           },
           "configurations": {

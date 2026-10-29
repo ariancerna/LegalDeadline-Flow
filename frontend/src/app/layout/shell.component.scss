@@ -1,250 +1,259 @@
 @use 'tokens' as *;
 
+// Menú lateral (Claude Design · Sidebar): 248 px expandido, 64 px contraído con tooltips.
 .app {
+  --menu: #{$ancho-menu};
+  display: grid;
+  grid-template-columns: var(--menu) minmax(0, 1fr);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  // Las bandas a todo lo ancho (tablero) no generan desplazamiento horizontal.
-  overflow-x: clip;
+  transition: grid-template-columns 0.18s ease;
+
+  &.contraido {
+    --menu: #{$ancho-menu-contraido};
+  }
+
+  @include movil {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-// ---------------- Barra superior ----------------
-.barra {
+.lateral {
   position: sticky;
   top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 10px 12px;
+  background: var(--lateral);
+  border-right: 1px solid var(--borde);
+  color: var(--texto);
   z-index: 40;
-  background: var(--barra);
-  color: var(--barra-texto);
-  border-bottom: 1px solid var(--barra-borde);
-}
-
-.barra-interior {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 52px;
-  max-width: $ancho-contenido + 48px;
-  margin: 0 auto;
-  padding: 0 24px;
-
-  @include movil {
-    padding: 0 12px;
-  }
-}
-
-.hamburguesa {
-  display: none;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  margin-left: -6px;
-  border: none;
-  background: none;
-  color: var(--barra-activo);
-  cursor: pointer;
-
-  @include movil {
-    display: grid;
-  }
-}
-
-// Marca: una carpeta manila mínima y el nombre en Archivo condensada.
-.marca {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin-right: 18px;
-  color: var(--barra-activo);
-  text-decoration: none !important;
-  flex-shrink: 0;
-}
-
-.carpeta {
-  position: relative;
-  width: 20px;
-  height: 15px;
-  margin-top: 2px;
-  background: #e2cf96;
-  border-radius: 1px;
-  clip-path: polygon(0 0, 42% 0, 52% 18%, 100% 18%, 100% 100%, 0 100%);
-
-  &::after {
-    // El plazo: una franja roja en el borde de la carpeta.
-    content: '';
-    position: absolute;
-    right: 3px;
-    bottom: 0;
-    width: 3px;
-    height: 62%;
-    background: #d4402f;
-  }
-}
-
-.nombre {
-  font-stretch: $condensada;
-  font-weight: 750;
-  font-size: 1.08rem;
-  letter-spacing: 0.005em;
-  color: var(--barra-activo);
-
-  em {
-    font-style: normal;
-    font-weight: 400;
-    margin-left: 3px;
-    opacity: 0.6;
-  }
-}
-
-.nav {
-  display: flex;
-  align-items: stretch;
-  height: 100%;
-  gap: 2px;
-  flex: 1;
   min-width: 0;
 
-  a {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 10px;
-    color: var(--barra-texto);
-    font-weight: 550;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    text-decoration: none;
-    transition: color 0.12s;
-
-    &:hover {
-      color: var(--barra-activo);
-    }
-
-    &.activo {
-      color: var(--barra-activo);
-
-      &::after {
-        content: '';
-        position: absolute;
-        left: 10px;
-        right: 10px;
-        bottom: -1px;
-        height: 3px;
-        background: #e2cf96;
-        // Con View Transitions, la marca se desliza de una sección a otra.
-        view-transition-name: nav-indicador;
-      }
-    }
-  }
-
   @include movil {
-    display: none;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 280px;
+    max-width: 86vw;
+    z-index: 70;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease;
   }
 }
 
-.contador {
-  min-width: 18px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--barra-activo);
-  font-size: 0.72rem;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  display: inline-grid;
-  place-items: center;
+.crece {
+  flex: 1;
+  min-width: 0;
+}
 
-  &.urgente {
-    background: #d4402f;
-    color: #fff;
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 4px;
+  color: var(--texto);
+  text-decoration: none !important;
+}
+
+// Carpeta manila con pestaña y el sello rojo de mesa de partes.
+.carpeta {
+  position: relative;
+  width: 24px;
+  height: 19px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  background: var(--manila);
+  border: 1px solid var(--manila-borde);
+  border-radius: 2px 3px 3px 3px;
+  box-sizing: border-box;
+
+  .pestana {
+    position: absolute;
+    left: -1px;
+    top: -5px;
+    width: 11px;
+    height: 5px;
+    background: var(--manila);
+    border: 1px solid var(--manila-borde);
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+    box-sizing: border-box;
+  }
+
+  .sello {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid var(--sello);
+    box-sizing: border-box;
+  }
+}
+
+.marca-texto {
+  font-size: 15px;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  font-stretch: 88%;
+  white-space: nowrap;
+
+  b {
+    font-weight: 750;
+  }
+
+  span {
+    font-weight: 450;
+    color: var(--texto-2);
   }
 }
 
 .buscar {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  width: 240px;
-  height: 32px;
-  padding: 0 8px 0 10px;
-  border: 1px solid var(--barra-borde);
-  border-radius: var(--radio);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--barra-texto);
+  height: 34px;
+  padding: 0 10px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-2);
+  color: var(--texto-3);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--t-sm);
+  text-align: left;
   cursor: pointer;
-  transition: border-color 0.12s;
+  flex-shrink: 0;
 
   &:hover {
-    border-color: #4a4d53;
-  }
-
-  .texto {
-    flex: 1;
-    text-align: left;
+    border-color: var(--borde-fuerte);
   }
 
   kbd {
-    background: transparent;
-    border-color: var(--barra-borde);
-    color: var(--barra-texto);
+    font-family: $mono;
+    font-size: 11px;
+    height: auto;
+    min-width: 0;
+    padding: 1px 5px;
+    color: var(--texto-2);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-1);
+    background: var(--superficie-2);
   }
+}
 
-  @media (max-width: 1180px) {
-    width: 36px;
-    padding: 0;
-    justify-content: center;
+.enlaces {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 
-    .texto,
-    kbd {
-      display: none;
+  a,
+  .item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radio-2);
+    background: transparent;
+    color: var(--texto);
+    font: inherit;
+    font-size: var(--t-base);
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.12s;
+
+    &:hover {
+      background: var(--lateral-hover);
+      color: var(--texto);
+      text-decoration: none;
+    }
+
+    &.activo {
+      background: var(--lateral-activo);
+      border-color: var(--borde);
+      font-weight: 650;
+      // Con View Transitions, el resaltado se desliza de una sección a otra.
+      view-transition-name: menu-activo;
     }
   }
 
-  @include movil {
-    margin-left: auto;
-    border: none;
-    background: none;
+  .contraer {
+    color: var(--texto-2);
+    font-size: var(--t-sm);
   }
 }
 
-.icono-barra {
+.icono {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: var(--radio);
-  background: none;
-  color: var(--barra-texto);
-  cursor: pointer;
-
-  &:hover {
-    color: var(--barra-activo);
-    background: rgba(255, 255, 255, 0.06);
-  }
+  display: flex;
+  flex-shrink: 0;
 }
 
-.punto {
-  position: absolute;
-  top: 3px;
-  right: 1px;
-  min-width: 17px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 2px;
-  background: #5b5e64;
-  color: #fff;
-  font-size: 0.68rem;
-  font-weight: 700;
+.contador {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid var(--borde-fuerte);
+  color: var(--texto-2);
+  font-size: var(--t-xs);
+  font-weight: 650;
+  line-height: 18px;
+  text-align: center;
   font-variant-numeric: tabular-nums;
-  line-height: 16px;
 
   &.critico {
-    background: #d4402f;
+    border-color: var(--riesgo-critico);
+    background: var(--riesgo-critico);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  &.suave {
+    border-color: transparent;
+    background: var(--riesgo-critico-fondo);
+    color: var(--riesgo-critico-texto);
+    font-weight: 700;
+  }
+}
+
+// Contador sobre el icono cuando el menú está contraído.
+.globo {
+  position: absolute;
+  top: -6px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--lateral-hover);
+  color: var(--texto-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--lateral);
+
+  &.critico {
+    background: var(--riesgo-critico);
+    color: #fff;
+  }
+
+  &.suave {
+    background: var(--riesgo-critico-fondo);
+    color: var(--riesgo-critico-texto);
   }
 }
 
@@ -252,64 +261,98 @@
   position: relative;
 }
 
+.usuario-bloque {
+  border-top: 1px solid var(--borde);
+  padding-top: 10px;
+}
+
 .usuario {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 6px 0 4px;
-  margin-left: 4px;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 10px;
   border: none;
-  border-radius: var(--radio);
-  background: none;
-  color: var(--barra-activo);
+  border-radius: var(--radio-2);
+  background: transparent;
+  color: var(--texto);
   font: inherit;
+  text-align: left;
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--lateral-hover);
   }
 
   .quien {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    line-height: 1.1;
+    gap: 1px;
 
     strong {
-      font-size: 0.82rem;
+      font-size: var(--t-sm);
       font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     small {
-      font-size: 0.7rem;
-      color: var(--barra-texto);
+      font-size: var(--t-xs);
+      color: var(--texto-3);
     }
   }
 
   .flecha {
-    color: var(--barra-texto);
+    color: var(--texto-3);
+    flex-shrink: 0;
+  }
+}
+
+// ---------------- Menú contraído (64 px) ----------------
+.contraido .lateral {
+  .solo-expandido {
+    display: none !important;
   }
 
-  @media (max-width: 1100px) {
-    .quien,
-    .flecha {
-      display: none;
-    }
+  .marca,
+  .buscar,
+  .enlaces a,
+  .enlaces .item,
+  .usuario {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .contraer svg {
+    transform: scaleX(-1);
   }
 }
 
 // ---------------- Desplegables ----------------
 .desplegable {
-  top: calc(100% + 8px);
-  right: 0;
+  border-radius: var(--radio-3);
+  box-shadow: var(--sombra-flotante);
   color: var(--texto);
 }
 
+// Las alertas se abren a la derecha del menú, ancladas abajo.
 .panel-alertas {
+  left: calc(100% + 16px);
+  bottom: 0;
   width: 380px;
-  max-width: calc(100vw - 24px);
+  max-width: calc(100vw - 32px);
   padding: 0;
+
+  @include movil {
+    left: 0;
+    bottom: calc(100% + 6px);
+    width: 100%;
+  }
 
   .cab {
     display: flex;
@@ -318,8 +361,8 @@
     border-bottom: 1px solid var(--borde);
 
     strong {
-      font-stretch: $semicondensada;
-      font-size: 0.95rem;
+      font-size: var(--t-md);
+      font-weight: 650;
     }
   }
 
@@ -339,6 +382,7 @@
 
     &:hover {
       background: var(--superficie-hover);
+      color: var(--texto);
     }
   }
 
@@ -346,15 +390,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 40px;
+    width: 42px;
     flex-shrink: 0;
     padding: 4px 0 3px;
-    border-radius: var(--radio-s);
+    border-radius: var(--radio-1);
     line-height: 1;
 
     strong {
       @include cifra;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
     }
 
     small {
@@ -368,8 +412,9 @@
     }
 
     &.r-ALTO {
-      background: color-mix(in srgb, var(--riesgo-alto) 16%, transparent);
-      color: var(--riesgo-alto);
+      background: var(--riesgo-alto-fondo);
+      color: var(--riesgo-alto-texto);
+      box-shadow: inset 0 0 0 1px var(--riesgo-alto);
     }
   }
 
@@ -379,13 +424,12 @@
     min-width: 0;
 
     strong {
-      font-size: 0.875rem;
       font-weight: 600;
     }
 
     small {
       color: var(--texto-3);
-      font-size: 0.78rem;
+      font-size: var(--t-xs);
     }
   }
 
@@ -399,122 +443,121 @@
     display: block;
     padding: 10px 14px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: var(--t-sm);
   }
 }
 
+// El menú del usuario se abre hacia arriba.
 .menu-usuario {
-  width: 260px;
+  bottom: calc(100% + 6px);
+  left: 0;
+  width: 228px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
   .cab-usuario {
     display: flex;
     flex-direction: column;
-    padding: 6px 8px 4px;
+    padding: 2px 4px 0;
 
     strong {
+      font-size: var(--t-sm);
       font-weight: 650;
     }
 
     small {
+      font-size: var(--t-xs);
       color: var(--texto-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
   .etiqueta {
-    margin: 6px 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--t-xs);
     color: var(--texto-3);
+    padding: 0 4px;
   }
 
   .temas {
-    display: flex;
-    margin: 0 8px 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
 
     button {
-      flex: 1;
-      justify-content: center;
+      height: 28px;
+      padding: 0;
     }
+  }
+
+  .separador {
+    margin: 0 -8px;
+  }
+
+  .opcion {
+    height: 32px;
+    padding: 0 8px;
   }
 }
 
 // ---------------- Contenido ----------------
 .contenido {
-  flex: 1;
-  width: 100%;
-  max-width: $ancho-contenido + 48px;
-  margin: 0 auto;
-  padding: 22px 24px 48px;
+  min-width: 0;
+  padding: 26px 32px 56px;
 
   @include movil {
     padding: 16px 12px 40px;
   }
 }
 
-// ---------------- Menú móvil ----------------
-.cajon {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 70;
-  width: 280px;
-  max-width: 86vw;
-  display: flex;
-  flex-direction: column;
-  background: var(--barra);
-  color: var(--barra-texto);
-  transform: translateX(-100%);
-  transition: transform 0.2s ease;
-  visibility: hidden;
+// ---------------- Pantallas angostas ----------------
+.barra-movil {
+  display: none;
 
-  .cajon-cab {
+  @include movil {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     height: 52px;
-    padding: 0 8px 0 16px;
-    border-bottom: 1px solid var(--barra-borde);
+    padding: 0 12px;
+    background: var(--lateral);
+    border-bottom: 1px solid var(--borde);
   }
+}
 
-  nav {
-    display: flex;
-    flex-direction: column;
-    padding: 8px 0;
-
-    a {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      color: var(--barra-texto);
-      font-size: 0.95rem;
-      font-weight: 550;
-      text-decoration: none;
-      border-left: 3px solid transparent;
-
-      &.activo {
-        color: var(--barra-activo);
-        border-left-color: #e2cf96;
-        background: rgba(255, 255, 255, 0.04);
-      }
-    }
-  }
+.icono-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radio-2);
+  background: none;
+  color: var(--texto);
+  cursor: pointer;
 }
 
 .cortina {
   display: none;
 }
 
-.menu-abierto {
-  .cajon {
-    transform: none;
-    visibility: visible;
-  }
+@include movil {
+  .menu-abierto {
+    .lateral {
+      transform: none;
+      visibility: visible;
+    }
 
-  .cortina {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 65;
-    background: var(--velo);
+    .cortina {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 65;
+      background: var(--velo);
+    }
   }
 }

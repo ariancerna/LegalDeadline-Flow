@@ -5,38 +5,55 @@
   overflow-x: auto;
 }
 
+// 15 columnas: vencidos + hoy + 13 días, dentro de un marco fino.
 .regla {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(68px, 1fr);
-  min-width: 860px;
-  border-top: 1px solid var(--borde);
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  min-width: 900px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-2);
+  overflow: hidden;
 }
 
 .columna {
   display: flex;
   flex-direction: column;
-  min-height: 168px;
-  border-right: 1px solid var(--borde);
+  min-width: 0;
+  min-height: 176px;
+  background: var(--superficie);
+  border-left: 1px solid var(--borde);
 
-  &:last-child {
-    border-right: none;
+  &.vencidos {
+    border-left: none;
+    background: var(--riesgo-critico-fondo);
+
+    .fecha {
+      color: var(--riesgo-critico-texto);
+
+      .dia {
+        font-weight: 700;
+      }
+    }
+  }
+
+  &.hoy {
+    border-left-color: var(--primario);
+
+    .fecha {
+      background: var(--primario);
+      color: var(--texto-invertido);
+
+      .dia {
+        font-weight: 700;
+      }
+    }
   }
 
   &.finde {
-    background: repeating-linear-gradient(
-      -45deg,
-      transparent 0 6px,
-      color-mix(in srgb, var(--borde) 45%, transparent) 6px 7px
-    );
-  }
+    background: var(--superficie-2);
 
-  &.vencidos {
-    background: color-mix(in srgb, var(--riesgo-critico) 7%, var(--superficie));
-
-    .dia,
-    .numero {
-      color: var(--riesgo-critico);
+    .fecha {
+      color: var(--texto-3);
     }
   }
 }
@@ -46,37 +63,20 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 4px;
-  padding: 8px 8px 7px;
+  padding: 6px 7px;
   border-bottom: 1px solid var(--borde);
-  line-height: 1;
+  color: var(--texto-2);
 
   .dia {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--texto-3);
+    font-size: 11.5px;
+    font-weight: 500;
   }
 
   .numero {
-    @include cifra;
-    font-size: 1.3rem;
-    color: var(--texto);
-  }
-
-  .mes {
-    display: none;
-  }
-}
-
-.hoy {
-  background: color-mix(in srgb, var(--manila) 55%, transparent);
-
-  .fecha {
-    border-bottom: 3px solid var(--texto);
-    padding-bottom: 5px;
-
-    .dia {
-      color: var(--texto);
-    }
+    font-size: 15px;
+    font-weight: 680;
+    font-stretch: 88%;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -84,79 +84,83 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 5px;
+  padding: 6px 5px;
 }
 
 .marca {
-  --c: var(--texto-3);
   display: flex;
   flex-direction: column;
-  padding: 4px 5px 4px 7px;
-  border-left: 3px solid var(--c);
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--c) 10%, var(--superficie));
-  color: var(--texto);
-  text-decoration: none;
-  line-height: 1.2;
-  transition: background-color 0.15s;
+  min-height: 32px;
+  padding: 4px 5px;
+  border-radius: 3px;
+  text-decoration: none !important;
+  box-sizing: border-box;
+  transition: filter 0.12s;
 
   &:hover {
-    text-decoration: none;
-    background: color-mix(in srgb, var(--c) 18%, var(--superficie));
+    filter: brightness(0.96);
   }
 
-  .exp {
+  .tipo {
+    font-size: 11.5px;
+    font-weight: 650;
+    font-stretch: 78%;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .tipo {
-    font-size: 0.7rem;
-    font-weight: 600;
-    line-height: 1.2;
-    // Hasta dos líneas, con guiones en las sílabas del español (Ape-lación) y no en cualquier letra.
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    hyphens: auto;
-  }
-
   .exp {
-    font-stretch: $semicondensada;
-    font-size: 0.68rem;
-    font-variant-numeric: tabular-nums;
-    color: var(--texto-3);
+    font-family: $mono;
+    font-size: 10.5px;
+    line-height: 1.25;
+    opacity: 0.92;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  // Crítico va lleno: es lo primero que debe verse en la semana.
   &.r-CRITICO {
-    --c: var(--riesgo-critico);
     background: var(--riesgo-critico);
     color: #fff;
-
-    .exp {
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    &:hover {
-      background: color-mix(in srgb, var(--riesgo-critico) 85%, #000);
-    }
+    box-shadow: inset 0 0 0 1px var(--riesgo-critico);
   }
+
   &.r-ALTO {
-    --c: var(--riesgo-alto);
+    background: var(--riesgo-alto-fondo);
+    color: var(--riesgo-alto-texto);
+    box-shadow: inset 0 0 0 1px var(--riesgo-alto);
   }
+
   &.r-MEDIO {
-    --c: var(--riesgo-medio);
+    background: var(--riesgo-medio-fondo);
+    color: var(--riesgo-medio-texto);
+    box-shadow: inset 0 0 0 1px var(--riesgo-medio);
   }
+
   &.r-BAJO {
-    --c: var(--riesgo-bajo);
+    background: var(--superficie);
+    color: var(--texto-2);
+    box-shadow: inset 0 0 0 1px var(--borde-fuerte);
   }
 }
 
 .mas {
-  font-size: 0.72rem;
+  padding: 2px 4px;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--texto-2);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--acento);
+    text-decoration: underline;
+  }
+}
+
+.inhabil {
+  padding: 2px 4px;
+  font-size: 11.5px;
   color: var(--texto-3);
-  text-align: center;
 }

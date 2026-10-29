@@ -54,8 +54,10 @@ describe('componentes compartidos', () => {
     f.componentRef.setInput('alertas', [plazo(1, '2026-10-27'), plazo(2, '2026-10-30')]);
     await f.whenStable();
     const columnas = (f.nativeElement as HTMLElement).querySelectorAll('.columna');
-    expect(columnas.length).toBe(16); // vencidos + hoy + 14 días
+    expect(columnas.length).toBe(15); // vencidos + hoy + 13 días, como en el diseño
     expect(columnas[0].classList).toContain('vencidos');
+    expect(columnas[1].classList).toContain('hoy');
+    expect(columnas[4].textContent).toContain('Inhábil'); // sábado 31/10 sin plazos
     expect(columnas[3].querySelectorAll('.marca').length).toBe(1); // 30/10
     expect(columnas[3].textContent).toContain('Apelación');
   });

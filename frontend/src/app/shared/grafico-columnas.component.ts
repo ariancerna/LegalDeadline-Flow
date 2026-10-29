@@ -17,145 +17,134 @@ export interface SerieColumnas {
   valores: number[];
 }
 
-interface Barra {
-  x: number;
-  y: number;
-  ancho: number;
-  alto: number;
-  color: string;
-  ruta: string;
-}
-
-const ALTO = 190;
-const MARGEN = { arriba: 18, abajo: 26, izquierda: 30, derecha: 6 };
-const GROSOR_MAX = 24;
-const SEPARACION = 2;
+const ALTO = 170;
 
 /**
- * Columnas agrupadas en SVG, sin librerías.
- * - Columnas de 24 px como máximo, extremo de datos redondeado (4 px) y base recta.
- * - 2 px de separación entre columnas, cuadrícula de líneas finas y una sola escala.
- * - Leyenda cuando hay dos o más series; tooltip al pasar el mouse o con el teclado.
- * - Vista de tabla con los mismos valores (el tooltip nunca es la única forma de leerlos).
- * Se dibuja al ancho real del contenedor para que el texto no se encoja en pantallas angostas.
+ * Columnas agrupadas (diseño «Movimiento de la cartera» / «Plazos por semana»).
+ * - Encabezado con título, subtítulo, leyenda y el botón «Ver tabla».
+ * - Una sola escala con números redondos y cuadrícula fina.
+ * - Tooltip al pasar el mouse o con el teclado; la vista de tabla tiene los mismos valores.
+ * - Las columnas crecen al aparecer (se desactiva con «reducir movimiento»).
  */
 @Component({
   selector: 'app-grafico-columnas',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="cabecera">
-      @if (series().length > 1) {
-        <ul class="leyenda">
-          @for (s of series(); track s.nombre) {
-            <li><i [style.background]="s.color"></i>{{ s.nombre }}</li>
-          }
-        </ul>
-      } @else {
-        <span></span>
-      }
-      <button type="button" class="vista" (click)="tabla.set(!tabla())">
-        {{ tabla() ? 'Ver gráfico' : 'Ver tabla' }}
-      </button>
+      <div class="titulos">
+        <h2>{{ titulo() }}</h2>
+        @if (subtitulo()) {
+          <span class="subtitulo">{{ subtitulo() }}</span>
+        }
+      </div>
+      <div class="derecha">
+        @if (series().length > 1) {
+          <ul class="leyenda">
+            @for (s of series(); track s.nombre) {
+              <li><i [style.background]="s.color"></i>{{ s.nombre }}</li>
+            }
+          </ul>
+        }
+        <button
+          type="button"
+          class="vista"
+          [attr.aria-pressed]="tabla()"
+          (click)="tabla.set(!tabla())"
+        >
+          {{ tabla() ? 'Ver gráfico' : 'Ver tabla' }}
+        </button>
+      </div>
     </div>
 
     @if (tabla()) {
-      <div class="tabla-contenedor">
-        <table class="tabla">
-          <thead>
+      <table class="tabla-datos">
+        <thead>
+          <tr>
+            <th scope="col">{{ nombreCategoria() }}</th>
+            @for (s of series(); track s.nombre) {
+              <th scope="col" class="num">{{ s.nombre }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of categorias(); track $index; let i = $index) {
             <tr>
-              <th>{{ nombreCategoria() }}</th>
+              <td>{{ nombre(i) }}</td>
               @for (s of series(); track s.nombre) {
-                <th class="derecha">{{ s.nombre }}</th>
+                <td class="num">{{ s.valores[i] }}</td>
               }
             </tr>
-          </thead>
-          <tbody>
-            @for (c of categorias(); track $index; let i = $index) {
-              <tr>
-                <td>{{ nombre(i) }}</td>
-                @for (s of series(); track s.nombre) {
-                  <td class="derecha num">{{ s.valores[i] }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+          }
+        </tbody>
+      </table>
     } @else {
-      <div class="lienzo" (pointerleave)="activo.set(null)">
-        <svg
-          [attr.width]="ancho()"
-          [attr.height]="alto"
-          [attr.viewBox]="'0 0 ' + ancho() + ' ' + alto"
-          role="img"
-          [attr.aria-label]="descripcion()"
-        >
+      <div class="grafico">
+        <div class="eje-y" [style.height.px]="alto">
           @for (t of ticks(); track t.valor) {
-            <line
-              class="rejilla"
-              [attr.x1]="margen.izquierda"
-              [attr.x2]="ancho() - margen.derecha"
-              [attr.y1]="t.y"
-              [attr.y2]="t.y"
-            />
-            <text class="eje" [attr.x]="margen.izquierda - 6" [attr.y]="t.y + 4" text-anchor="end">
-              {{ t.valor }}
-            </text>
+            <span [style.bottom.%]="t.pos">{{ t.valor }}</span>
           }
-          @for (g of grupos(); track $index; let i = $index) {
-            <g
-              class="grupo"
-              [class.atenuado]="activo() !== null && activo() !== i"
-              [class.resaltado]="i === resaltar()"
-              tabindex="0"
-              [attr.aria-label]="textoGrupo(i)"
-              (pointerenter)="activo.set(i)"
-              (focus)="activo.set(i)"
-              (blur)="activo.set(null)"
-            >
-              <rect
-                class="zona"
-                [attr.x]="g.x0"
-                [attr.y]="margen.arriba"
-                [attr.width]="g.x1 - g.x0"
-                [attr.height]="alto - margen.arriba - margen.abajo"
-              />
-              @for (b of g.barras; track $index) {
-                <path class="barra" [attr.d]="b.ruta" [style.fill]="b.color" />
+        </div>
+        <div>
+          <div class="area" [style.height.px]="alto" (mouseleave)="activo.set(null)">
+            @for (t of ticks(); track t.valor) {
+              <span class="linea" [style.bottom.%]="t.pos"></span>
+            }
+            <div class="columnas">
+              @for (c of categorias(); track $index; let i = $index) {
+                <div
+                  class="grupo"
+                  tabindex="0"
+                  [class.activo]="activo() === i"
+                  [attr.aria-label]="textoGrupo(i)"
+                  (mouseenter)="activo.set(i)"
+                  (focus)="activo.set(i)"
+                  (blur)="activo.set(null)"
+                >
+                  @if (etiquetas()) {
+                    <span
+                      class="valor"
+                      [style.bottom]="'calc(' + altura(series()[0].valores[i]) + '% + 3px)'"
+                      >{{ series()[0].valores[i] }}</span
+                    >
+                  }
+                  <div class="barras">
+                    @for (s of series(); track s.nombre) {
+                      <span
+                        class="barra"
+                        [class.ancha]="series().length === 1"
+                        [style.height.%]="altura(s.valores[i])"
+                        [style.background]="s.color"
+                      ></span>
+                    }
+                  </div>
+                  @if (activo() === i) {
+                    <div
+                      class="tooltip"
+                      role="tooltip"
+                      [class.izquierda]="i > categorias().length * 0.6"
+                    >
+                      <b>{{ nombre(i) }}</b>
+                      @for (s of series(); track s.nombre) {
+                        <span class="fila"
+                          ><i [style.background]="s.color"></i>{{ s.nombre }}
+                          <b>{{ s.valores[i] }}</b></span
+                        >
+                      }
+                    </div>
+                  }
+                </div>
               }
-              @if (etiquetas() && g.total > 0) {
-                <text class="valor" [attr.x]="g.centro" [attr.y]="g.cima - 5" text-anchor="middle">
-                  {{ g.total }}
-                </text>
-              }
-              @if (etiquetaVisible(i)) {
-                <text class="eje" [attr.x]="g.centro" [attr.y]="alto - 8" text-anchor="middle">
-                  {{ categorias()[i] }}
-                </text>
-              }
-            </g>
-          }
-          <line
-            class="base"
-            [attr.x1]="margen.izquierda"
-            [attr.x2]="ancho() - margen.derecha"
-            [attr.y1]="alto - margen.abajo"
-            [attr.y2]="alto - margen.abajo"
-          />
-        </svg>
-        @if (activo() !== null) {
-          @let i = activo()!;
-          <div class="tooltip" [style.left.px]="posicionTooltip(i)">
-            <small>{{ nombre(i) }}</small>
-            @for (s of series(); track s.nombre) {
-              <div class="fila">
-                <i [style.background]="s.color"></i>
-                <strong>{{ s.valores[i] }}</strong>
-                <span>{{ s.nombre }}</span>
-              </div>
+            </div>
+          </div>
+          <div class="eje-x">
+            @for (c of categorias(); track $index; let i = $index) {
+              <span [class.resaltado]="i === resaltar()"
+                ><span>{{ c }}</span
+                ><b>{{ subetiquetas().at(i) ?? '' }}</b></span
+              >
             }
           </div>
-        }
+        </div>
       </div>
     }
   `,
@@ -168,7 +157,26 @@ const SEPARACION = 2;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .titulos {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    h2 {
+      font-size: var(--t-md);
+      font-weight: 650;
+    }
+    .subtitulo {
+      font-size: var(--t-sm);
+      color: var(--texto-3);
+    }
+    .derecha {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
     .leyenda {
       display: flex;
@@ -176,7 +184,7 @@ const SEPARACION = 2;
       margin: 0;
       padding: 0;
       list-style: none;
-      font-size: 0.8rem;
+      font-size: var(--t-xs);
       color: var(--texto-2);
 
       li {
@@ -188,68 +196,103 @@ const SEPARACION = 2;
       i {
         width: 10px;
         height: 10px;
-        border-radius: 2px;
       }
     }
     .vista {
-      border: none;
-      background: none;
-      padding: 2px 0;
-      color: var(--marca-texto);
+      height: 32px;
+      padding: 0 10px;
+      border-radius: var(--radio-2);
+      border: 1px solid var(--borde);
+      background: var(--superficie);
+      color: var(--texto-2);
       font: inherit;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: var(--t-sm);
       cursor: pointer;
+      white-space: nowrap;
     }
-    .lienzo {
+    .vista:hover {
+      background: var(--superficie-hover);
+      color: var(--texto);
+    }
+    .grafico {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      gap: 8px;
+    }
+    .eje-y {
       position: relative;
-      overflow: hidden;
+
+      span {
+        position: absolute;
+        right: 0;
+        transform: translateY(50%);
+        font-size: 11px;
+        color: var(--texto-3);
+        font-variant-numeric: tabular-nums;
+      }
     }
-    svg {
-      display: block;
-      overflow: visible;
+    .area {
+      position: relative;
+      border-bottom: 1px solid var(--borde-fuerte);
     }
-    .rejilla {
-      stroke: var(--borde);
-      stroke-width: 1;
+    .linea {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-top: 1px solid var(--cuadricula);
     }
-    .base {
-      stroke: var(--borde-fuerte);
-      stroke-width: 1;
-    }
-    .eje {
-      fill: var(--texto-3);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums;
-    }
-    .valor {
-      fill: var(--texto-2);
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .zona {
-      fill: transparent;
+    .columnas {
+      position: absolute;
+      inset: 0;
+      display: flex;
     }
     .grupo {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
       outline: none;
       cursor: default;
-      transition: opacity 0.15s;
+
+      &.activo,
+      &:focus-visible {
+        background: var(--superficie-hover);
+      }
     }
-    .grupo.atenuado {
-      opacity: 0.45;
+    .barras {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      height: 100%;
+      width: 100%;
     }
-    .grupo:focus-visible .zona {
-      fill: var(--neutro-suave);
-    }
-    .grupo.resaltado .eje {
-      fill: var(--texto);
-      font-weight: 700;
+    .valor {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      animation: aparecer 0.3s 0.7s both;
+      font-size: 11px;
+      color: var(--texto-2);
+      font-variant-numeric: tabular-nums;
     }
     // Las columnas crecen desde la base al aparecer.
     .barra {
-      transform-box: fill-box;
+      width: 10px;
       transform-origin: bottom;
-      animation: crecer 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      animation: crecer 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+      &.ancha {
+        width: min(22px, 60%);
+      }
+    }
+    @keyframes aparecer {
+      from {
+        opacity: 0;
+      }
     }
     @keyframes crecer {
       from {
@@ -259,47 +302,99 @@ const SEPARACION = 2;
     .tooltip {
       position: absolute;
       top: 4px;
-      transform: translateX(-50%);
-      min-width: 130px;
+      left: calc(50% + 14px);
+      z-index: 5;
+      width: max-content;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
       padding: 8px 10px;
-      border: 1px solid var(--borde);
-      border-radius: var(--radio);
       background: var(--superficie);
-      box-shadow: var(--sombra-3);
+      border: 1px solid var(--borde-fuerte);
+      border-radius: var(--radio-2);
+      box-shadow: var(--sombra-flotante);
+      font-size: var(--t-xs);
       pointer-events: none;
-      font-size: 0.8rem;
 
-      small {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--texto-3);
+      &.izquierda {
+        left: auto;
+        right: calc(50% + 14px);
+      }
+
+      > b {
+        font-size: var(--t-sm);
+        font-weight: 650;
       }
 
       .fila {
         display: flex;
         align-items: center;
-        gap: 7px;
-      }
-
-      i {
-        width: 12px;
-        height: 2px;
-      }
-
-      strong {
-        min-width: 22px;
+        gap: 6px;
         font-variant-numeric: tabular-nums;
-      }
 
-      span {
-        color: var(--texto-2);
+        i {
+          width: 8px;
+          height: 8px;
+        }
+
+        b {
+          margin-left: auto;
+          padding-left: 12px;
+        }
       }
     }
-    .derecha {
-      text-align: right !important;
+    .eje-x {
+      display: flex;
+      padding-top: 6px;
+
+      > span {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 11px;
+        line-height: 1.25;
+        color: var(--texto-3);
+        min-width: 0;
+
+        b {
+          color: var(--texto-2);
+          font-weight: 600;
+        }
+      }
+
+      .resaltado > span {
+        color: var(--texto);
+        font-weight: 650;
+      }
+    }
+    .tabla-datos {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--t-sm);
+      font-variant-numeric: tabular-nums;
+
+      th {
+        text-align: left;
+        padding: 5px 8px;
+        font-weight: 600;
+        font-size: var(--t-xs);
+        color: var(--texto-2);
+        border-bottom: 1px solid var(--borde);
+      }
+
+      td {
+        padding: 4px 8px;
+        border-bottom: 1px solid var(--borde);
+      }
+
+      .num {
+        text-align: right;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
-      .barra {
+      .barra,
+      .valor {
         animation: none;
       }
     }
@@ -308,8 +403,12 @@ const SEPARACION = 2;
 export class GraficoColumnasComponent {
   private readonly elemento = inject(ElementRef<HTMLElement>);
 
+  readonly titulo = input('');
+  readonly subtitulo = input('');
   readonly categorias = input.required<string[]>();
-  /** Texto largo de cada categoría para el tooltip y la tabla (por ejemplo, «octubre de 2026»). */
+  /** Segunda línea de cada etiqueta del eje (por ejemplo, el año o «esta»). */
+  readonly subetiquetas = input<string[]>([]);
+  /** Texto largo de cada categoría para el tooltip y la tabla (por ejemplo, «Octubre 2026»). */
   readonly detalles = input<string[]>([]);
   readonly series = input.required<SerieColumnas[]>();
   readonly nombreCategoria = input('Periodo');
@@ -320,15 +419,14 @@ export class GraficoColumnasComponent {
   readonly etiquetas = input(false);
 
   protected readonly alto = ALTO;
-  protected readonly margen = MARGEN;
-  protected readonly ancho = signal(600);
   protected readonly activo = signal<number | null>(null);
   protected readonly tabla = signal(false);
+  protected readonly ancho = signal(600);
 
   constructor() {
     const destruir = inject(DestroyRef);
     afterNextRender(() => {
-      const medir = () => this.ancho.set(Math.max(260, this.elemento.nativeElement.clientWidth));
+      const medir = () => this.ancho.set(this.elemento.nativeElement.clientWidth);
       medir();
       if (typeof ResizeObserver === 'undefined') return;
       const observador = new ResizeObserver(medir);
@@ -337,73 +435,23 @@ export class GraficoColumnasComponent {
     });
   }
 
-  /** Escala con números redondos: 0, 5, 10… o 0, 20, 40… */
+  /** Escala con números redondos: 0, 25, 50… o 0, 10, 20… */
   private readonly escala = computed(() => {
     const maximo = Math.max(1, ...this.series().flatMap((s) => s.valores));
-    const pasos = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
+    const pasos = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000];
     const paso = pasos.find((p) => maximo / p <= 4) ?? Math.ceil(maximo / 4);
     return { tope: Math.ceil(maximo / paso) * paso, paso };
   });
 
   protected readonly ticks = computed(() => {
     const { tope, paso } = this.escala();
-    const lista: { valor: number; y: number }[] = [];
-    for (let v = 0; v <= tope; v += paso) lista.push({ valor: v, y: this.y(v) });
+    const lista: { valor: number; pos: number }[] = [];
+    for (let v = 0; v <= tope; v += paso) lista.push({ valor: v, pos: (v / tope) * 100 });
     return lista;
   });
 
-  protected readonly grupos = computed(() => {
-    const n = this.categorias().length;
-    const series = this.series();
-    const util = this.ancho() - MARGEN.izquierda - MARGEN.derecha;
-    const banda = util / Math.max(1, n);
-    const grosor = Math.min(
-      GROSOR_MAX,
-      (banda * 0.62 - SEPARACION * (series.length - 1)) / series.length,
-    );
-    const anchoGrupo = grosor * series.length + SEPARACION * (series.length - 1);
-    return Array.from({ length: n }, (_, i) => {
-      const x0 = MARGEN.izquierda + banda * i;
-      const centro = x0 + banda / 2;
-      let x = centro - anchoGrupo / 2;
-      const barras: Barra[] = series.map((s) => {
-        const valor = s.valores[i] ?? 0;
-        const y = this.y(valor);
-        const alto = this.y(0) - y;
-        const barra = {
-          x,
-          y,
-          ancho: grosor,
-          alto,
-          color: s.color,
-          ruta: columna(x, y, grosor, alto),
-        };
-        x += grosor + SEPARACION;
-        return barra;
-      });
-      const total = series.reduce((suma, s) => suma + (s.valores[i] ?? 0), 0);
-      const cima = Math.min(...barras.map((b) => b.y));
-      return { x0, x1: x0 + banda, centro, barras, total, cima };
-    });
-  });
-
-  private y(valor: number): number {
-    const alto = ALTO - MARGEN.arriba - MARGEN.abajo;
-    return MARGEN.arriba + alto - (valor / this.escala().tope) * alto;
-  }
-
-  /** En pantallas angostas se muestra una etiqueta de cada dos (y siempre la destacada). */
-  protected etiquetaVisible(i: number): boolean {
-    const n = this.categorias().length;
-    const banda = (this.ancho() - MARGEN.izquierda - MARGEN.derecha) / Math.max(1, n);
-    if (banda >= 44 || i === this.resaltar()) return true;
-    const ultima = n - 1;
-    return (ultima - i) % 2 === 0 && Math.abs(i - (this.resaltar() ?? -9)) > 1;
-  }
-
-  protected posicionTooltip(i: number): number {
-    const g = this.grupos()[i];
-    return Math.min(Math.max(g.centro, 75), this.ancho() - 75);
+  protected altura(valor: number | undefined): number {
+    return ((valor ?? 0) / this.escala().tope) * 100;
   }
 
   protected nombre(i: number): string {
@@ -415,11 +463,4 @@ export class GraficoColumnasComponent {
       .map((s) => `${s.valores[i]} ${s.nombre.toLowerCase()}`)
       .join(', ')}`;
   }
-}
-
-/** Columna con el extremo superior redondeado (4 px) y la base recta. */
-function columna(x: number, y: number, ancho: number, alto: number): string {
-  if (alto <= 0) return '';
-  const r = Math.min(4, ancho / 2, alto);
-  return `M${x},${y + alto}V${y + r}Q${x},${y} ${x + r},${y}H${x + ancho - r}Q${x + ancho},${y} ${x + ancho},${y + r}V${y + alto}Z`;
 }

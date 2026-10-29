@@ -1,3 +1,4 @@
+import { hoyLima, sumarDias } from '../../shared/fechas';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -73,8 +74,11 @@ export class TareasListaComponent implements OnInit {
   );
 
   constructor() {
-    if (inject(ActivatedRoute).snapshot.queryParamMap.get('nuevo') && this.auth.puedeEscribir())
-      this.creando.set(true);
+    const parametros = inject(ActivatedRoute).snapshot.queryParamMap;
+    if (parametros.get('nuevo') && this.auth.puedeEscribir()) this.creando.set(true);
+    // Desde el tablero: «6 vencidas» abre la lista con las tareas activas cuyo límite ya pasó.
+    if (parametros.get('vencidas'))
+      this.filtros.set({ ...vacios(), hasta: sumarDias(hoyLima(), -1) });
   }
 
   ngOnInit(): void {

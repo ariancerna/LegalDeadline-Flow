@@ -46,11 +46,12 @@ const ETIQUETAS: Record<string, string> = {
 
 const CORTAS: Record<string, string> = {
   CONTESTACION: 'Contestación',
+  AUDIENCIA_UNICA: 'Aud. única',
   AUDIENCIA_SANEAMIENTO: 'Saneamiento',
   AUDIENCIA_CONCILIACION: 'Conciliación',
+  AUDIENCIA_JUZGAMIENTO: 'Juzgamiento',
   OFRECIMIENTO_PRUEBAS: 'Pruebas',
   PRESENTACION_DEMANDA: 'Demanda',
-  AUDIENCIA_JUZGAMIENTO: 'Juzgamiento',
 };
 
 /** Versión breve para espacios estrechos (línea de tiempo, calendario). */
@@ -73,24 +74,9 @@ export function etiqueta(valor: string | null | undefined): string {
 }
 
 /** Clase CSS de la pill de estado (ver .estado en _components.scss). */
+/** Clase CSS del rótulo de estado: cada estado tiene su color tenue (ver .estado en _components.scss). */
 export function tono(valor: string | null | undefined): string {
-  switch (valor) {
-    case 'ABIERTO':
-    case 'ACTIVO':
-    case 'EN_PROGRESO':
-      return 'e-info';
-    case 'CERRADO':
-    case 'CERRADA':
-      return 'e-exito';
-    case 'PENDIENTE':
-      return 'e-aviso';
-    case 'ARCHIVADO':
-    case 'CANCELADA':
-    case 'ANULADO':
-      return '';
-    default:
-      return '';
-  }
+  return valor ? `e-${valor}` : '';
 }
 
 export function claseRiesgo(nivel: NivelRiesgo | null | undefined): string {

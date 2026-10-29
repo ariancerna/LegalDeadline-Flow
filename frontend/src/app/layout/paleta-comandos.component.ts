@@ -50,7 +50,7 @@ export class PaletaComandosComponent {
     const ir = enlacesPara(this.auth.rol()).map<Comando>((e) => ({
       id: 'ir' + e.ruta,
       grupo: 'Ir a',
-      icono: e.icono,
+      icono: 'arrow-right',
       texto: e.texto,
       ejecutar: () => this.navegar([e.ruta]),
     }));

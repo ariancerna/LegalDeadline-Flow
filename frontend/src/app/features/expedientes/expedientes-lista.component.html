@@ -2,7 +2,7 @@
   <header class="pagina-encabezado">
     <div>
       <h1>
-        Expedientes <span class="cuenta">{{ total() | number }}</span>
+        Expedientes <span class="cuenta">{{ total() | cifra }}</span>
       </h1>
     </div>
     @if (auth.esGestor()) {
@@ -67,7 +67,7 @@
           class="tiempo texto-3 texto-chico"
           title="Indicador RF04: tiempo de respuesta de la búsqueda"
         >
-          {{ total() | number }} resultados en {{ tiempoMs() }} ms
+          {{ total() | cifra }} resultados en {{ tiempoMs() }} ms
         </span>
       }
     </div>

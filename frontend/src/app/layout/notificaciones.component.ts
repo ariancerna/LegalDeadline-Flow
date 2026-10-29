@@ -37,18 +37,19 @@ const ICONOS: Record<TipoNotificacion, NombreIcono> = {
       gap: 10px;
       width: min(380px, calc(100vw - 32px));
     }
+    // Notificación en tinta, abajo a la derecha; se oculta sola.
     .toast {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-start;
       padding: 12px 12px 12px 14px;
-      border-radius: var(--radio-l);
-      background: var(--superficie);
-      border: 1px solid var(--borde);
-      box-shadow: var(--sombra-3);
-      color: var(--texto);
-      font-size: 0.875rem;
+      border-radius: var(--radio-3);
+      background: var(--primario);
+      color: var(--texto-invertido);
+      box-shadow: var(--sombra-flotante);
+      font-size: var(--t-sm);
       font-weight: 500;
+      line-height: 1.4;
       animation: entrar 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
     }
     .icono {
@@ -59,34 +60,28 @@ const ICONOS: Record<TipoNotificacion, NombreIcono> = {
       flex: 1;
     }
     .t-exito .icono {
-      color: var(--exito);
+      color: oklch(0.82 0.1 150);
     }
     .t-error .icono {
-      color: var(--peligro);
+      color: oklch(0.75 0.15 27);
     }
     .t-info .icono {
-      color: var(--info);
+      color: oklch(0.8 0.08 245);
     }
     .t-alerta .icono {
-      color: var(--aviso);
-    }
-    .t-error {
-      border-left: 3px solid var(--peligro);
-    }
-    .t-alerta {
-      border-left: 3px solid var(--aviso);
+      color: oklch(0.82 0.12 70);
     }
     button {
       background: none;
       border: none;
-      color: var(--texto-3);
+      color: inherit;
+      opacity: 0.7;
       cursor: pointer;
       padding: 2px;
-      border-radius: var(--radio-l);
+      border-radius: var(--radio-1);
     }
     button:hover {
-      background: var(--superficie-hover);
-      color: var(--texto);
+      opacity: 1;
     }
     @keyframes entrar {
       from {

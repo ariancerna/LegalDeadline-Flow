@@ -1,27 +1,32 @@
 // Medidas, tipografía y puntos de quiebre (SCSS). Los colores viven en variables CSS (ver _tema.scss)
 // para poder cambiar entre modo claro y oscuro en tiempo de ejecución.
 $movil: 860px;
-$ancho-contenido: 1320px;
+$ancho-contenido: 1440px;
+$ancho-menu: 248px;
+$ancho-menu-contraido: 64px;
 
 // Una sola familia: Archivo, con eje de ancho. Condensada para títulos y cifras; normal para leer.
 $fuente: 'Archivo Variable', 'Archivo', 'Arial Narrow', Arial, sans-serif;
 
+// Números de expediente y referencias, como en un escrito mecanografiado.
+$mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
 // Anchos del eje wdth de Archivo (62 % – 125 %).
-$condensada: 78%;
-$semicondensada: 88%;
+$condensada: 85%;
+$semicondensada: 90%;
 
 @mixin titulo {
   font-family: $fuente;
-  font-stretch: $condensada;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  line-height: 1.1;
+  font-stretch: 90%;
+  font-weight: 680;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
 }
 
 // Cifras grandes: condensadas y de ancho fijo para que las columnas no bailen.
 @mixin cifra {
   font-stretch: $condensada;
-  font-weight: 700;
+  font-weight: 650;
   font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: -0.01em;
   line-height: 1;

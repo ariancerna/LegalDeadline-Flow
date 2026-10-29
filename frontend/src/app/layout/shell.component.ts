@@ -14,7 +14,9 @@ import { EnlaceNav, enlacesPara } from './navegacion';
 import { NotificacionesComponent } from './notificaciones.component';
 import { PaletaComandosComponent } from './paleta-comandos.component';
 
-/** Estructura principal: barra superior con la navegación del rol y el contenido. */
+const CLAVE_CONTRAIDO = 'ldf.menu-contraido';
+
+/** Estructura principal: menú lateral con la navegación del rol, alertas y usuario; y el contenido. */
 @Component({
   selector: 'app-shell',
   imports: [
@@ -41,6 +43,7 @@ export class ShellComponent {
   private readonly responsables = inject(ResponsablesStore);
 
   protected readonly menuMovil = signal(false);
+  protected readonly contraido = signal(leerContraido());
   protected readonly abierto = signal<'alertas' | 'usuario' | null>(null);
   protected readonly esMac = /Mac|iPhone|iPad/.test(navigator.platform ?? '');
 
@@ -67,8 +70,24 @@ export class ShellComponent {
     if (cual === 'alertas' && this.abierto()) this.alertas.recargar();
   }
 
-  protected primerNombre(nombre: string): string {
-    return nombre.split(' ')[0];
+  protected tituloEnlace(e: EnlaceNav): string {
+    const n = this.contador(e);
+    if (e.contador === 'alertas' && n > 0)
+      return `${e.texto} · ${n} ${n === 1 ? 'crítico' : 'críticos'}`;
+    if (e.contador === 'sobrecarga' && n > 0)
+      return `${e.texto} · ${n} ${n === 1 ? 'persona sobrecargada' : 'personas sobrecargadas'}`;
+    return e.texto;
+  }
+
+  protected alternarContraido(): void {
+    const valor = !this.contraido();
+    this.contraido.set(valor);
+    this.abierto.set(null);
+    try {
+      localStorage.setItem(CLAVE_CONTRAIDO, valor ? '1' : '0');
+    } catch {
+      /* sin almacenamiento */
+    }
   }
 
   protected abs(n: number): number {
@@ -87,5 +106,13 @@ export class ShellComponent {
     this.responsables.limpiar();
     this.alertas.limpiar();
     this.auth.logout();
+  }
+}
+
+function leerContraido(): boolean {
+  try {
+    return localStorage.getItem(CLAVE_CONTRAIDO) === '1';
+  } catch {
+    return false;
   }
 }

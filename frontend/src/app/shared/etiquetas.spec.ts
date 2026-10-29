@@ -11,8 +11,8 @@ describe('etiquetas', () => {
   });
 
   it('asigna clases de color', () => {
-    expect(tono('EN_PROGRESO')).toBe('e-info');
-    expect(tono('CERRADA')).toBe('e-exito');
+    expect(tono('EN_PROGRESO')).toBe('e-EN_PROGRESO');
+    expect(tono('CERRADA')).toBe('e-CERRADA');
     expect(claseRiesgo('CRITICO')).toBe('riesgo-CRITICO');
     expect(claseRiesgo(null)).toBe('');
   });

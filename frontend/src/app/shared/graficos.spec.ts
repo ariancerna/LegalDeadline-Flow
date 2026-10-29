@@ -27,16 +27,18 @@ describe('gráficos y cifras', () => {
     ]);
     await f.whenStable();
     const el = f.nativeElement as HTMLElement;
-    // Una columna con valor 0 no se dibuja (ruta vacía).
-    const rutas = [...el.querySelectorAll('path.barra')].map((p) => p.getAttribute('d') ?? '');
-    expect(rutas.length).toBe(6);
-    expect(rutas.filter((d) => d !== '').length).toBe(5);
+    // Una columna por serie y categoría; la de valor 0 queda sin altura.
+    const alturas = [...el.querySelectorAll<HTMLElement>('.barra')].map((b) => b.style.height);
+    expect(alturas.length).toBe(6);
+    expect(alturas.filter((h) => h !== '0%').length).toBe(5);
     // Leyenda con dos series y escala con números redondos.
     expect([...el.querySelectorAll('.leyenda li')].map((li) => li.textContent?.trim())).toEqual([
       'Ingresados',
       'Concluidos',
     ]);
-    expect([...el.querySelectorAll('text.eje')].map((t) => t.textContent?.trim())).toContain('20');
+    expect([...el.querySelectorAll('.eje-y span')].map((t) => t.textContent?.trim())).toContain(
+      '20',
+    );
 
     (el.querySelector('button.vista') as HTMLButtonElement).click();
     await f.whenStable();
@@ -50,16 +52,26 @@ describe('gráficos y cifras', () => {
     ]);
   });
 
-  it('el contador termina en el valor exacto con el formato de Perú', async () => {
+  it('el contador termina en el valor exacto, con coma decimal', async () => {
     const f = TestBed.createComponent(PruebaContador);
     await f.whenStable();
     const el = f.nativeElement as HTMLElement;
     await new Promise((r) => setTimeout(r, 900));
-    expect(el.textContent?.trim()).toBe('5,001');
+    expect(el.textContent?.trim()).toBe('5001');
     f.componentInstance.valor.set(97.94);
     f.componentInstance.decimales.set(1);
     await f.whenStable();
     await new Promise((r) => setTimeout(r, 900));
-    expect(el.textContent?.trim()).toBe('97.9');
+    expect(el.textContent?.trim()).toBe('97,9');
+  });
+});
+
+describe('formato de cifras', () => {
+  it('usa espacio fino desde 5 cifras y coma decimal', async () => {
+    const { formatoCifra } = await import('./cifra');
+    expect(formatoCifra(4187)).toBe('4187');
+    expect(formatoCifra(14732)).toBe('14 732');
+    expect(formatoCifra(97.94, 1)).toBe('97,9');
+    expect(formatoCifra(-6)).toBe('−6');
   });
 });
