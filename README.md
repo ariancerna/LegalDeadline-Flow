@@ -106,7 +106,7 @@ La cartera de volumen se parece a la de un estudio con varios años de actividad
 
 | Registro | Cantidad aproximada | Detalle |
 |---|---|---|
-| Expedientes | 5000 | ~800 abiertos y el resto cerrados o archivados, ingresados de 2019 a hoy; materias civiles, laborales, de familia, alimentos, comerciales y apelaciones en Sala |
+| Expedientes | 5000 | ~700 abiertos y el resto cerrados o archivados, ingresados a lo largo de 10 años (de 2017 a hoy, más en los años recientes); materias civiles, laborales, de familia, alimentos, comerciales y apelaciones en Sala |
 | Responsables | 39 | Los 3 de la demostración y 36 más (`nombre.apellido@legaldeadline.local`, contraseña `ResponsableDemo123!`) |
 | Tareas | 10 000 | Historial cerrado o cancelado y unas 180 activas; solo unas 6 personas superan el umbral de carga |
 | Plazos | 600 | En días hábiles, la mayoría por venir, pocos vencidos y algunos anulados con motivo |

@@ -180,6 +180,14 @@ export interface Indicadores {
   riesgoPlazosActivos: Partial<Record<NivelRiesgo, number>>;
   /** Ingresos y conclusiones de los últimos 12 meses. */
   movimientoMensual: MovimientoMes[];
+  /** Los últimos 10 años, del más antiguo al actual. */
+  movimientoAnual: MovimientoAnio[];
+}
+
+export interface MovimientoAnio {
+  anio: number;
+  ingresados: number;
+  concluidos: number;
 }
 
 export interface Evento {

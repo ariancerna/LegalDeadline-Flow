@@ -38,6 +38,8 @@ const ALTO = 170;
         }
       </div>
       <div class="derecha">
+        <!-- Controles propios de cada gráfico, por ejemplo el periodo. -->
+        <ng-content select="[acciones]" />
         @if (series().length > 1) {
           <ul class="leyenda">
             @for (s of series(); track s.nombre) {
@@ -176,7 +178,9 @@ const ALTO = 170;
     .derecha {
       display: flex;
       align-items: center;
-      gap: 14px;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      min-width: 0;
     }
     .leyenda {
       display: flex;
@@ -284,6 +288,8 @@ const ALTO = 170;
       width: 10px;
       transform-origin: bottom;
       animation: crecer 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      // Al cambiar los datos (por ejemplo, de meses a años) la columna se ajusta sin saltar.
+      transition: height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 
       &.ancha {
         width: min(22px, 60%);
@@ -396,6 +402,7 @@ const ALTO = 170;
       .barra,
       .valor {
         animation: none;
+        transition: none;
       }
     }
   `,

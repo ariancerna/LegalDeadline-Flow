@@ -40,6 +40,11 @@ class GeneradorCarteraTest {
         // La mayor parte es histórica, como en un estudio con años de actividad.
         assertThat(abiertos).isBetween(500L, 1100L);
         assertThat(archivados).isGreaterThan(1500L);
+        // Diez años de historia: cada año de 2017 a 2026 tiene expedientes ingresados.
+        Map<Integer, Long> porAnio = c.expedientes().stream().collect(java.util.stream.Collectors.groupingBy(
+                e -> e.creadoEn().atZone(LIMA).getYear(), java.util.TreeMap::new, java.util.stream.Collectors.counting()));
+        assertThat(porAnio.keySet()).containsExactly(2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026);
+        assertThat(porAnio.values()).allSatisfy(n -> assertThat(n).isGreaterThan(200L));
 
         Set<String> codigos = new HashSet<>();
         for (FilaExpediente e : c.expedientes()) {

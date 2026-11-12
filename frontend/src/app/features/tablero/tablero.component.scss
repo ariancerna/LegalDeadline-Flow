@@ -760,3 +760,10 @@
     animation: none;
   }
 }
+
+// Selector de periodo dentro del encabezado del gráfico de movimiento.
+.periodo button {
+  height: 26px;
+  padding: 0 10px;
+  font-size: var(--t-sm);
+}

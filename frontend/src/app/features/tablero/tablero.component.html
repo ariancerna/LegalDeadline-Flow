@@ -341,15 +341,42 @@
       @if (movimiento(); as m) {
         <app-grafico-columnas
           titulo="Movimiento de la cartera"
-          subtitulo="Expedientes por mes · últimos 12 meses"
+          [subtitulo]="
+            periodo() === 'meses'
+              ? 'Expedientes por mes · últimos 12 meses'
+              : 'Expedientes por año · últimos 10 años'
+          "
           [categorias]="m.categorias"
           [subetiquetas]="m.subetiquetas"
           [detalles]="m.detalles"
           [series]="m.series"
           [resaltar]="m.categorias.length - 1"
-          nombreCategoria="Mes"
-          descripcion="Expedientes ingresados y concluidos en los últimos 12 meses"
-        />
+          [nombreCategoria]="periodo() === 'meses' ? 'Mes' : 'Año'"
+          [descripcion]="
+            periodo() === 'meses'
+              ? 'Expedientes ingresados y concluidos en los últimos 12 meses'
+              : 'Expedientes ingresados y concluidos en los últimos 10 años'
+          "
+        >
+          <div acciones class="segmentado periodo" role="group" aria-label="Periodo">
+            <button
+              type="button"
+              [class.activo]="periodo() === 'meses'"
+              [attr.aria-pressed]="periodo() === 'meses'"
+              (click)="periodo.set('meses')"
+            >
+              12 meses
+            </button>
+            <button
+              type="button"
+              [class.activo]="periodo() === 'anios'"
+              [attr.aria-pressed]="periodo() === 'anios'"
+              (click)="periodo.set('anios')"
+            >
+              10 años
+            </button>
+          </div>
+        </app-grafico-columnas>
       } @else {
         <span class="esqueleto" style="height: 240px"></span>
       }

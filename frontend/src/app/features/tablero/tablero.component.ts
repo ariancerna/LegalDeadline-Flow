@@ -103,9 +103,25 @@ export class TableroComponent implements OnInit {
   });
 
   /** Ingresos y conclusiones de los últimos 12 meses. */
+  /** Periodo del gráfico de movimiento: los últimos 12 meses o los últimos 10 años. */
+  protected readonly periodo = signal<'meses' | 'anios'>('meses');
+
   protected readonly movimiento = computed<DatosGrafico | null>(() => {
-    const m = this.indicadores()?.movimientoMensual;
-    if (!m) return null;
+    const i = this.indicadores();
+    if (!i) return null;
+    if (this.periodo() === 'anios') {
+      const a = i.movimientoAnual ?? [];
+      return {
+        categorias: a.map((x) => String(x.anio)),
+        subetiquetas: a.map((_, n) => (n === a.length - 1 ? 'en curso' : '')),
+        detalles: a.map((x, n) => (n === a.length - 1 ? `${x.anio} (en curso)` : String(x.anio))),
+        series: [
+          { nombre: 'Ingresados', color: 'var(--serie-1)', valores: a.map((x) => x.ingresados) },
+          { nombre: 'Concluidos', color: 'var(--serie-2)', valores: a.map((x) => x.concluidos) },
+        ],
+      };
+    }
+    const m = i.movimientoMensual;
     return {
       categorias: m.map((x) => mesCorto(x.mes + '-01')),
       // El año aparece bajo el primer mes y bajo cada enero.

@@ -440,6 +440,12 @@ class ApiIntegrationTest {
         long ingresados=0; for (JsonNode m:movimiento) ingresados+=m.get("ingresados").asLong();
         assertThat(ingresados).isPositive();
         assertThat(movimiento.get(11).get("mes").asText()).isEqualTo(java.time.YearMonth.now(clock).toString());
+        // Y el resumen de los últimos 10 años, del más antiguo al actual.
+        JsonNode anual=call(get("/api/v1/indicadores"),supervisor,null,200).get("movimientoAnual");
+        assertThat(anual.size()).isEqualTo(10);
+        int anioActual=java.time.LocalDate.now(clock).getYear();
+        assertThat(anual.get(0).get("anio").asInt()).isEqualTo(anioActual-9);
+        assertThat(anual.get(9).get("anio").asInt()).isEqualTo(anioActual);
 
         // Historial de un expediente: sus eventos y los de sus tareas y plazos, sin mezclar otros.
         long expedienteId=pagina.get("content").get(0).get("expedienteId").asLong();

@@ -412,9 +412,12 @@ final class GeneradorCartera {
         return MATERIAS.get(0);
     }
 
-    /** Fecha de ingreso: de 2019 a hoy, con más expedientes en los años recientes. */
+    /**
+     * Fecha de ingreso: los últimos 10 años (de 2017 a hoy), con más expedientes en los años recientes,
+     * como un estudio que fue creciendo. El año actual pesa menos porque aún no termina.
+     */
     private LocalDate fechaCreacion() {
-        int[] pesos = {8, 9, 11, 13, 14, 15, 16, 14};
+        int[] pesos = {5, 6, 7, 8, 9, 10, 11, 12, 13, 11};
         int primerAnio = p.hoy().getYear() - pesos.length + 1;
         int total = 0;
         for (int w : pesos) total += w;
