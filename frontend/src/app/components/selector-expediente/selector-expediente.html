@@ -1,0 +1,56 @@
+<div class="selector">
+  <app-icono nombre="search" [tamano]="15" class="lupa" />
+  <input
+    type="text"
+    role="combobox"
+    autocomplete="off"
+    [id]="idCampo()"
+    [value]="texto()"
+    [disabled]="deshabilitado()"
+    [attr.aria-expanded]="abierto()"
+    [attr.aria-controls]="idCampo() + '-opciones'"
+    [attr.aria-activedescendant]="abierto() && activo() >= 0 ? idCampo() + '-op-' + activo() : null"
+    placeholder="Busca por número, partes o juzgado…"
+    (input)="escribir($any($event.target).value)"
+    (focus)="abrir()"
+    (keydown)="tecla($event)"
+    (blur)="tocado()"
+  />
+  @if (texto() && !deshabilitado()) {
+    <button type="button" class="limpiar" aria-label="Quitar expediente" (click)="limpiar()">
+      <app-icono nombre="x" [tamano]="14" />
+    </button>
+  }
+  @if (abierto()) {
+    <ul
+      class="opciones"
+      role="listbox"
+      [id]="idCampo() + '-opciones'"
+      [class.esperando]="buscando()"
+      [attr.aria-busy]="buscando()"
+    >
+      @for (e of opciones(); track e.id; let i = $index) {
+        <li
+          role="option"
+          [id]="idCampo() + '-op-' + i"
+          [class.activa]="i === activo()"
+          [attr.aria-selected]="e.id === valor()"
+          (mousedown)="$event.preventDefault()"
+          (click)="elegir(e)"
+          (mouseenter)="activo.set(i)"
+        >
+          <span class="mono codigo">{{ e.codigo }}</span>
+          <span class="titulo">{{ partes(e) }}</span>
+          <span class="materia">{{ materia(e) }}</span>
+        </li>
+      } @empty {
+        <li class="vacio">{{ buscando() ? 'Buscando…' : 'Ningún expediente abierto coincide.' }}</li>
+      }
+      @if (total() > opciones().length) {
+        <li class="pie">
+          {{ opciones().length }} de {{ total() }} · escribe más para acotar
+        </li>
+      }
+    </ul>
+  }
+</div>

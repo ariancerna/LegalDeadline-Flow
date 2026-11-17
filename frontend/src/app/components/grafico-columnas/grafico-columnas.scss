@@ -1,0 +1,254 @@
+:host {
+  display: block;
+}
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+h2 {
+  font-size: var(--t-md);
+  font-weight: 650;
+}
+.subtitulo {
+  font-size: var(--t-sm);
+  color: var(--texto-3);
+}
+.derecha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-width: 0;
+}
+.leyenda {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-xs);
+  color: var(--texto-2);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  i {
+    width: 10px;
+    height: 10px;
+  }
+}
+.vista {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radio-2);
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto-2);
+  font: inherit;
+  font-size: var(--t-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.vista:hover {
+  background: var(--superficie-hover);
+  color: var(--texto);
+}
+.grafico {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+}
+.eje-y {
+  position: relative;
+
+  span {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-size: 11px;
+    color: var(--texto-3);
+    font-variant-numeric: tabular-nums;
+  }
+}
+.area {
+  position: relative;
+  border-bottom: 1px solid var(--borde-fuerte);
+}
+.linea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--cuadricula);
+}
+.columnas {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+.grupo {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  outline: none;
+  cursor: default;
+
+  &.activo,
+  &:focus-visible {
+    background: var(--superficie-hover);
+  }
+}
+.barras {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  height: 100%;
+  width: 100%;
+}
+.valor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  animation: aparecer 0.3s 0.7s both;
+  font-size: 11px;
+  color: var(--texto-2);
+  font-variant-numeric: tabular-nums;
+}
+// Las columnas crecen desde la base al aparecer.
+.barra {
+  width: 10px;
+  transform-origin: bottom;
+  animation: crecer 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  // Al cambiar los datos (por ejemplo, de meses a años) la columna se ajusta sin saltar.
+  transition: height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &.ancha {
+    width: min(22px, 60%);
+  }
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes crecer {
+  from {
+    transform: scaleY(0);
+  }
+}
+.tooltip {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 14px);
+  z-index: 5;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-2);
+  box-shadow: var(--sombra-flotante);
+  font-size: var(--t-xs);
+  pointer-events: none;
+
+  &.izquierda {
+    left: auto;
+    right: calc(50% + 14px);
+  }
+
+  > b {
+    font-size: var(--t-sm);
+    font-weight: 650;
+  }
+
+  .fila {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+
+    i {
+      width: 8px;
+      height: 8px;
+    }
+
+    b {
+      margin-left: auto;
+      padding-left: 12px;
+    }
+  }
+}
+.eje-x {
+  display: flex;
+  padding-top: 6px;
+
+  > span {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    line-height: 1.25;
+    color: var(--texto-3);
+    min-width: 0;
+
+    b {
+      color: var(--texto-2);
+      font-weight: 600;
+    }
+  }
+
+  .resaltado > span {
+    color: var(--texto);
+    font-weight: 650;
+  }
+}
+.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+
+  th {
+    text-align: left;
+    padding: 5px 8px;
+    font-weight: 600;
+    font-size: var(--t-xs);
+    color: var(--texto-2);
+    border-bottom: 1px solid var(--borde);
+  }
+
+  td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .num {
+    text-align: right;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barra,
+  .valor {
+    animation: none;
+    transition: none;
+  }
+}

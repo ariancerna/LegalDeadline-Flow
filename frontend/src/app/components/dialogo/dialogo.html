@@ -1,0 +1,28 @@
+<div class="velo" (click)="cerrar.emit()"></div>
+<section
+  class="ventana"
+  [class.lateral]="lateral()"
+  [class.ancho]="ancho()"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="titulo()"
+  tabindex="-1"
+>
+  <header>
+    <div class="titulos">
+      <h2>{{ titulo() }}</h2>
+      @if (descripcion()) {
+        <p>{{ descripcion() }}</p>
+      }
+    </div>
+    <button
+      type="button"
+      class="btn btn-fantasma btn-icono btn-chico"
+      aria-label="Cerrar ventana"
+      (click)="cerrar.emit()"
+    >
+      <app-icono nombre="x" [tamano]="18" />
+    </button>
+  </header>
+  <div class="cuerpo"><ng-content /></div>
+</section>

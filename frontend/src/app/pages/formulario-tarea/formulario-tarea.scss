@@ -1,0 +1,16 @@
+.prioridades {
+  display: flex;
+}
+.prioridades button {
+  flex: 1;
+  justify-content: center;
+}
+.p-ALTA {
+  color: var(--peligro);
+}
+.p-MEDIA {
+  color: var(--aviso);
+}
+.p-BAJA {
+  color: var(--texto-3);
+}

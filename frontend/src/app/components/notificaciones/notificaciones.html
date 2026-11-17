@@ -1,0 +1,11 @@
+<div class="pila" aria-live="polite">
+  @for (n of servicio.lista(); track n.id) {
+    <div [class]="'toast t-' + n.tipo" role="status">
+      <span class="icono"><app-icono [nombre]="iconos[n.tipo]" [tamano]="18" /></span>
+      <span class="mensaje">{{ n.mensaje }}</span>
+      <button type="button" aria-label="Cerrar notificación" (click)="servicio.cerrar(n.id)">
+        <app-icono nombre="x" [tamano]="15" />
+      </button>
+    </div>
+  }
+</div>

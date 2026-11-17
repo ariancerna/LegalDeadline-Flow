@@ -1,0 +1,21 @@
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--borde);
+}
+.fila:last-child {
+  border-bottom: none;
+}
+.circ {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radio-s);
+  flex-shrink: 0;
+}
+.lineas {
+  flex: 1;
+  display: grid;
+  gap: 7px;
+}

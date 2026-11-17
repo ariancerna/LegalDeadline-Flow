@@ -1,0 +1,63 @@
+<form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
+  <div class="campo">
+    <label for="u-nombre">Nombre</label>
+    <input id="u-nombre" formControlName="nombre" maxlength="120" />
+    <app-error-campo [control]="form.controls.nombre" [servidor]="camposServidor()['nombre']" />
+  </div>
+  <div class="campo">
+    <label for="u-email">Correo</label>
+    <input
+      id="u-email"
+      type="email"
+      formControlName="email"
+      maxlength="150"
+      autocomplete="off"
+    />
+    <app-error-campo [control]="form.controls.email" [servidor]="camposServidor()['email']" />
+  </div>
+  <div class="fila-campos">
+    <div class="campo">
+      <label for="u-rol">Rol</label>
+      <select id="u-rol" formControlName="rol">
+        @for (r of roles; track r) {
+          <option [ngValue]="r">{{ r | etiqueta }}</option>
+        }
+      </select>
+    </div>
+    @if (usuario()) {
+      <label class="casilla" style="align-self: end">
+        <input type="checkbox" formControlName="activo" /> Cuenta activa
+      </label>
+    }
+  </div>
+  <div class="campo">
+    <label for="u-pass">{{ usuario() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
+    <input
+      id="u-pass"
+      type="password"
+      formControlName="password"
+      maxlength="72"
+      autocomplete="new-password"
+    />
+    <span class="ayuda"
+      >Entre 8 y 72 caracteres.{{
+        usuario() ? ' Cambiarla invalida las sesiones abiertas.' : ''
+      }}</span
+    >
+    <app-error-campo
+      [control]="form.controls.password"
+      [servidor]="camposServidor()['password']"
+    />
+  </div>
+  <div class="acciones pie-formulario">
+    <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
+    <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+      {{ usuario() ? 'Guardar cambios' : 'Crear usuario' }}
+    </button>
+  </div>
+</form>

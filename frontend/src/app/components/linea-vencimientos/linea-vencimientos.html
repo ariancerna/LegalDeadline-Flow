@@ -1,0 +1,39 @@
+<div class="regla">
+  @for (c of columnas(); track c.clave) {
+    <div
+      class="columna"
+      [class.hoy]="c.hoy"
+      [class.finde]="c.finDeSemana"
+      [class.vencidos]="c.vencidos"
+    >
+      <div class="fecha">
+        <span class="dia">{{ c.dia }}</span>
+        <span class="numero">{{ c.numero }}</span>
+      </div>
+      <div class="marcas">
+        @for (a of c.plazos.slice(0, visibles); track a.plazo.id) {
+          <a
+            [class]="'marca r-' + a.riesgo.nivel"
+            [routerLink]="['/expedientes', a.plazo.expedienteId]"
+            [title]="titulo(a)"
+            [attr.aria-label]="titulo(a)"
+          >
+            <span class="tipo">{{ a.plazo.tipo | etiqueta: 'corta' }}</span>
+            <span class="exp">{{ numero(a) }}</span>
+          </a>
+        }
+        @if (c.plazos.length > visibles) {
+          <a
+            class="mas"
+            routerLink="/plazos"
+            [queryParams]="c.vencidos ? { ver: 'vencidos' } : { vista: 'calendario' }"
+            >+{{ c.plazos.length - visibles }} más</a
+          >
+        }
+        @if (c.finDeSemana && c.plazos.length === 0) {
+          <span class="inhabil">Inhábil</span>
+        }
+      </div>
+    </div>
+  }
+</div>

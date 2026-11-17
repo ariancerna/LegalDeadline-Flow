@@ -1,4 +1,4 @@
-// Genera src/app/shared/iconos.generados.ts a partir de lucide-static (licencia ISC).
+// Genera src/app/components/icono/iconos.generados.ts a partir de lucide-static (licencia ISC).
 // Uso: node scripts/generar-iconos.mjs  (agrega el nombre del icono a ICONOS y vuelve a ejecutar)
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -32,5 +32,5 @@ export type ElementoSvg = [string, Record<string, string>];
 export const ICONOS: Record<string, ElementoSvg[]> = ${JSON.stringify(salida, null, 0)};
 export type NombreIcono = ${ICONOS.map((n) => `'${n}'`).join(' | ')};
 `;
-writeFileSync(new URL('../src/app/shared/iconos.generados.ts', import.meta.url), ts);
+writeFileSync(new URL('../src/app/components/icono/iconos.generados.ts', import.meta.url), ts);
 console.log(`${ICONOS.length} iconos generados`);

@@ -1,0 +1,94 @@
+<div class="formulario">
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
+
+  @if (modo() === 'cancelar') {
+    <p class="texto-2">
+      La tarea no se borra: queda como <strong>cancelada</strong> en el historial y deja de
+      contar en la carga del responsable.
+    </p>
+  } @else {
+    <div class="actual">
+      <span class="texto-3 texto-chico">Estado actual</span>
+      <span [class]="'estado ' + tono(tarea().estado)">{{ tarea().estado | etiqueta }}</span>
+      <span class="texto-3 texto-chico">· Prioridad {{ tarea().prioridad | etiqueta }}</span>
+    </div>
+    <div class="opciones" role="radiogroup" aria-label="Nuevo estado">
+      @for (e of opciones(); track e) {
+        <button
+          type="button"
+          role="radio"
+          class="opcion-estado"
+          [class.elegida]="nuevo() === e"
+          [attr.aria-checked]="nuevo() === e"
+          (click)="elegir(e)"
+        >
+          <app-icono [nombre]="iconos[e]" [tamano]="18" />
+          <span>{{ e | etiqueta }}</span>
+        </button>
+      }
+    </div>
+    <label class="sr-only" for="nuevo-estado">Nuevo estado</label>
+    <select
+      id="nuevo-estado"
+      class="sr-only"
+      [ngModel]="nuevo()"
+      (ngModelChange)="elegir($event)"
+      tabindex="-1"
+    >
+      @for (e of opciones(); track e) {
+        <option [ngValue]="e">{{ e | etiqueta }}</option>
+      }
+    </select>
+
+    @if (necesitaConfirmacion()) {
+      @if (auth.esGestor()) {
+        <label class="casilla aviso aviso-alerta">
+          <input
+            type="checkbox"
+            [ngModel]="confirmacion()"
+            (ngModelChange)="confirmacion.set($event)"
+          />
+          <span
+            >Confirmo, como <strong>{{ auth.rol() | etiqueta }}</strong
+            >, el cierre de esta tarea de prioridad alta (RN03).</span
+          >
+        </label>
+      } @else {
+        <div class="aviso aviso-info">
+          <app-icono nombre="shield-check" [tamano]="16" />
+          <span
+            >Las tareas de prioridad alta solo las cierra un supervisor o administrador. Pídele
+            a tu supervisor que confirme el cierre.</span
+          >
+        </div>
+      }
+    }
+  }
+
+  <div class="acciones pie-formulario">
+    <button type="button" class="btn btn-secundario" (click)="volver.emit()">Volver</button>
+    @if (modo() === 'cancelar') {
+      <button
+        type="button"
+        class="btn btn-peligro"
+        [disabled]="enviando()"
+        (click)="cancelar()"
+      >
+        Cancelar tarea
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="btn btn-primario"
+        [disabled]="!puedeGuardar()"
+        (click)="guardar()"
+      >
+        Guardar estado
+      </button>
+    }
+  </div>
+</div>

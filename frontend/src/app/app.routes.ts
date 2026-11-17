@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { autenticadoGuard, invitadoGuard, rolGuard } from './core/auth/guards';
-import { LoginComponent } from './features/auth/login.component';
-import { ShellComponent } from './layout/shell.component';
+import { autenticadoGuard, invitadoGuard, rolGuard } from './services/auth/guards';
+import { LoginComponent } from './pages/login/login';
+import { ShellComponent } from './components/shell/shell';
 
 export const routes: Routes = [
   {
@@ -21,13 +21,13 @@ export const routes: Routes = [
         path: 'tablero',
         title: 'Tablero · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/tablero/tablero.component').then((m) => m.TableroComponent),
+          import('./pages/inicio/inicio').then((m) => m.TableroComponent),
       },
       {
         path: 'expedientes',
         title: 'Expedientes · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/expedientes/expedientes-lista.component').then(
+          import('./pages/lista-expedientes/lista-expedientes').then(
             (m) => m.ExpedientesListaComponent,
           ),
       },
@@ -35,7 +35,7 @@ export const routes: Routes = [
         path: 'expedientes/:id',
         title: 'Expediente · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/expedientes/expediente-detalle.component').then(
+          import('./pages/detalle-expediente/detalle-expediente').then(
             (m) => m.ExpedienteDetalleComponent,
           ),
       },
@@ -43,41 +43,46 @@ export const routes: Routes = [
         path: 'tareas',
         title: 'Tareas · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/tareas/tareas-lista.component').then((m) => m.TareasListaComponent),
+          import('./pages/lista-tareas/lista-tareas').then((m) => m.TareasListaComponent),
       },
       {
         path: 'plazos',
         title: 'Plazos · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/plazos/plazos-lista.component').then((m) => m.PlazosListaComponent),
+          import('./pages/lista-plazos/lista-plazos').then((m) => m.PlazosListaComponent),
       },
       {
         path: 'carga',
         title: 'Carga de trabajo · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/carga/carga.component').then((m) => m.CargaComponent),
+          import('./pages/carga/carga').then((m) => m.CargaComponent),
       },
       {
         path: 'auditoria',
         title: 'Auditoría · LegalDeadline Flow',
         data: { roles: ['ADMINISTRADOR', 'SUPERVISOR', 'AUDITOR'] },
         loadComponent: () =>
-          import('./features/auditoria/auditoria.component').then((m) => m.AuditoriaComponent),
+          import('./pages/auditoria/auditoria').then((m) => m.AuditoriaComponent),
       },
       {
         path: 'usuarios',
         title: 'Usuarios · LegalDeadline Flow',
         data: { roles: ['ADMINISTRADOR'] },
         loadComponent: () =>
-          import('./features/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
+          import('./pages/lista-usuarios/lista-usuarios').then((m) => m.UsuariosComponent),
       },
       {
         path: 'sin-permiso',
         title: 'Sin permiso · LegalDeadline Flow',
         loadComponent: () =>
-          import('./features/sin-permiso.component').then((m) => m.SinPermisoComponent),
+          import('./pages/sin-permiso/sin-permiso').then((m) => m.SinPermisoComponent),
+      },
+      {
+        path: '**',
+        title: 'Página no encontrada · LegalDeadline Flow',
+        loadComponent: () =>
+          import('./pages/no-encontrado/no-encontrado').then((m) => m.NoEncontradoComponent),
       },
     ],
   },
-  { path: '**', redirectTo: '' },
 ];

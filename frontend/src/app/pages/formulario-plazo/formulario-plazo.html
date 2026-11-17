@@ -1,0 +1,67 @@
+<form class="formulario" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  @if (error(); as mensaje) {
+    <div class="aviso aviso-error" role="alert">
+      <app-icono nombre="circle-alert" [tamano]="16" />{{ mensaje }}
+    </div>
+  }
+  @if (!plazo() && expedienteId() === null) {
+    <div
+      class="campo"
+      [class.invalido]="
+        form.controls.expedienteId.invalid && form.controls.expedienteId.touched
+      "
+    >
+      <label for="p-exp">Expediente</label>
+      <app-selector-expediente idCampo="p-exp" formControlName="expedienteId" />
+      <app-error-campo [control]="form.controls.expedienteId" />
+    </div>
+  }
+  <div class="fila-campos">
+    <div
+      class="campo"
+      [class.invalido]="form.controls.tipo.invalid && form.controls.tipo.touched"
+    >
+      <label for="p-tipo">Tipo de plazo</label>
+      <input
+        id="p-tipo"
+        class="mono"
+        formControlName="tipo"
+        maxlength="50"
+        placeholder="CONTESTACION"
+        list="tipos-plazo"
+      />
+      <datalist id="tipos-plazo">
+        <option value="CONTESTACION"></option>
+        <option value="APELACION"></option>
+        <option value="AUDIENCIA"></option>
+        <option value="SUBSANACION"></option>
+      </datalist>
+      <app-error-campo [control]="form.controls.tipo" [servidor]="camposServidor()['tipo']" />
+    </div>
+    <div class="campo">
+      <label for="p-fecha">Fecha límite</label>
+      <input id="p-fecha" type="date" formControlName="fechaLimite" />
+      <app-error-campo
+        [control]="form.controls.fechaLimite"
+        [servidor]="camposServidor()['fechaLimite']"
+      />
+    </div>
+  </div>
+  <div class="aviso aviso-info">
+    <app-icono nombre="gauge" [tamano]="16" />
+    <span>
+      El riesgo se calcula solo (RN04): <strong>crítico</strong> si venció o faltan hasta 2 días
+      con tareas activas; <strong>alto</strong> hasta 5; <strong>medio</strong> hasta 10;
+      <strong>bajo</strong> en los demás casos.
+    </span>
+  </div>
+  <div class="acciones pie-formulario">
+    <button type="button" class="btn btn-secundario" (click)="cancelar.emit()">Cancelar</button>
+    <button type="submit" class="btn btn-primario" [disabled]="enviando()">
+      @if (enviando()) {
+        <app-icono nombre="loader-circle" [tamano]="16" class="girando" />
+      }
+      {{ plazo() ? 'Guardar cambios' : 'Registrar plazo' }}
+    </button>
+  </div>
+</form>

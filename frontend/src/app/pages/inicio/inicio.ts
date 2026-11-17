@@ -1,0 +1,250 @@
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Alerta, AlertasStore } from '../../services/alertas.store';
+import { ConsultasService } from '../../services/api/consultas.service';
+import { ExpedientesService } from '../../services/api/expedientes.service';
+import { PlazosService } from '../../services/api/plazos.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { interpretarError } from '../../services/errores';
+import { ExpedientesCache } from '../../services/expedientes.cache';
+import { Evento } from '../../models/evento';
+import { Expediente } from '../../models/expediente';
+import { Indicadores } from '../../models/indicadores';
+import { NIVELES_RIESGO } from '../../data/catalogos.data';
+import { NivelRiesgo } from '../../models/plazo';
+import { ResponsablesStore } from '../../services/responsables.store';
+import { AvatarComponent } from '../../components/avatar/avatar';
+import { CifraPipe } from '../../utils/cifra';
+import { ContadorDirective } from '../../components/contador/contador.directive';
+import { EtiquetaPipe } from '../../utils/etiqueta.pipe';
+import { EVENTOS, detalleLegible } from '../../utils/eventos';
+import {
+  fechaLarga,
+  formatoFecha,
+  haceCuanto,
+  hoyLima,
+  mesCorto,
+  nombreMes,
+  sumarDias,
+  textoDias,
+} from '../../utils/fechas';
+import { GraficoColumnasComponent, SerieColumnas } from '../../components/grafico-columnas/grafico-columnas';
+import { IconoComponent } from '../../components/icono/icono';
+import { VacioComponent } from '../../components/vacio/vacio';
+import { LineaVencimientosComponent } from '../../components/linea-vencimientos/linea-vencimientos';
+
+/** Casillas de la barra de carga: cada una es una tarea activa. */
+const CASILLAS = 12;
+/** Ancho de una casilla más su separación, en píxeles. */
+const PASO_CASILLA = 16;
+
+interface DatosGrafico {
+  categorias: string[];
+  subetiquetas: string[];
+  detalles: string[];
+  series: SerieColumnas[];
+}
+
+/** RF17 / RF22: tablero del supervisor (diseño «Tablero Supervisor»). */
+@Component({
+  selector: 'app-tablero',
+  imports: [
+    RouterLink,
+    EtiquetaPipe,
+    CifraPipe,
+    IconoComponent,
+    AvatarComponent,
+    VacioComponent,
+    LineaVencimientosComponent,
+    GraficoColumnasComponent,
+    ContadorDirective,
+  ],
+  templateUrl: './inicio.html',
+  styleUrl: './inicio.scss',
+})
+export class TableroComponent implements OnInit {
+  private readonly consultas = inject(ConsultasService);
+  private readonly plazos = inject(PlazosService);
+  private readonly expedientesApi = inject(ExpedientesService);
+  protected readonly auth = inject(AuthService);
+  protected readonly alertas = inject(AlertasStore);
+  protected readonly responsables = inject(ResponsablesStore);
+  protected readonly expedientes = inject(ExpedientesCache);
+  protected readonly textoDias = textoDias;
+  protected readonly haceCuanto = haceCuanto;
+  protected readonly formatoFecha = formatoFecha;
+  protected readonly eventosInfo = EVENTOS;
+  protected readonly detalleLegible = detalleLegible;
+  protected readonly niveles = NIVELES_RIESGO;
+  protected readonly pasoCasilla = PASO_CASILLA;
+
+  protected readonly hoy = hoyLima();
+  protected readonly fechaHoy = capitalizar(fechaLarga(this.hoy));
+  protected readonly indicadores = signal<Indicadores | null>(null);
+  protected readonly actividad = signal<Evento[] | null>(null);
+  protected readonly error = signal<string | null>(null);
+
+  protected readonly criticos = computed(
+    () => this.indicadores()?.riesgoPlazosActivos.CRITICO ?? 0,
+  );
+
+  /** El plazo más urgente: el primero de la campana (crítico o alto, ordenado por días). */
+  protected readonly urgente = computed(() => this.alertas.lista()?.[0] ?? null);
+  /** Expediente del plazo más urgente, para mostrar su responsable y sus tareas. */
+  protected readonly expedienteUrgente = signal<Expediente | null>(null);
+
+  /** Texto del sello: «VENCIÓ / HACE 6 DÍAS», «VENCE / HOY» o «VENCE EN / 2 DÍAS». */
+  protected readonly sello = computed<[string, string] | null>(() => {
+    const u = this.urgente();
+    if (!u) return null;
+    const d = u.riesgo.diasRestantes;
+    const n = Math.abs(d);
+    const dias = `${n} ${n === 1 ? 'DÍA' : 'DÍAS'}`;
+    if (d < 0) return ['VENCIÓ', `HACE ${dias}`];
+    if (d === 0) return ['VENCE', 'HOY'];
+    if (d === 1) return ['VENCE', 'MAÑANA'];
+    return ['VENCE EN', dias];
+  });
+
+  /** Ingresos y conclusiones de los últimos 12 meses. */
+  /** Periodo del gráfico de movimiento: los últimos 12 meses o los últimos 10 años. */
+  protected readonly periodo = signal<'meses' | 'anios'>('meses');
+
+  protected readonly movimiento = computed<DatosGrafico | null>(() => {
+    const i = this.indicadores();
+    if (!i) return null;
+    if (this.periodo() === 'anios') {
+      const a = i.movimientoAnual ?? [];
+      return {
+        categorias: a.map((x) => String(x.anio)),
+        subetiquetas: a.map((_, n) => (n === a.length - 1 ? 'en curso' : '')),
+        detalles: a.map((x, n) => (n === a.length - 1 ? `${x.anio} (en curso)` : String(x.anio))),
+        series: [
+          { nombre: 'Ingresados', color: 'var(--serie-1)', valores: a.map((x) => x.ingresados) },
+          { nombre: 'Concluidos', color: 'var(--serie-2)', valores: a.map((x) => x.concluidos) },
+        ],
+      };
+    }
+    const m = i.movimientoMensual;
+    return {
+      categorias: m.map((x) => mesCorto(x.mes + '-01')),
+      // El año aparece bajo el primer mes y bajo cada enero.
+      subetiquetas: m.map((x, i) => (i === 0 || x.mes.endsWith('-01') ? x.mes.slice(0, 4) : '')),
+      detalles: m.map(
+        (x) => `${capitalizar(nombreMes(Number(x.mes.slice(5, 7)) - 1))} ${x.mes.slice(0, 4)}`,
+      ),
+      series: [
+        { nombre: 'Ingresados', color: 'var(--serie-1)', valores: m.map((x) => x.ingresados) },
+        { nombre: 'Concluidos', color: 'var(--serie-2)', valores: m.map((x) => x.concluidos) },
+      ],
+    };
+  });
+
+  /** Plazos activos de las próximas 8 semanas, desde hoy. */
+  protected readonly semanas = signal<DatosGrafico | null>(null);
+
+  /** Agenda: plazos del horizonte, primero los vencidos. */
+  protected readonly registro = computed(() => (this.alertas.proximos() ?? []).slice(0, 12));
+
+  protected readonly totalRiesgo = computed(() => {
+    const r = this.indicadores()?.riesgoPlazosActivos ?? {};
+    return NIVELES_RIESGO.reduce((s, n) => s + (r[n] ?? 0), 0);
+  });
+
+  /** Los seis responsables con más tareas activas, con una casilla por tarea. */
+  protected readonly equipo = computed(() =>
+    [...this.responsables.lista()]
+      .sort((a, b) => b.tareasActivas - a.tareasActivas)
+      .slice(0, 6)
+      .map((r) => ({
+        ...r,
+        exceso: r.tareasActivas - r.umbral,
+        casillas: Array.from({ length: CASILLAS }, (_, i) =>
+          i < Math.min(r.tareasActivas, r.umbral) ? 'dentro' : i < r.tareasActivas ? 'fuera' : '',
+        ),
+      })),
+  );
+  protected readonly umbral = computed(() => this.equipo()[0]?.umbral ?? 5);
+
+  constructor() {
+    // Al cambiar el plazo más urgente se consulta su expediente (responsable y tareas activas).
+    effect(() => {
+      const id = this.urgente()?.plazo.expedienteId;
+      if (id === undefined || this.expedienteUrgente()?.id === id) return;
+      this.expedientesApi.obtener(id).subscribe({
+        next: (e) => this.expedienteUrgente.set(e),
+        error: () => this.expedienteUrgente.set(null),
+      });
+    });
+  }
+
+  ngOnInit(): void {
+    this.consultas.indicadores().subscribe({
+      next: (i) => this.indicadores.set(i),
+      error: (e) => this.error.set(interpretarError(e).mensaje),
+    });
+    this.alertas.recargar();
+    this.responsables.asegurar();
+    this.cargarSemanas();
+    if (this.auth.puedeVerAuditoria()) {
+      this.consultas.eventos({ size: 6 }).subscribe({
+        next: (p) => this.actividad.set(p.content),
+        error: () => this.actividad.set([]),
+      });
+    }
+  }
+
+  private cargarSemanas(): void {
+    const fin = sumarDias(this.hoy, 8 * 7 - 1);
+    this.plazos.listarTodo({ estado: 'ACTIVO', desde: this.hoy, hasta: fin }).subscribe({
+      next: (plazos) => {
+        const conteo = new Array(8).fill(0);
+        for (const p of plazos) {
+          const semana = Math.floor(diasEntre(this.hoy, p.fechaLimite) / 7);
+          if (semana >= 0 && semana < 8) conteo[semana]++;
+        }
+        const inicios = conteo.map((_, i) => sumarDias(this.hoy, i * 7));
+        const corta = (f: string) => `${f.slice(8, 10)}/${f.slice(5, 7)}`;
+        this.semanas.set({
+          categorias: inicios.map((f) => `${f.slice(8, 10)} ${mesCorto(f)}`),
+          subetiquetas: inicios.map((_, i) => (i === 0 ? 'esta' : '')),
+          detalles: inicios.map((f) => `Semana ${corta(f)} – ${corta(sumarDias(f, 6))}`),
+          series: [{ nombre: 'Plazos', color: 'var(--serie-1)', valores: conteo }],
+        });
+      },
+      error: () => this.semanas.set(null),
+    });
+  }
+
+  protected cantidad(nivel: NivelRiesgo): number {
+    return this.indicadores()?.riesgoPlazosActivos[nivel] ?? 0;
+  }
+
+  protected porcentaje(nivel: NivelRiesgo): number {
+    const t = this.totalRiesgo();
+    return t === 0 ? 0 : (this.cantidad(nivel) / t) * 100;
+  }
+
+  protected textoRiesgo(): string {
+    return NIVELES_RIESGO.map((n) => `${this.cantidad(n)} ${n.toLowerCase()}`).join(', ');
+  }
+
+  protected mesDe(a: Alerta): string {
+    return a.plazo.fechaLimite === this.hoy ? 'hoy' : mesCorto(a.plazo.fechaLimite);
+  }
+
+  /** «8 plazos críticos» lleva a la agenda, donde aparecen primero los vencidos. */
+  protected irAgenda(): void {
+    document.getElementById('agenda')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function capitalizar(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function diasEntre(desde: string, hasta: string): number {
+  return Math.round(
+    (Date.parse(`${hasta}T12:00:00Z`) - Date.parse(`${desde}T12:00:00Z`)) / 86400000,
+  );
+}

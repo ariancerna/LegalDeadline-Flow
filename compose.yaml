@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: legaldeadline-flow-backend:local
+    image: ${COMPOSE_PROJECT_NAME:-legaldeadline-flow}-backend:local
     environment:
       DB_HOST: db
       DB_PORT: "5432"
@@ -61,7 +61,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: legaldeadline-flow-frontend:local
+    image: ${COMPOSE_PROJECT_NAME:-legaldeadline-flow}-frontend:local
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-4200}:8080"
     depends_on:

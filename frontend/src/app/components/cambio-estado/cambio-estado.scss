@@ -1,0 +1,38 @@
+.actual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+.opcion-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto-2);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+.opcion-estado:hover {
+  border-color: var(--borde-fuerte);
+}
+.opcion-estado.elegida {
+  border-color: var(--marca);
+  background: var(--marca-suave);
+  color: var(--marca-texto);
+  box-shadow: var(--anillo);
+}

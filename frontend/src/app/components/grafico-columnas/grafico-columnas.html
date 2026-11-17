@@ -1,0 +1,119 @@
+<div class="cabecera">
+  <div class="titulos">
+    <h2>{{ titulo() }}</h2>
+    @if (subtitulo()) {
+      <span class="subtitulo">{{ subtitulo() }}</span>
+    }
+  </div>
+  <div class="derecha">
+    <!-- Controles propios de cada gráfico, por ejemplo el periodo. -->
+    <ng-content select="[acciones]" />
+    @if (series().length > 1) {
+      <ul class="leyenda">
+        @for (s of series(); track s.nombre) {
+          <li><i [style.background]="s.color"></i>{{ s.nombre }}</li>
+        }
+      </ul>
+    }
+    <button
+      type="button"
+      class="vista"
+      [attr.aria-pressed]="tabla()"
+      (click)="tabla.set(!tabla())"
+    >
+      {{ tabla() ? 'Ver gráfico' : 'Ver tabla' }}
+    </button>
+  </div>
+</div>
+
+@if (tabla()) {
+  <table class="tabla-datos">
+    <thead>
+      <tr>
+        <th scope="col">{{ nombreCategoria() }}</th>
+        @for (s of series(); track s.nombre) {
+          <th scope="col" class="num">{{ s.nombre }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of categorias(); track $index; let i = $index) {
+        <tr>
+          <td>{{ nombre(i) }}</td>
+          @for (s of series(); track s.nombre) {
+            <td class="num">{{ s.valores[i] }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+} @else {
+  <div class="grafico">
+    <div class="eje-y" [style.height.px]="alto">
+      @for (t of ticks(); track t.valor) {
+        <span [style.bottom.%]="t.pos">{{ t.valor }}</span>
+      }
+    </div>
+    <div>
+      <div class="area" [style.height.px]="alto" (mouseleave)="activo.set(null)">
+        @for (t of ticks(); track t.valor) {
+          <span class="linea" [style.bottom.%]="t.pos"></span>
+        }
+        <div class="columnas">
+          @for (c of categorias(); track $index; let i = $index) {
+            <div
+              class="grupo"
+              tabindex="0"
+              [class.activo]="activo() === i"
+              [attr.aria-label]="textoGrupo(i)"
+              (mouseenter)="activo.set(i)"
+              (focus)="activo.set(i)"
+              (blur)="activo.set(null)"
+            >
+              @if (etiquetas()) {
+                <span
+                  class="valor"
+                  [style.bottom]="'calc(' + altura(series()[0].valores[i]) + '% + 3px)'"
+                  >{{ series()[0].valores[i] }}</span
+                >
+              }
+              <div class="barras">
+                @for (s of series(); track s.nombre) {
+                  <span
+                    class="barra"
+                    [class.ancha]="series().length === 1"
+                    [style.height.%]="altura(s.valores[i])"
+                    [style.background]="s.color"
+                  ></span>
+                }
+              </div>
+              @if (activo() === i) {
+                <div
+                  class="tooltip"
+                  role="tooltip"
+                  [class.izquierda]="i > categorias().length * 0.6"
+                >
+                  <b>{{ nombre(i) }}</b>
+                  @for (s of series(); track s.nombre) {
+                    <span class="fila"
+                      ><i [style.background]="s.color"></i>{{ s.nombre }}
+                      <b>{{ s.valores[i] }}</b></span
+                    >
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      <div class="eje-x">
+        @for (c of categorias(); track $index; let i = $index) {
+          <span [class.resaltado]="i === resaltar()"
+            ><span>{{ c }}</span
+            ><b>{{ subetiquetas().at(i) ?? '' }}</b></span
+          >
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -6,7 +6,7 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 - Estilo de **mesa de partes** en `src/styles/`, pensado como herramienta de trabajo diario. El sistema de diseño (tokens, componentes, menú lateral y tablero) se definió en Claude Design y se trasladó a `_tema.scss`, `_tokens.scss` y `_components.scss`:
   - [Archivo](https://fonts.google.com/specimen/Archivo) con eje de ancho: condensada y gruesa en títulos y cifras, normal en el texto. Los números de expediente van en [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono).
   - Colores en `oklch`, definidos por separado para el tema claro y el oscuro.
-  - Cifras con coma decimal y espacio fino como separador de miles desde cinco dígitos: 4187, 14 732, 97,9 % (`shared/cifra.ts`).
+  - Cifras con coma decimal y espacio fino como separador de miles desde cinco dígitos: 4187, 14 732, 97,9 % (`utils/cifra.ts`).
   - Grises neutros, tinta casi negra en la acción principal, un azul de sello para enlaces y foco, y el manila de las carpetas de expediente en la carátula y en la marca.
   - El color se reserva para el riesgo y sube de intensidad: «Crítico» va en rojo lleno; «Bajo» es solo texto gris.
   - Tablas densas, esquinas casi rectas y sin sombras salvo en menús. Modo claro y oscuro (`_tema.scss`).
@@ -26,6 +26,7 @@ Cliente web del sistema. Consume la API REST del backend Spring Boot con JWT y m
 | Carga de trabajo | Bloques de capacidad por persona y recomendaciones de reasignación aplicables con un clic. |
 | Auditoría | Bitácora en línea de tiempo agrupada por día. |
 | Usuarios | Resumen por rol, alta, edición y desactivación. |
+| Página no encontrada | Permite volver al tablero cuando la dirección no corresponde a una ruta. |
 
 En toda la aplicación:
 
@@ -67,44 +68,58 @@ Desde la raíz del repositorio, `docker compose up -d --build` levanta PostgreSQ
 ## Estructura
 
 ```
-src/app/
-  core/            modelos (DTO), servicios REST, sesión JWT, interceptor, guards, errores
-    api/           un servicio por recurso: expedientes, tareas, plazos, usuarios, consultas
-    auth/          AuthService, authInterceptor, guards, permisos por rol
-  shared/          icono, avatar, diálogo/panel, skeleton, estado vacío, paginador, pipes, fechas de Lima
-  layout/          menú lateral por rol, buscador Ctrl+K, alertas, notificaciones
-  features/
-    auth/          login
-    tablero/       indicadores, distribución del riesgo, alertas de plazos
-    expedientes/   listado con búsqueda, detalle, formulario
-    tareas/        lista, tablero Kanban, cambio de estado, formulario, transiciones
-    plazos/        lista, calendario mensual, tabla con riesgo, formulario, anulación
-    carga/         balanceador visual y recomendación de reasignación
-    auditoria/     bitácora en línea de tiempo
-    usuarios/      administración de cuentas
+src/
+  app/
+    components/            componentes reutilizables y estructura de navegación
+      avatar/              avatar.ts, avatar.html, avatar.scss, avatar.spec.ts
+      tareas-kanban/       tablero de tareas y cambios de estado
+      shell/               menú lateral por rol y alertas
+    data/                  catálogos para filtros y formularios, enlaces de navegación
+    models/                tipos de expediente, tarea, plazo, usuario y respuestas de la API
+    pages/
+      inicio/              tablero de indicadores en /tablero
+      lista-expedientes/   listado con búsqueda y filtros
+      detalle-expediente/  ficha de un expediente
+      formulario-expediente/ formulario de alta y edición
+      no-encontrado/       pantalla para URLs desconocidas
+    services/
+      api/                 servicios REST por recurso
+      auth/                sesión JWT, interceptor, guards y permisos
+    utils/                 fechas de Lima, pipes y funciones de apoyo
+    validators/            validadores de formularios reutilizables
+    app.ts                 componente raíz
+    app.html               punto de inserción de rutas
+    app.scss               estilos del componente raíz
+    app.config.ts          configuración de Angular, router y HttpClient
+    app.routes.ts          rutas, parámetros y guards
+  styles/
+    _tokens.scss           tipografías, medidas y mixins
+  styles.scss              entrada de estilos globales
+  index.html               documento HTML principal
+  main.ts                  arranque de Angular
 ```
 
-El asunto de un expediente puede seguir la convención `Materia · Partes · Órgano jurisdiccional` (así lo carga la demostración); en ese caso la interfaz muestra cada parte por separado (`shared/asunto.ts`). Si no la sigue, el asunto completo se usa como título.
+El asunto de un expediente puede seguir la convención `Materia · Partes · Órgano jurisdiccional` (así lo carga la demostración); en ese caso la interfaz muestra cada parte por separado (`utils/asunto.ts`). Si no la sigue, el asunto completo se usa como título.
 
 Los iconos se generan con `node scripts/generar-iconos.mjs` a partir de `lucide-static`. Para usar uno nuevo, agrega su nombre a la lista del script y vuelve a ejecutarlo.
 
 ## Movimiento
 
 - Transición suave entre páginas con la View Transitions API; la marca de la sección activa se desliza en el menú lateral.
-- Las cifras del tablero, de la carga y de usuarios cuentan hasta su valor (`shared/contador.directive.ts`).
+- Las cifras del tablero, de la carga y de usuarios cuentan hasta su valor (`components/contador/contador.directive.ts`).
 - Las filas de las tablas aparecen en cascada; las columnas de los gráficos y las barras de progreso crecen desde su base.
 - Todo se desactiva con la preferencia del sistema «reducir movimiento».
 
 ## Gráficos
 
-`shared/grafico-columnas.component.ts` dibuja columnas agrupadas con HTML y CSS, sin librerías. Tiene título, leyenda, eje con números redondos, tooltip con mouse o teclado y una vista de tabla con los mismos valores. Los colores de las series (`--serie-1`, `--serie-2`) se validaron contra daltonismo en modo claro y oscuro.
+`components/grafico-columnas/grafico-columnas.ts` dibuja columnas agrupadas con HTML y CSS, sin librerías. Tiene título, leyenda, eje con números redondos, tooltip con mouse o teclado y una vista de tabla con los mismos valores. Los colores de las series (`--serie-1`, `--serie-2`) se validaron contra daltonismo en modo claro y oscuro.
 
 ## Volumen de datos
 
 La demostración trae 5000 expedientes, unas 10 000 tareas y 14 000 eventos. La interfaz está preparada para ese volumen:
 
 - Los listados de plazos ya traen el **riesgo** (RN04) y el **código y asunto del expediente**, así que el tablero, la campana, el calendario y las tablas hacen una sola consulta en lugar de una por fila. `GET /plazos/{id}/riesgo` sigue disponible.
-- Al registrar una tarea o un plazo, el expediente se elige con un **buscador** (`shared/selector-expediente.component.ts`) que consulta `GET /expedientes?q` mientras escribes, en lugar de un desplegable con todos los expedientes.
+- Al registrar una tarea o un plazo, el expediente se elige con un **buscador** (`components/selector-expediente/selector-expediente.ts`) que consulta `GET /expedientes?q` mientras escribes.
 - El calendario pide todas las páginas del mes y muestra primero los plazos de mayor riesgo de cada día.
 - La pestaña **Actividad** de un expediente usa `GET /auditoria/eventos?expedienteId=`, que filtra en el servidor sus eventos y los de sus tareas y plazos.
 
@@ -119,20 +134,20 @@ La demostración trae 5000 expedientes, unas 10 000 tareas y 14 000 eventos. La 
 
 | Requisito | Endpoint | Componente Angular | Prueba |
 |---|---|---|---|
-| RF01 Autenticación | `POST /auth/login` | `features/auth/login.component` | `core/auth/auth.spec.ts` |
-| RF02 Usuarios y roles | `/usuarios` | `features/usuarios/*` | E2E: el administrador crea un usuario |
-| RF03–RF06 Expedientes | `/expedientes`, `/expedientes/{id}/cierre` | `features/expedientes/*` | E2E: crear, buscar, cierre bloqueado con pendientes |
-| RF04 Búsqueda | `GET /expedientes?q&estado&responsableId` | `expedientes-lista.component` (muestra el tiempo de respuesta en ms) | E2E: la búsqueda filtra |
-| RF07, RF09 Tareas | `/tareas` | `tarea-form.component` | E2E: registrar tarea |
-| RF08 Duplicados | `POST /tareas` → 409 `TAREA_DUPLICADA` | `tarea-form.component` | `core/errores.spec.ts`, E2E: duplicado rechazado |
-| RF10 Transiciones / RN03 | `PATCH /tareas/{id}/estado` | `cambio-estado.component`, `tareas-kanban.component` | `features/tareas/transiciones.spec.ts`, E2E: cierre ALTA y arrastre en el Kanban |
-| RF12–RF14 Plazos | `/plazos`, `/plazos/{id}/anulacion` | `features/plazos/*` | E2E: motivo < 10 caracteres bloqueado, anulación |
-| RF15 Riesgo | `GET /plazos/{id}/riesgo` | `plazos-tabla`, `plazos-calendario`, `core/alertas.store` (campana y tablero) | E2E: plazo a 2 días = CRÍTICO |
-| RF16 Sobrecarga | `GET /responsables/carga` | `features/carga/*`, aviso en `tarea-form` | `features/carga/recomendacion.spec.ts` |
-| RF17 Indicadores | `GET /indicadores` | `tablero.component`, `linea-vencimientos.component` | `shared/componentes.spec.ts`, E2E: tablero |
-| RF18 Auditoría | `GET /auditoria/eventos` | `auditoria.component`, pestaña Actividad del expediente | E2E: eventos visibles solo para roles autorizados |
-| RF20 Navegación por rol | — | `layout/shell.component`, `core/auth/guards.ts` | `core/auth/auth.spec.ts` (guards), E2E: el auditor no ve acciones |
-| RF23 Integración | todos | `core/auth/auth.interceptor.ts` | `core/auth/auth.spec.ts` (Bearer, 401) |
+| RF01 Autenticación | `POST /auth/login` | `pages/login/login.ts` | `services/auth/auth.spec.ts` |
+| RF02 Usuarios y roles | `/usuarios` | `lista-usuarios`, `formulario-usuario` | E2E: el administrador crea un usuario |
+| RF03–RF06 Expedientes | `/expedientes`, `/expedientes/{id}/cierre` | `lista-expedientes`, `detalle-expediente`, `formulario-expediente` | E2E: crear, buscar, cierre bloqueado con pendientes |
+| RF04 Búsqueda | `GET /expedientes?q&estado&responsableId` | `lista-expedientes` (muestra el tiempo de respuesta en ms) | E2E: la búsqueda filtra |
+| RF07, RF09 Tareas | `/tareas` | `formulario-tarea` | E2E: registrar tarea |
+| RF08 Duplicados | `POST /tareas` → 409 `TAREA_DUPLICADA` | `formulario-tarea` | `services/errores.spec.ts`, E2E: duplicado rechazado |
+| RF10 Transiciones / RN03 | `PATCH /tareas/{id}/estado` | `cambio-estado`, `tareas-kanban` | `utils/transiciones.spec.ts`, E2E: cierre ALTA y arrastre en el Kanban |
+| RF12–RF14 Plazos | `/plazos`, `/plazos/{id}/anulacion` | `lista-plazos`, `formulario-plazo`, `plazos-tabla` | E2E: motivo < 10 caracteres bloqueado, anulación |
+| RF15 Riesgo | `GET /plazos/{id}/riesgo` | `plazos-tabla`, `plazos-calendario`, `services/alertas.store.ts` (campana y tablero) | E2E: plazo a 2 días = CRÍTICO |
+| RF16 Sobrecarga | `GET /responsables/carga` | `pages/carga/`, aviso en `formulario-tarea` | `pages/carga/recomendacion.spec.ts` |
+| RF17 Indicadores | `GET /indicadores` | `inicio`, `linea-vencimientos` | `components/componentes.spec.ts`, E2E: tablero |
+| RF18 Auditoría | `GET /auditoria/eventos` | `auditoria`, pestaña Actividad del expediente | E2E: eventos visibles solo para roles autorizados |
+| RF20 Navegación por rol | — | `components/shell/shell.ts`, `services/auth/guards.ts` | `services/auth/auth.spec.ts` (guards), E2E: el auditor no ve acciones |
+| RF23 Integración | todos | `services/auth/auth.interceptor.ts` | `services/auth/auth.spec.ts` (Bearer, 401) |
 
 ## Desplegar en la nube
 
