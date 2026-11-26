@@ -50,7 +50,27 @@ Al terminar entras a la **consola de AWS**.
 - **Mira tus créditos:** la página de inicio de la consola muestra el saldo y los días restantes. El detalle está en **Facturación (Billing) → Créditos** y **Capa gratuita (Free Tier)**.
 - **Créditos extra:** en la página de inicio aparecen actividades que suman crédito (por ejemplo, lanzar una instancia de EC2 o crear un presupuesto). La de EC2 la vas a cumplir en el paso 2.
 
-## 1. Entrar a la consola
+## Opción rápida: todo con un comando (CloudShell)
+
+En vez de los pasos 2 y 5 a mano, puedes crear todo desde **AWS CloudShell**, la terminal que trae la consola y que ya tiene iniciada tu sesión:
+
+1. En la consola, elige la región arriba a la derecha (por ejemplo, **N. Virginia**).
+2. Abre **CloudShell**: el ícono `>_` de la barra superior, o busca «CloudShell».
+3. Pega esta línea y pulsa Enter:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/ariancerna/LegalDeadline-Flow/main/deploy/aws/crear-servidor.sh | bash
+   ```
+
+El script [`deploy/aws/crear-servidor.sh`](../deploy/aws/crear-servidor.sh) hace lo siguiente:
+
+- Crea el grupo de seguridad: HTTP abierto, y SSH solo para la terminal del navegador.
+- Lanza la instancia con t3.small, o con t3.micro si el plan no permite la primera.
+- Asigna una IP elástica.
+- Espera hasta que la aplicación responda y muestra la dirección.
+
+Si lo ejecutas otra vez, no crea un segundo servidor. Deja CloudShell abierto mientras espera; si la ventana se cierra, el servidor sigue instalándose igual.
+
 
 - **AWS Academy:** en el curso, abre **Learner Lab**, pulsa **Start Lab** y espera a que el círculo junto a «AWS» se ponga verde. Pulsa **AWS** para abrir la consola. Usa la región **N. Virginia (us-east-1)**.
 - **Cuenta propia:** entra a <https://console.aws.amazon.com> y elige una región arriba a la derecha (por ejemplo, **N. Virginia (us-east-1)**).
