@@ -9,9 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.UsuarioActualizacionRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.UsuarioRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.UsuarioResponse;
+import pe.edu.utp.legaldeadlineflow.dto.UsuarioActualizacionRequest;
+import pe.edu.utp.legaldeadlineflow.dto.UsuarioRequest;
+import pe.edu.utp.legaldeadlineflow.dto.UsuarioResponse;
 import pe.edu.utp.legaldeadlineflow.domain.EventoTipo;
 import pe.edu.utp.legaldeadlineflow.domain.Rol;
 import pe.edu.utp.legaldeadlineflow.domain.Usuario;

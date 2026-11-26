@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.EventoResponse;
+import pe.edu.utp.legaldeadlineflow.dto.EventoResponse;
 import pe.edu.utp.legaldeadlineflow.domain.Evento;
 import pe.edu.utp.legaldeadlineflow.domain.EventoTipo;
 import pe.edu.utp.legaldeadlineflow.domain.Plazo;

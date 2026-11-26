@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import pe.edu.utp.legaldeadlineflow.api.error.ApiError;
+import pe.edu.utp.legaldeadlineflow.exception.ApiError;
 
 @Component
 public class SecurityErrorWriter {

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pe.edu.utp.legaldeadlineflow.api.dto.IndicadoresResponse;
+import pe.edu.utp.legaldeadlineflow.dto.IndicadoresResponse;
 import pe.edu.utp.legaldeadlineflow.domain.*;
 import pe.edu.utp.legaldeadlineflow.repository.IndicadoresRepository;
 import pe.edu.utp.legaldeadlineflow.security.AccesoService;

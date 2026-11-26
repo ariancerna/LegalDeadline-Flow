@@ -52,6 +52,19 @@ API REST del segundo avance para gestionar expedientes, tareas, plazos y auditor
 
 La [guía práctica en inglés](docs/backend-learning-and-demo-guide.en.md) explica JWT, DTO, records, el recorrido de una solicitud y cómo demostrar RF01–RF19. Incluye una colección de Postman, un entorno local y la evidencia de sus comprobaciones.
 
+Paquetes en `src/main/java/pe/edu/utp/legaldeadlineflow/`:
+
+| Paquete | Contenido |
+|---|---|
+| `controller/` | Controladores REST: reciben la solicitud, validan el DTO con `@Valid` y delegan en el servicio |
+| `dto/` | DTO de entrada y salida (records) con sus validaciones; las entidades nunca se exponen |
+| `service/` | Lógica de negocio: reglas, transiciones, riesgo de plazos, carga, auditoría |
+| `repository/` | Repositorios Spring Data JPA y consultas propias |
+| `domain/` | Entidades JPA y enumeraciones |
+| `security/` | JWT, permisos por rol y recurso, límite de intentos de login |
+| `exception/` | Excepciones del negocio y manejador global que responde errores uniformes |
+| `config/` | Seguridad HTTP, conexión a la base y datos de demostración |
+
 ## Ejecutar con Docker Compose
 
 Necesitas Docker Desktop iniciado con contenedores Linux y Docker Compose v2. No necesitas instalar Java, Maven ni PostgreSQL para este modo.
@@ -126,7 +139,7 @@ Content-Type: application/json
 }
 ```
 
-La respuesta contiene `accessToken`, `tokenType`, `expiresIn` y los datos del usuario. Envía `Authorization: Bearer <token>` en las solicitudes posteriores. Un token ausente, vencido o inválido produce 401; un usuario sin permiso produce 403. Las contraseñas se almacenan con BCrypt y no se incluyen en respuestas. Los cambios de contraseña, rol, estado o versión del usuario invalidan sus tokens anteriores.
+La respuesta contiene `accessToken`, `tokenType`, `expiresIn` y los datos del usuario. Envía `Authorization: Bearer <token>` en las solicitudes posteriores. Un token ausente, vencido o inválido produce 401; un usuario sin permiso produce 403. Las contraseñas se almacenan con BCrypt y no se incluyen en respuestas. Los cambios de contraseña, rol, estado o versión del usuario invalidan sus tokens anteriores. Tras 5 contraseñas fallidas para un mismo correo en 15 minutos, ese correo queda bloqueado 15 minutos y el login responde 429 `DEMASIADOS_INTENTOS` con la cabecera `Retry-After` (configurable con `LOGIN_MAX_INTENTOS`, `LOGIN_VENTANA_MINUTOS` y `LOGIN_BLOQUEO_MINUTOS`).
 
 | Rol | Alcance |
 |---|---|

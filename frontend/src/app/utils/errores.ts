@@ -16,6 +16,7 @@ const POR_ESTADO: Record<number, string> = {
   404: 'El recurso solicitado no existe.',
   409: 'La operación entra en conflicto con los datos actuales.',
   422: 'La operación no cumple las reglas del negocio.',
+  429: 'Demasiados intentos fallidos. Espera unos minutos y vuelve a intentarlo.',
 };
 
 const POR_CODIGO: Record<string, string> = {

@@ -11,7 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pe.edu.utp.legaldeadlineflow.api.dto.*;
+import pe.edu.utp.legaldeadlineflow.dto.*;
 import pe.edu.utp.legaldeadlineflow.domain.*;
 import pe.edu.utp.legaldeadlineflow.exception.*;
 import pe.edu.utp.legaldeadlineflow.repository.TareaRepository;

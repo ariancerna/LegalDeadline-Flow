@@ -28,11 +28,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.AnulacionPlazoRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.PlazoActualizarRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.PlazoRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.PlazoResponse;
-import pe.edu.utp.legaldeadlineflow.api.dto.RiesgoPlazoResponse;
+import pe.edu.utp.legaldeadlineflow.dto.AnulacionPlazoRequest;
+import pe.edu.utp.legaldeadlineflow.dto.PlazoActualizarRequest;
+import pe.edu.utp.legaldeadlineflow.dto.PlazoRequest;
+import pe.edu.utp.legaldeadlineflow.dto.PlazoResponse;
+import pe.edu.utp.legaldeadlineflow.dto.RiesgoPlazoResponse;
 import pe.edu.utp.legaldeadlineflow.domain.Expediente;
 import pe.edu.utp.legaldeadlineflow.domain.NivelRiesgo;
 import pe.edu.utp.legaldeadlineflow.domain.Plazo;

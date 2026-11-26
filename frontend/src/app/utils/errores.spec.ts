@@ -41,6 +41,19 @@ describe('interpretarError', () => {
     expect(interpretarError(http(0, null)).mensaje).toContain('No se pudo conectar');
   });
 
+  it('muestra cuánto esperar cuando el login se bloquea por intentos fallidos (429)', () => {
+    const e = interpretarError(
+      http(429, {
+        status: 429,
+        code: 'DEMASIADOS_INTENTOS',
+        message: 'Demasiados intentos fallidos. Vuelve a intentarlo en 15 minutos.',
+      }),
+    );
+    expect(e.mensaje).toContain('15 minutos');
+    expect(e.codigo).toBe('DEMASIADOS_INTENTOS');
+    expect(interpretarError(http(429, null)).mensaje).toContain('Demasiados intentos');
+  });
+
   it('tolera errores que no son HTTP', () => {
     expect(interpretarError(new Error('x')).mensaje).toContain('inesperado');
   });

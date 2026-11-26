@@ -14,7 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import pe.edu.utp.legaldeadlineflow.api.error.ApiError;
+import pe.edu.utp.legaldeadlineflow.exception.ApiError;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)

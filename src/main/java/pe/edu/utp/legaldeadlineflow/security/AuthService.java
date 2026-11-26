@@ -16,9 +16,9 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.LoginRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.LoginResponse;
-import pe.edu.utp.legaldeadlineflow.api.dto.UsuarioResponse;
+import pe.edu.utp.legaldeadlineflow.dto.LoginRequest;
+import pe.edu.utp.legaldeadlineflow.dto.LoginResponse;
+import pe.edu.utp.legaldeadlineflow.dto.UsuarioResponse;
 import pe.edu.utp.legaldeadlineflow.domain.Usuario;
 import pe.edu.utp.legaldeadlineflow.repository.UsuarioRepository;
 
@@ -33,12 +33,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
     private final AccesoService accesoService;
+    private final LimiteIntentosLogin limiteIntentos;
     private final Clock clock;
     private final long expirationSeconds;
     private final String dummyPasswordHash;
 
     public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-                       JwtEncoder jwtEncoder, AccesoService accesoService, Clock clock,
+                       JwtEncoder jwtEncoder, AccesoService accesoService, LimiteIntentosLogin limiteIntentos,
+                       Clock clock,
                        @Value("${legaldeadline.jwt.expiration-seconds:3600}") long expirationSeconds) {
         if (expirationSeconds < 60 || expirationSeconds > 86400) {
             throw new IllegalArgumentException("La duración del JWT debe estar entre 60 y 86400 segundos");
@@ -47,21 +49,27 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
         this.accesoService = accesoService;
+        this.limiteIntentos = limiteIntentos;
         this.clock = clock;
         this.expirationSeconds = expirationSeconds;
         this.dummyPasswordHash = passwordEncoder.encode("credencial-interna-no-utilizable");
     }
 
     public LoginResponse login(LoginRequest request) {
+        // Un correo bloqueado no llega a comparar la contraseña, ni siquiera la correcta.
+        limiteIntentos.verificar(request.email());
         if (request.password() == null || request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
+            limiteIntentos.registrarFallo(request.email());
             throw credencialesInvalidas();
         }
         Usuario usuario = usuarioRepository.findByEmailIgnoreCase(request.email()).orElse(null);
         String hash = usuario == null ? dummyPasswordHash : usuario.getPasswordHash();
         boolean passwordValido = passwordEncoder.matches(request.password(), hash);
         if (usuario == null || !usuario.isActivo() || !passwordValido) {
+            limiteIntentos.registrarFallo(request.email());
             throw credencialesInvalidas();
         }
+        limiteIntentos.registrarExito(request.email());
         Instant ahora = clock.instant();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(ISSUER)

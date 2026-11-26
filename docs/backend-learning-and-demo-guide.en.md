@@ -321,8 +321,8 @@ All source paths below are relative to `src/main/java/pe/edu/utp/legaldeadlinefl
 | Order | Breakpoint | Observe |
 |---|---|---|
 | 1 | `security/JwtUsuarioConverter.java`, `convert` | Subject/user ID; stored account active flag; stored version versus token version. Do not expose token values in presentation screenshots. |
-| 2 | `api/dto/TareaRequest.java`, compact constructor | Raw arguments becoming cleaned title and uppercase type. |
-| 3 | `api/TareaController.java`, `crear` | `request` is already a typed, validated DTO. Inspect `request.titulo()` and `request.expedienteId()`. |
+| 2 | `dto/TareaRequest.java`, compact constructor | Raw arguments becoming cleaned title and uppercase type. |
+| 3 | `controller/TareaController.java`, `crear` | `request` is already a typed, validated DTO. Inspect `request.titulo()` and `request.expedienteId()`. |
 | 4 | `service/TareaService.java`, `crear` | Permission checks, open case, active assignable user, and the transaction boundary. |
 | 5 | `repository/ExpedienteRepository.java`, inspect its `findByIdForUpdate` declaration | `PESSIMISTIC_WRITE` and JPQL explain the case lock. Interfaces are implemented through Spring proxies, so a breakpoint on the interface may not stop as an ordinary method would. |
 | 6 | `service/TareaService.java`, the `tituloNormalizado` assignment and `exigirNoDuplicada` call | The derived uppercase title and the equivalence check. |

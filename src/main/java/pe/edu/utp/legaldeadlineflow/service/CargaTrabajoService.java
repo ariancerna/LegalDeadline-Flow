@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.CargaTrabajoResponse;
+import pe.edu.utp.legaldeadlineflow.dto.CargaTrabajoResponse;
 import pe.edu.utp.legaldeadlineflow.repository.TareaRepository;
 import pe.edu.utp.legaldeadlineflow.repository.UsuarioRepository;
 import pe.edu.utp.legaldeadlineflow.domain.Rol;

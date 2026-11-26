@@ -18,8 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.LoginRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.LoginResponse;
+import pe.edu.utp.legaldeadlineflow.dto.LoginRequest;
+import pe.edu.utp.legaldeadlineflow.dto.LoginResponse;
 import pe.edu.utp.legaldeadlineflow.domain.Rol;
 import pe.edu.utp.legaldeadlineflow.domain.Usuario;
 import pe.edu.utp.legaldeadlineflow.repository.UsuarioRepository;
@@ -43,7 +43,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new AuthService(repository, passwordEncoder, jwtEncoder, acceso, clock, 3600);
+        service = new AuthService(repository, passwordEncoder, jwtEncoder, acceso, new LimiteIntentosLogin(clock, 5, 15, 15), clock, 3600);
     }
 
     @Test
@@ -87,9 +87,9 @@ class AuthServiceTest {
     void meDevuelveUsuarioActualSinCredencialesYRechazaDuracionesInvalidas() {
         when(acceso.usuarioActual()).thenReturn(usuario());
         assertThat(service.actual().email()).isEqualTo("ana@example.com");
-        assertThatThrownBy(() -> new AuthService(repository, passwordEncoder, jwtEncoder, acceso, clock, 1))
+        assertThatThrownBy(() -> new AuthService(repository, passwordEncoder, jwtEncoder, acceso, new LimiteIntentosLogin(clock, 5, 15, 15), clock, 1))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthService(repository, passwordEncoder, jwtEncoder, acceso, clock, 86401))
+        assertThatThrownBy(() -> new AuthService(repository, passwordEncoder, jwtEncoder, acceso, new LimiteIntentosLogin(clock, 5, 15, 15), clock, 86401))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

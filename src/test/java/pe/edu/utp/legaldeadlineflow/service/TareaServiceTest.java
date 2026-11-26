@@ -29,11 +29,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import pe.edu.utp.legaldeadlineflow.api.dto.CambioEstadoTareaRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.TareaActualizarRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.TareaRequest;
-import pe.edu.utp.legaldeadlineflow.api.dto.TareaResponse;
-import pe.edu.utp.legaldeadlineflow.api.dto.VersionRequest;
+import pe.edu.utp.legaldeadlineflow.dto.CambioEstadoTareaRequest;
+import pe.edu.utp.legaldeadlineflow.dto.TareaActualizarRequest;
+import pe.edu.utp.legaldeadlineflow.dto.TareaRequest;
+import pe.edu.utp.legaldeadlineflow.dto.TareaResponse;
+import pe.edu.utp.legaldeadlineflow.dto.VersionRequest;
 import pe.edu.utp.legaldeadlineflow.domain.Expediente;
 import pe.edu.utp.legaldeadlineflow.domain.Prioridad;
 import pe.edu.utp.legaldeadlineflow.domain.Rol;
