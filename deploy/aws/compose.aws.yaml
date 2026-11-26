@@ -1,0 +1,20 @@
+# Capa para un servidor EC2 de AWS. Se usa junto con compose.yaml:
+#   docker compose -f compose.yaml -f deploy/aws/compose.aws.yaml up -d --build
+#
+# - Publica el frontend en el puerto 80 del servidor (HTTP). La base de datos y el backend
+#   siguen escuchando solo dentro del servidor: el navegador llega a la API a través de nginx (/api).
+# - Limita la memoria para que todo quepa en una instancia de 2 GB (t3.small).
+services:
+  db:
+    mem_limit: 384m
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40"]
+
+  backend:
+    mem_limit: 900m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70.0 -XX:+UseSerialGC"
+
+  frontend:
+    mem_limit: 64m
+    ports:
+      - "80:8080"

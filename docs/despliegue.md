@@ -1,5 +1,7 @@
 # Despliegue en la nube (gratis)
 
+> Para desplegar todo en **AWS** (un servidor EC2 con frontend, backend y PostgreSQL), sigue [despliegue-aws.md](despliegue-aws.md).
+
 | Parte | Servicio | Región | Configuración en el repositorio |
 |---|---|---|---|
 | Base de datos | [Neon](https://neon.com) | AWS US East 1 (N. Virginia) | `application-neon.properties` |

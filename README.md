@@ -158,7 +158,7 @@ Para usar PostgreSQL en la nube en lugar del contenedor local, crea un proyecto 
 docker compose -f compose.neon.yaml up -d --build
 ```
 
-La guía completa, con la configuración de IntelliJ y Maven, está en [docs/neon.md](docs/neon.md). Para publicar la aplicación (Vercel para el frontend, Render para el backend y Neon para la base), sigue [docs/despliegue.md](docs/despliegue.md).
+La guía completa, con la configuración de IntelliJ y Maven, está en [docs/neon.md](docs/neon.md). Para publicar la aplicación (Vercel para el frontend, Render para el backend y Neon para la base), sigue [docs/despliegue.md](docs/despliegue.md). Para desplegar todo en **AWS** (un servidor EC2 con frontend, backend y PostgreSQL), sigue [docs/despliegue-aws.md](docs/despliegue-aws.md).
 
 ## Ejecutar Java en el equipo
 
