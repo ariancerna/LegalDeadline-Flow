@@ -24,6 +24,32 @@ Archivos en el repositorio:
 
 Funciona igual con **AWS Academy (Learner Lab)** o con una **cuenta propia** con el plan gratuito.
 
+## 0. Crear la cuenta de AWS (solo si no usas AWS Academy)
+
+Antes, pregunta al profesor si la universidad tiene **AWS Academy**: si te invita a un Learner Lab, no necesitas cuenta propia ni tarjeta y puedes saltar al paso 1.
+
+AWS cambió su registro en octubre de 2026, así que las pantallas pueden verse algo distintas; lo importante es lo que eliges en cada paso.
+
+1. Entra a <https://aws.amazon.com/free> y pulsa **Crear una cuenta gratuita**.
+2. Escribe tu **correo** y un **nombre para la cuenta** (por ejemplo, `legaldeadline-flow`). Usa un correo que revises: ahí llegan los códigos, las alertas de uso y la recuperación de la cuenta. Confirma el código que te llega.
+3. Crea una **contraseña** (mínimo 8 caracteres, con al menos tres tipos: mayúsculas, minúsculas, números o símbolos).
+4. Cuando te pregunte el plan, elige **Plan gratuito (Free plan)**, no el plan de pago:
+   - Te da **$100 de crédito** al empezar y hasta **$100 más** por completar actividades en la consola.
+   - Dura **6 meses** o hasta que se acabe el crédito, lo que pase primero. No te cobran nada mientras no cambies al plan de pago.
+   - Al terminar, AWS suspende la cuenta y guarda los datos 90 días por si decides pasar al plan de pago. Para el curso es suficiente.
+5. **Datos de contacto:** tipo **Personal**, con tu nombre, teléfono y dirección.
+6. **Tarjeta:** AWS dice que a la mayoría no se la pide, pero puede pedirla para verificar tu identidad. Sirve una tarjeta de débito o crédito habilitada para compras por internet. En el plan gratuito no se cobra.
+7. **Verificación:** si te lo pide, elige **SMS**, escribe tu celular con el código de Perú (+51) e ingresa el código que te llega.
+8. Si aparece la elección de soporte, deja el **básico (gratis)**.
+
+Al terminar entras a la **consola de AWS**.
+
+**Primeros ajustes recomendados (5 minutos):**
+
+- **Activa la verificación en dos pasos (MFA):** en el menú con tu nombre (arriba a la derecha) entra a la configuración de seguridad, busca **MFA** y registra una app de autenticación (Google Authenticator, Microsoft Authenticator). Protege la cuenta si alguien obtiene tu contraseña.
+- **Mira tus créditos:** la página de inicio de la consola muestra el saldo y los días restantes. El detalle está en **Facturación (Billing) → Créditos** y **Capa gratuita (Free Tier)**.
+- **Créditos extra:** en la página de inicio aparecen actividades que suman crédito (por ejemplo, lanzar una instancia de EC2 o crear un presupuesto). La de EC2 la vas a cumplir en el paso 2.
+
 ## 1. Entrar a la consola
 
 - **AWS Academy:** en el curso, abre **Learner Lab**, pulsa **Start Lab** y espera a que el círculo junto a «AWS» se ponga verde. Pulsa **AWS** para abrir la consola. Usa la región **N. Virginia (us-east-1)**.
@@ -35,7 +61,7 @@ En la consola busca **EC2** → **Instancias** → **Lanzar instancias** y compl
 
 1. **Nombre:** `legaldeadline-flow`.
 2. **Imagen (AMI):** **Amazon Linux 2023** (la primera de la lista, 64 bits x86).
-3. **Tipo de instancia:** **t3.small** (2 GB de RAM). Con t3.micro (1 GB) la compilación es muy lenta y puede fallar.
+3. **Tipo de instancia:** **t3.small** (2 GB de RAM). En el plan gratuito solo aparecen como disponibles algunos tipos, marcados como **aptos para la capa gratuita**; si t3.small no se puede elegir, usa **t3.micro** (1 GB). Funciona porque el script agrega 2 GB de memoria de intercambio, pero la primera instalación tarda más (20–30 minutos).
 4. **Par de claves:** en AWS Academy elige **vockey**. En una cuenta propia, **Crear un nuevo par de claves** (no hace falta si solo usarás la conexión desde el navegador).
 5. **Configuración de red → Editar → Firewall (grupos de seguridad) → Crear grupo de seguridad**:
    - Deja la regla **SSH (22)** con origen **Cualquier lugar (0.0.0.0/0)**. La terminal en el navegador (EC2 Instance Connect) entra desde servidores de AWS, no desde tu IP; el acceso sigue protegido porque exige la clave que AWS entrega en cada conexión.
