@@ -1,7 +1,8 @@
-// Ruta base de la API. En desarrollo, `ng serve` reenvía /api al backend
-// (ver proxy.conf.json). En Docker, nginx hace lo mismo.
-// Si el frontend y el backend se publican en dominios distintos, coloca aquí
-// la URL completa, por ejemplo: 'https://mi-backend.onrender.com/api/v1'.
+// Configuración de producción (ng build). En Vercel, /api se reenvía al backend de Render
+// (ver vercel.json); en Docker lo hace nginx. Si el frontend y el backend se publican en dominios
+// distintos sin reenvío, coloca aquí la URL completa, por ejemplo:
+// 'https://mi-backend.onrender.com/api/v1'.
 export const environment = {
+  production: true,
   apiUrl: '/api/v1',
 };
