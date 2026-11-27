@@ -1,0 +1,21 @@
+# Capa para una máquina virtual de Azure con 1 GB de RAM (las gratuitas de Azure for Students:
+# B1s o B2ats v2). Se usa junto con compose.yaml:
+#   docker compose -f compose.yaml -f deploy/azure/compose.azure.yaml up -d
+#
+# - Publica el frontend en el puerto 80. La base de datos y el backend siguen escuchando solo dentro
+#   del servidor; el navegador llega a la API a través de nginx (/api).
+# - Ajusta la memoria para 1 GB de RAM más la memoria de intercambio que crea cloud-init.sh.
+services:
+  db:
+    mem_limit: 256m
+    command: ["postgres", "-c", "shared_buffers=48MB", "-c", "max_connections=30", "-c", "work_mem=2MB"]
+
+  backend:
+    mem_limit: 640m
+    environment:
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k"
+
+  frontend:
+    mem_limit: 48m
+    ports:
+      - "80:8080"

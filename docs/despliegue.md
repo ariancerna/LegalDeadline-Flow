@@ -1,6 +1,6 @@
 # Despliegue en la nube (gratis)
 
-> Para desplegar todo en **AWS** (un servidor EC2 con frontend, backend y PostgreSQL), sigue [despliegue-aws.md](despliegue-aws.md).
+> Para desplegar todo en una sola máquina virtual con frontend, backend y PostgreSQL, sigue [despliegue-azure.md](despliegue-azure.md) (Azure for Students, sin tarjeta) o [despliegue-aws.md](despliegue-aws.md) (AWS EC2).
 
 | Parte | Servicio | Región | Configuración en el repositorio |
 |---|---|---|---|

@@ -1,6 +1,8 @@
 # Etapa 1: compila Angular.
 FROM node:22-alpine AS build
 WORKDIR /app
+# Tope de memoria para compilar también en servidores de 1 GB (con memoria de intercambio).
+ENV NODE_OPTIONS=--max-old-space-size=768
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

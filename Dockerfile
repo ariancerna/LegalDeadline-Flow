@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM maven:3.9-eclipse-temurin-17-noble AS build
 WORKDIR /workspace
+# Tope de memoria para compilar también en servidores de 1 GB (con memoria de intercambio).
+ENV MAVEN_OPTS="-Xmx512m"
 RUN apt-get update \
     && apt-get install -y --no-install-recommends unzip \
     && rm -rf /var/lib/apt/lists/*
